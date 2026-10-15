@@ -193,22 +193,29 @@ class AppRouter {
       GoRoute(
         path: '/all-debts',
         name: 'all-debts',
-        pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
-          child: BlocProvider(
-            create: (_) => di.sl<AllDebtsBloc>(),
-            child: const AllDebtsScreen(),
-          ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(1.0, 0.0),
-                end: Offset.zero,
-              ).animate(animation),
-              child: child,
-            );
-          },
-        ),
+        pageBuilder: (context, state) {
+          final filter = state.uri.queryParameters['filter'] ?? 'all';
+          final type = state.uri.queryParameters['type'] ?? 'all';
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: BlocProvider(
+              create: (_) => di.sl<AllDebtsBloc>(),
+              child: AllDebtsScreen(
+                initialFilter: filter,
+                initialTypeFilter: type,
+              ),
+            ),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1.0, 0.0),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              );
+            },
+          );
+        },
       ),
       GoRoute(
         path: '/settings',

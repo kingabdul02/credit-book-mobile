@@ -253,23 +253,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 32),
-            _buildSectionTitle('DATA MANAGEMENT'),
-            _buildSectionContainer(
-              children: [
-                _buildListTile(
-                  icon: Icons.download_outlined,
-                  title: 'Export Data',
-                  subtitle: 'CSV, PDF, or JSON format',
-                ),
-                _buildDivider(),
-                _buildListTile(
-                  icon: Icons.upload_outlined,
-                  title: 'Import Backup',
-                  subtitle: 'Restore from local or cloud file',
-                ),
-              ],
-            ),
+            // const SizedBox(height: 32),
+            // _buildSectionTitle('DATA MANAGEMENT'),
+            // _buildSectionContainer(
+            //   children: [
+            //     _buildListTile(
+            //       icon: Icons.download_outlined,
+            //       title: 'Export Data',
+            //       subtitle: 'CSV, PDF, or JSON format',
+            //     ),
+            //     _buildDivider(),
+            //     _buildListTile(
+            //       icon: Icons.upload_outlined,
+            //       title: 'Import Backup',
+            //       subtitle: 'Restore from local or cloud file',
+            //     ),
+            //   ],
+            // ),
             const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,

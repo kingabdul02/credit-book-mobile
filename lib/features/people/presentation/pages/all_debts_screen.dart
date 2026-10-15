@@ -8,7 +8,14 @@ import '../bloc/all_debts_bloc.dart';
 import '../../domain/entities/debt_with_contact_entity.dart';
 
 class AllDebtsScreen extends StatefulWidget {
-  const AllDebtsScreen({super.key});
+  final String initialFilter; // 'all', 'pending', 'settled'
+  final String initialTypeFilter; // 'all', 'receivable', 'payable'
+
+  const AllDebtsScreen({
+    super.key,
+    this.initialFilter = 'all',
+    this.initialTypeFilter = 'all',
+  });
 
   @override
   State<AllDebtsScreen> createState() => _AllDebtsScreenState();
@@ -23,9 +30,24 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    int initialIndex = 0;
+    if (widget.initialFilter == 'pending') {
+      initialIndex = 1;
+    } else if (widget.initialFilter == 'settled') {
+      initialIndex = 2;
+    }
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: initialIndex,
+    );
     _tabController.addListener(_onTabChanged);
-    context.read<AllDebtsBloc>().add(LoadAllDebts());
+    context.read<AllDebtsBloc>().add(
+      LoadAllDebts(
+        statusFilter: widget.initialFilter,
+        typeFilter: widget.initialTypeFilter,
+      ),
+    );
   }
 
   @override
@@ -43,6 +65,29 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
         FilterDebts(filters[_tabController.index]),
       );
     }
+  }
+
+  String _getTitle(AllDebtsState state) {
+    if (state is AllDebtsLoaded) {
+      if (state.typeFilter == 'receivable') {
+        if (state.currentFilter == 'pending') return 'Pending Receivables';
+        if (state.currentFilter == 'settled') return 'Settled Receivables';
+        return 'Receivables';
+      }
+      if (state.typeFilter == 'payable') {
+        if (state.currentFilter == 'pending') return 'Pending Payables';
+        if (state.currentFilter == 'settled') return 'Settled Payables';
+        return 'Payables';
+      }
+      if (state.currentFilter == 'pending') return 'Pending Debts';
+      if (state.currentFilter == 'settled') return 'Settled Debts';
+    } else {
+      if (widget.initialTypeFilter == 'receivable') return 'Pending Receivables';
+      if (widget.initialTypeFilter == 'payable') return 'Pending Payables';
+      if (widget.initialFilter == 'pending') return 'Pending Debts';
+      if (widget.initialFilter == 'settled') return 'Settled Debts';
+    }
+    return 'All Debts';
   }
 
   @override
@@ -67,187 +112,316 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
           );
         }
       },
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF8F9FA),
-        appBar: CustomAppBar(
-          title: 'All Debts',
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.sync, color: AppTheme.textDark),
-              onPressed: () {
-                context.read<AllDebtsBloc>().add(LoadAllDebts());
-              },
+      child: BlocBuilder<AllDebtsBloc, AllDebtsState>(
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: const Color(0xFFF8F9FA),
+            appBar: CustomAppBar(
+              title: _getTitle(state),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.sync, color: AppTheme.textDark),
+                  onPressed: () {
+                    final status = state is AllDebtsLoaded
+                        ? state.currentFilter
+                        : widget.initialFilter;
+                    final type = state is AllDebtsLoaded
+                        ? state.typeFilter
+                        : widget.initialTypeFilter;
+                    context.read<AllDebtsBloc>().add(
+                      LoadAllDebts(statusFilter: status, typeFilter: type),
+                    );
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
-        body: Column(
-          children: [
-            // Search Bar
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (query) {
-                  context.read<AllDebtsBloc>().add(SearchDebts(query));
-                },
-                style: const TextStyle(fontSize: 14, color: AppTheme.textDark),
-                decoration: InputDecoration(
-                  hintText: 'Search by name, note, or category...',
-                  hintStyle: TextStyle(
-                    color: AppTheme.textMuted.withValues(alpha: 0.5),
-                    fontSize: 14,
+            body: Column(
+              children: [
+                // Search Bar
+                Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (query) {
+                      context.read<AllDebtsBloc>().add(SearchDebts(query));
+                    },
+                    style: const TextStyle(fontSize: 14, color: AppTheme.textDark),
+                    decoration: InputDecoration(
+                      hintText: 'Search by name, note, or category...',
+                      hintStyle: TextStyle(
+                        color: AppTheme.textMuted.withValues(alpha: 0.5),
+                        fontSize: 14,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        size: 20,
+                        color: AppTheme.textMuted,
+                      ),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(
+                                Icons.close,
+                                size: 18,
+                                color: AppTheme.textMuted,
+                              ),
+                              onPressed: () {
+                                _searchController.clear();
+                                context.read<AllDebtsBloc>().add(SearchDebts(''));
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: AppTheme.onBackground,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
                   ),
-                  prefixIcon: const Icon(
-                    Icons.search,
-                    size: 20,
-                    color: AppTheme.textMuted,
-                  ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(
-                            Icons.close,
-                            size: 18,
-                            color: AppTheme.textMuted,
+                ),
+
+                // Tab Bar
+                Container(
+                  color: Colors.white,
+                  child: state is AllDebtsLoaded
+                      ? TabBar(
+                          controller: _tabController,
+                          indicatorColor: AppTheme.primaryColor,
+                          indicatorWeight: 3,
+                          labelColor: AppTheme.primaryColor,
+                          unselectedLabelColor: AppTheme.textMuted,
+                          labelStyle: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
                           ),
-                          onPressed: () {
-                            _searchController.clear();
-                            context.read<AllDebtsBloc>().add(SearchDebts(''));
-                          },
+                          unselectedLabelStyle: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                          tabs: [
+                            Tab(text: 'All (${state.filteredTotalCount})'),
+                            Tab(text: 'Pending (${state.filteredPendingCount})'),
+                            Tab(text: 'Settled (${state.filteredSettledCount})'),
+                          ],
                         )
-                      : null,
-                  filled: true,
-                  fillColor: AppTheme.onBackground,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
+                      : TabBar(
+                          controller: _tabController,
+                          indicatorColor: AppTheme.primaryColor,
+                          labelColor: AppTheme.primaryColor,
+                          unselectedLabelColor: AppTheme.textMuted,
+                          tabs: const [
+                            Tab(text: 'All'),
+                            Tab(text: 'Pending'),
+                            Tab(text: 'Settled'),
+                          ],
+                        ),
+                ),
+
+                // Content
+                Expanded(
+                  child: Builder(
+                    builder: (context) {
+                      if (state is AllDebtsInitial ||
+                          state is AllDebtsLoading ||
+                          state is PaymentRecording) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (state is AllDebtsError) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.error_outline,
+                                size: 48,
+                                color: AppTheme.errorColor,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Error: ${state.message}',
+                                style: const TextStyle(color: AppTheme.errorColor),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () {
+                                  context.read<AllDebtsBloc>().add(
+                                    LoadAllDebts(
+                                      statusFilter: widget.initialFilter,
+                                      typeFilter: widget.initialTypeFilter,
+                                    ),
+                                  );
+                                },
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
+                      if (state is AllDebtsLoaded) {
+                        return Column(
+                          children: [
+                            // Summary Cards & Quick Type Toggles (only show on Pending and Settled tabs)
+                            if (_tabController.index != 0)
+                              _buildSummarySection(state),
+
+                            // Type Filter Pills
+                            _buildTypeFilterPills(state),
+
+                            // Debt List
+                            Expanded(
+                              child: state.filteredDebts.isEmpty
+                                  ? _buildEmptyState(
+                                      state.searchQuery,
+                                      state.typeFilter,
+                                    )
+                                  : ListView.separated(
+                                      padding: const EdgeInsets.all(16),
+                                      itemCount: state.filteredDebts.length,
+                                      separatorBuilder: (context, index) =>
+                                          const SizedBox(height: 12),
+                                      itemBuilder: (context, index) {
+                                        return _buildDebtCard(
+                                              context,
+                                              state.filteredDebts[index],
+                                            )
+                                            .animate()
+                                            .fadeIn(
+                                              delay: Duration(
+                                                milliseconds: 50 * index,
+                                              ),
+                                            )
+                                            .slideY(begin: 0.1, end: 0);
+                                      },
+                                    ),
+                            ),
+                          ],
+                        );
+                      }
+
+                      return const SizedBox.shrink();
+                    },
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTypeFilterPills(AllDebtsLoaded state) {
+    Widget buildPill(String title, String type, int count, Color color) {
+      final isSelected = state.typeFilter == type;
+      return GestureDetector(
+        onTap: () {
+          context.read<AllDebtsBloc>().add(FilterDebtsByType(type));
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? color : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected
+                  ? color
+                  : AppTheme.textMuted.withValues(alpha: 0.25),
+              width: 1.5,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.25),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                  color: isSelected ? Colors.white : AppTheme.textDark,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Colors.white.withValues(alpha: 0.25)
+                      : Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '$count',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: isSelected ? Colors.white : AppTheme.textDark,
                   ),
                 ),
               ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final isPending = state.currentFilter == 'pending';
+    final isSettled = state.currentFilter == 'settled';
+
+    final totalCount = isPending
+        ? state.pendingCount
+        : (isSettled ? state.settledCount : state.allDebts.length);
+
+    final receivableCount = isPending
+        ? state.allDebts.where((d) => d.isTheyOweMe && d.isPending).length
+        : (isSettled
+            ? state.allDebts.where((d) => d.isTheyOweMe && d.isSettled).length
+            : state.allDebts.where((d) => d.isTheyOweMe).length);
+
+    final payableCount = isPending
+        ? state.allDebts.where((d) => d.isIOweThem && d.isPending).length
+        : (isSettled
+            ? state.allDebts.where((d) => d.isIOweThem && d.isSettled).length
+            : state.allDebts.where((d) => d.isIOweThem).length);
+
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            buildPill('All Debts', 'all', totalCount, AppTheme.textDark),
+            const SizedBox(width: 8),
+            buildPill(
+              'Receivables (Owed Me)',
+              'receivable',
+              receivableCount,
+              AppTheme.primaryColor,
             ),
-
-            // Tab Bar
-            Container(
-              color: Colors.white,
-              child: BlocBuilder<AllDebtsBloc, AllDebtsState>(
-                builder: (context, state) {
-                  if (state is AllDebtsLoaded) {
-                    return TabBar(
-                      controller: _tabController,
-                      indicatorColor: AppTheme.primaryColor,
-                      indicatorWeight: 3,
-                      labelColor: AppTheme.primaryColor,
-                      unselectedLabelColor: AppTheme.textMuted,
-                      labelStyle: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14,
-                      ),
-                      unselectedLabelStyle: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                      tabs: [
-                        Tab(text: 'All (${state.allDebts.length})'),
-                        Tab(text: 'Pending (${state.pendingCount})'),
-                        Tab(text: 'Settled (${state.settledCount})'),
-                      ],
-                    );
-                  }
-                  return TabBar(
-                    controller: _tabController,
-                    indicatorColor: AppTheme.primaryColor,
-                    labelColor: AppTheme.primaryColor,
-                    unselectedLabelColor: AppTheme.textMuted,
-                    tabs: const [
-                      Tab(text: 'All'),
-                      Tab(text: 'Pending'),
-                      Tab(text: 'Settled'),
-                    ],
-                  );
-                },
-              ),
-            ),
-
-            // Content
-            Expanded(
-              child: BlocBuilder<AllDebtsBloc, AllDebtsState>(
-                builder: (context, state) {
-                  if (state is AllDebtsInitial ||
-                      state is AllDebtsLoading ||
-                      state is PaymentRecording) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (state is AllDebtsError) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.error_outline,
-                            size: 48,
-                            color: AppTheme.errorColor,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Error: ${state.message}',
-                            style: const TextStyle(color: AppTheme.errorColor),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: () {
-                              context.read<AllDebtsBloc>().add(LoadAllDebts());
-                            },
-                            child: const Text('Retry'),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  if (state is AllDebtsLoaded) {
-                    return Column(
-                      children: [
-                        // Summary Cards (only show on Pending and Settled tabs)
-                        if (_tabController.index != 0)
-                          _buildSummarySection(state),
-
-                        // Debt List
-                        Expanded(
-                          child: state.filteredDebts.isEmpty
-                              ? _buildEmptyState(state.searchQuery)
-                              : ListView.separated(
-                                  padding: const EdgeInsets.all(16),
-                                  itemCount: state.filteredDebts.length,
-                                  separatorBuilder: (context, index) =>
-                                      const SizedBox(height: 12),
-                                  itemBuilder: (context, index) {
-                                    return _buildDebtCard(
-                                          context,
-                                          state.filteredDebts[index],
-                                        )
-                                        .animate()
-                                        .fadeIn(
-                                          delay: Duration(
-                                            milliseconds: 50 * index,
-                                          ),
-                                        )
-                                        .slideY(begin: 0.1, end: 0);
-                                  },
-                                ),
-                        ),
-                      ],
-                    );
-                  }
-
-                  return const SizedBox.shrink();
-                },
-              ),
+            const SizedBox(width: 8),
+            buildPill(
+              'Payables (I Owe)',
+              'payable',
+              payableCount,
+              AppTheme.errorColor,
             ),
           ],
         ),
@@ -256,9 +430,12 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
   }
 
   Widget _buildSummarySection(AllDebtsLoaded state) {
+    final isPayableSelected = state.typeFilter == 'payable';
+    final isReceivableSelected = state.typeFilter == 'receivable';
+
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Row(
         children: [
           Expanded(
@@ -269,6 +446,11 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                   : state.currentFilterIOwe,
               AppTheme.errorColor,
               Icons.arrow_upward_rounded,
+              isSelected: isPayableSelected,
+              onTap: () {
+                final next = isPayableSelected ? 'all' : 'payable';
+                context.read<AllDebtsBloc>().add(FilterDebtsByType(next));
+              },
             ),
           ),
           const SizedBox(width: 12),
@@ -280,6 +462,11 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                   : state.currentFilterTheyOweMe,
               AppTheme.primaryColor,
               Icons.arrow_downward_rounded,
+              isSelected: isReceivableSelected,
+              onTap: () {
+                final next = isReceivableSelected ? 'all' : 'receivable';
+                context.read<AllDebtsBloc>().add(FilterDebtsByType(next));
+              },
             ),
           ),
         ],
@@ -291,47 +478,106 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
     String label,
     double amount,
     Color color,
-    IconData icon,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+    IconData icon, {
+    bool isSelected = false,
+    VoidCallback? onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? color.withValues(alpha: 0.16)
+                : color.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? color : color.withValues(alpha: 0.3),
+              width: isSelected ? 2 : 1,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: color, size: 20),
-              Text(
-                label,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Icon(icon, color: color, size: 18),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            label,
+                            style: TextStyle(
+                              color: color,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.end,
+                          ),
+                        ),
+                        if (isSelected) ...[
+                          const SizedBox(width: 4),
+                          Icon(Icons.check_circle, color: color, size: 13),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  formatCurrency.format(amount),
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            formatCurrency.format(amount),
-            style: TextStyle(
-              color: color,
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildEmptyState(String searchQuery) {
+  Widget _buildEmptyState(String searchQuery, [String typeFilter = 'all']) {
+    String message = 'No debts found';
+    String submessage = 'Start by adding a transaction';
+
+    if (searchQuery.isNotEmpty) {
+      message = 'No matching debts';
+      submessage = 'Try adjusting your search';
+    } else if (typeFilter == 'receivable') {
+      message = 'No pending receivables found';
+      submessage = 'You do not have any pending receivables in this tab';
+    } else if (typeFilter == 'payable') {
+      message = 'No pending payables found';
+      submessage = 'You do not have any pending payables in this tab';
+    }
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -347,7 +593,7 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              searchQuery.isEmpty ? 'No debts found' : 'No matching debts',
+              message,
               style: const TextStyle(
                 color: AppTheme.textDark,
                 fontSize: 18,
@@ -356,9 +602,7 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              searchQuery.isEmpty
-                  ? 'Start by adding a transaction'
-                  : 'Try adjusting your search',
+              submessage,
               style: TextStyle(
                 color: AppTheme.textMuted.withValues(alpha: 0.8),
                 fontSize: 14,

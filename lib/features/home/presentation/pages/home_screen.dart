@@ -699,65 +699,83 @@ class _HomeScreenState extends State<HomeScreen> {
     final formatCurrency = NumberFormat.currency(symbol: '₦', decimalDigits: 0);
     final amount = double.tryParse(metrics.totalOwedToMe) ?? 0.0;
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: () => context.push('/all-debts?filter=pending&type=receivable'),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+        child: Ink(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.south_west_rounded,
-                  size: 20,
-                  color: AppTheme.primaryVariant,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.south_west_rounded,
+                      size: 20,
+                      color: AppTheme.primaryVariant,
+                    ),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Receivable',
+                        style: TextStyle(
+                          color: AppTheme.primaryVariant,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 10,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 10,
+                        color: AppTheme.primaryVariant.withValues(alpha: 0.6),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'People Owe Me',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppTheme.textDark.withValues(alpha: 0.7),
+                  fontWeight: FontWeight.w600,
                 ),
               ),
+              const SizedBox(height: 4),
               Text(
-                'Receivable',
-                style: TextStyle(
+                formatCurrency.format(amount),
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   color: AppTheme.primaryVariant,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            'People Owe Me',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.textDark.withValues(alpha: 0.7),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            formatCurrency.format(amount),
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: AppTheme.primaryVariant,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
+        ),
       ),
     ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1, end: 0);
   }
@@ -766,65 +784,83 @@ class _HomeScreenState extends State<HomeScreen> {
     final formatCurrency = NumberFormat.currency(symbol: '₦', decimalDigits: 0);
     final amount = double.tryParse(metrics.totalIOwe) ?? 0.0;
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: () => context.push('/all-debts?filter=pending&type=payable'),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+        child: Ink(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppTheme.errorColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.north_east_rounded,
-                  size: 20,
-                  color: AppTheme.errorColor,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.errorColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.north_east_rounded,
+                      size: 20,
+                      color: AppTheme.errorColor,
+                    ),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Payable',
+                        style: TextStyle(
+                          color: AppTheme.errorColor,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 10,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 10,
+                        color: AppTheme.errorColor.withValues(alpha: 0.6),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'I Owe People',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppTheme.textDark.withValues(alpha: 0.7),
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              const Text(
-                'Payable',
-                style: TextStyle(
+              const SizedBox(height: 4),
+              Text(
+                formatCurrency.format(amount),
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   color: AppTheme.errorColor,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            'I Owe People',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.textDark.withValues(alpha: 0.7),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            formatCurrency.format(amount),
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: AppTheme.errorColor,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
+        ),
       ),
     ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1, end: 0);
   }

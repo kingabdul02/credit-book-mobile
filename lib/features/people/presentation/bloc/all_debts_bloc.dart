@@ -10,12 +10,21 @@ abstract class AllDebtsEvent {}
 
 class LoadAllDebts extends AllDebtsEvent {
   final String statusFilter; // 'all', 'pending', 'settled'
-  LoadAllDebts({this.statusFilter = 'all'});
+  final String typeFilter; // 'all', 'receivable', 'payable'
+  LoadAllDebts({
+    this.statusFilter = 'all',
+    this.typeFilter = 'all',
+  });
 }
 
 class FilterDebts extends AllDebtsEvent {
   final String statusFilter;
   FilterDebts(this.statusFilter);
+}
+
+class FilterDebtsByType extends AllDebtsEvent {
+  final String typeFilter; // 'all', 'receivable', 'payable'
+  FilterDebtsByType(this.typeFilter);
 }
 
 class SearchDebts extends AllDebtsEvent {
@@ -45,6 +54,7 @@ class AllDebtsLoaded extends AllDebtsState {
   final List<DebtWithContactEntity> allDebts;
   final List<DebtWithContactEntity> filteredDebts;
   final String currentFilter; // 'all', 'pending', 'settled'
+  final String typeFilter; // 'all', 'receivable', 'payable'
   final String searchQuery;
   final int pendingCount;
   final int settledCount;
@@ -58,6 +68,7 @@ class AllDebtsLoaded extends AllDebtsState {
     required this.allDebts,
     required this.filteredDebts,
     required this.currentFilter,
+    this.typeFilter = 'all',
     required this.searchQuery,
     required this.pendingCount,
     required this.settledCount,
@@ -68,10 +79,29 @@ class AllDebtsLoaded extends AllDebtsState {
     required this.statistics,
   });
 
+  int get filteredTotalCount {
+    if (typeFilter == 'receivable') return allDebts.where((d) => d.isTheyOweMe).length;
+    if (typeFilter == 'payable') return allDebts.where((d) => d.isIOweThem).length;
+    return allDebts.length;
+  }
+
+  int get filteredPendingCount {
+    if (typeFilter == 'receivable') return allDebts.where((d) => d.isTheyOweMe && d.isPending).length;
+    if (typeFilter == 'payable') return allDebts.where((d) => d.isIOweThem && d.isPending).length;
+    return pendingCount;
+  }
+
+  int get filteredSettledCount {
+    if (typeFilter == 'receivable') return allDebts.where((d) => d.isTheyOweMe && d.isSettled).length;
+    if (typeFilter == 'payable') return allDebts.where((d) => d.isIOweThem && d.isSettled).length;
+    return settledCount;
+  }
+
   AllDebtsLoaded copyWith({
     List<DebtWithContactEntity>? allDebts,
     List<DebtWithContactEntity>? filteredDebts,
     String? currentFilter,
+    String? typeFilter,
     String? searchQuery,
     int? pendingCount,
     int? settledCount,
@@ -85,6 +115,7 @@ class AllDebtsLoaded extends AllDebtsState {
       allDebts: allDebts ?? this.allDebts,
       filteredDebts: filteredDebts ?? this.filteredDebts,
       currentFilter: currentFilter ?? this.currentFilter,
+      typeFilter: typeFilter ?? this.typeFilter,
       searchQuery: searchQuery ?? this.searchQuery,
       pendingCount: pendingCount ?? this.pendingCount,
       settledCount: settledCount ?? this.settledCount,
@@ -122,6 +153,7 @@ class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
   AllDebtsBloc({required this.repository}) : super(AllDebtsInitial()) {
     on<LoadAllDebts>(_onLoadAllDebts);
     on<FilterDebts>(_onFilterDebts);
+    on<FilterDebtsByType>(_onFilterDebtsByType);
     on<SearchDebts>(_onSearchDebts);
     on<RecordDebtPayment>(_onRecordDebtPayment);
   }
@@ -137,7 +169,7 @@ class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
       final stats = result.statistics;
 
       // Apply initial filter
-      final filtered = _applyFilter(debts, event.statusFilter, '');
+      final filtered = _applyFilter(debts, event.statusFilter, event.typeFilter, '');
 
       // Use API-provided statistics directly - NO client-side calculation
       double currentFilterIOwe = 0.0;
@@ -160,6 +192,7 @@ class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
           allDebts: debts,
           filteredDebts: filtered,
           currentFilter: event.statusFilter,
+          typeFilter: event.typeFilter,
           searchQuery: '',
           pendingCount: stats.pendingCount,
           settledCount: stats.settledCount,
@@ -181,6 +214,7 @@ class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
       final filtered = _applyFilter(
         current.allDebts,
         event.statusFilter,
+        current.typeFilter,
         current.searchQuery,
       );
 
@@ -212,18 +246,35 @@ class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
     }
   }
 
+  void _onFilterDebtsByType(FilterDebtsByType event, Emitter<AllDebtsState> emit) {
+    if (state is AllDebtsLoaded) {
+      final current = state as AllDebtsLoaded;
+      final filtered = _applyFilter(
+        current.allDebts,
+        current.currentFilter,
+        event.typeFilter,
+        current.searchQuery,
+      );
+
+      emit(
+        current.copyWith(
+          typeFilter: event.typeFilter,
+          filteredDebts: filtered,
+        ),
+      );
+    }
+  }
+
   void _onSearchDebts(SearchDebts event, Emitter<AllDebtsState> emit) {
     if (state is AllDebtsLoaded) {
       final current = state as AllDebtsLoaded;
       final filtered = _applyFilter(
         current.allDebts,
         current.currentFilter,
+        current.typeFilter,
         event.query,
       );
 
-      // When searching, keep using API statistics
-      // The statistics show totals for ALL debts, not just search results
-      // This is intentional - we want to show overall statistics, not filtered ones
       emit(current.copyWith(searchQuery: event.query, filteredDebts: filtered));
     }
   }
@@ -231,6 +282,7 @@ class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
   List<DebtWithContactEntity> _applyFilter(
     List<DebtWithContactEntity> debts,
     String statusFilter,
+    String typeFilter,
     String searchQuery,
   ) {
     var result = debts;
@@ -240,6 +292,13 @@ class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
       result = result.where((d) => d.isPending).toList();
     } else if (statusFilter == 'settled') {
       result = result.where((d) => d.isSettled).toList();
+    }
+
+    // Apply type filter
+    if (typeFilter == 'receivable' || typeFilter == 'they_owe_me') {
+      result = result.where((d) => d.isTheyOweMe).toList();
+    } else if (typeFilter == 'payable' || typeFilter == 'i_owe_them') {
+      result = result.where((d) => d.isIOweThem).toList();
     }
 
     // Apply search query
@@ -278,6 +337,8 @@ class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
     RecordDebtPayment event,
     Emitter<AllDebtsState> emit,
   ) async {
+    final currentStatus = state is AllDebtsLoaded ? (state as AllDebtsLoaded).currentFilter : 'all';
+    final currentType = state is AllDebtsLoaded ? (state as AllDebtsLoaded).typeFilter : 'all';
     emit(PaymentRecording());
     try {
       await repository.recordPayment(
@@ -287,8 +348,8 @@ class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
       );
       emit(PaymentRecorded());
 
-      // Reload debts to reflect the payment
-      add(LoadAllDebts());
+      // Reload debts to reflect the payment, preserving current filters
+      add(LoadAllDebts(statusFilter: currentStatus, typeFilter: currentType));
     } catch (e) {
       emit(PaymentFailed(e.toString()));
     }
