@@ -246,6 +246,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (state is AuthSuccess) {
           _initFromUser(state.user);
           if (state.successMessage != null) {
+            setState(() {
+              _localPreviewFile = null;
+            });
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Row(

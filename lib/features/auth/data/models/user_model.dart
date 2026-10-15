@@ -1,4 +1,5 @@
 import '../../domain/entities/user.dart';
+import '../../../../core/widgets/user_avatar.dart';
 
 class UserModel extends User {
   const UserModel({
@@ -18,7 +19,7 @@ class UserModel extends User {
       name: json['name'] as String,
       phoneNumber: json['phone_number'] as String?,
       email: json['email'] as String?,
-      avatarUrl: json['avatar_url'] as String?,
+      avatarUrl: UserAvatar.resolveUrl(json['avatar_url'] as String?),
       defaultCurrency: json['default_currency'] as String?,
       hasPin: json['has_pin'] as bool? ?? false,
       createdAt: json['created_at'] != null 
