@@ -18,6 +18,7 @@ import '../../features/onboarding/presentation/pages/onboarding_screen.dart';
 import '../../features/splash/presentation/pages/splash_screen.dart';
 import '../../features/auth/presentation/pages/auth_screen.dart';
 import '../../features/auth/presentation/pages/set_pin_screen.dart';
+import '../../features/auth/presentation/pages/profile_photo_setup_screen.dart';
 import '../../features/settings/presentation/pages/settings_screen.dart';
 import '../../features/settings/presentation/pages/profile_screen.dart';
 import '../../features/settings/presentation/pages/face_setup_screen.dart';
@@ -59,6 +60,23 @@ class AppRouter {
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
           child: const SetPinScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(1.0, 0.0),
+                end: Offset.zero,
+              ).animate(animation),
+              child: child,
+            );
+          },
+        ),
+      ),
+      GoRoute(
+        path: '/setup-photo',
+        name: 'setup-photo',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const ProfilePhotoSetupScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return SlideTransition(
               position: Tween<Offset>(

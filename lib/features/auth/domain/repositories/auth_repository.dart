@@ -11,4 +11,5 @@ abstract class AuthRepository {
   Future<User> uploadAvatar(File imageFile);
   Future<User> deleteAvatar();
   Future<void> logout();
+  Future<bool> refreshToken();
 }

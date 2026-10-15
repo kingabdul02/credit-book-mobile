@@ -93,7 +93,15 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> logout() async {
-    await sharedPreferences.remove(AuthRemoteDataSourceImpl.tokenKey);
-    await sharedPreferences.remove(cachedUserKey);
+    try {
+      await remoteDataSource.logout();
+    } finally {
+      await sharedPreferences.remove(cachedUserKey);
+    }
+  }
+
+  @override
+  Future<bool> refreshToken() async {
+    return await remoteDataSource.refreshToken();
   }
 }

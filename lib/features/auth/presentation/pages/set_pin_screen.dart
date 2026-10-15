@@ -83,7 +83,7 @@ class _SetPinScreenState extends State<SetPinScreen> {
         if (state is AuthError) {
           _showError(state.message);
         } else if (state is PinSetSuccess) {
-          context.go('/home');
+          context.go('/setup-photo');
         }
       },
       builder: (context, state) {

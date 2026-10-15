@@ -13,6 +13,8 @@ abstract class AuthRemoteDataSource {
   Future<UserModel> updateProfile({String? name, String? email, String? defaultCurrency});
   Future<UserModel> uploadAvatar(File imageFile);
   Future<UserModel> deleteAvatar();
+  Future<void> logout();
+  Future<bool> refreshToken();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -21,6 +23,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   
   String get baseUrl => dotenv.env['API_BASE_URL']!;
   static const String tokenKey = 'auth_token';
+  static const String refreshTokenKey = 'refresh_token';
 
   AuthRemoteDataSourceImpl({
     required this.client,
@@ -62,7 +65,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
-      await sharedPreferences.setString(tokenKey, json['token']);
+      final token = json['access_token'] ?? json['token'];
+      if (token != null) {
+        await sharedPreferences.setString(tokenKey, token as String);
+      }
+      if (json['refresh_token'] != null) {
+        await sharedPreferences.setString(refreshTokenKey, json['refresh_token'] as String);
+      }
       return UserModel.fromJson(json['user']);
     } else {
       throw Exception(_parseError(response));
@@ -87,7 +96,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     if (response.statusCode == 201) {
       final json = jsonDecode(response.body);
-      await sharedPreferences.setString(tokenKey, json['token']);
+      final token = json['access_token'] ?? json['token'];
+      if (token != null) {
+        await sharedPreferences.setString(tokenKey, token as String);
+      }
+      if (json['refresh_token'] != null) {
+        await sharedPreferences.setString(refreshTokenKey, json['refresh_token'] as String);
+      }
       return UserModel.fromJson(json['user']);
     } else {
       throw Exception(_parseError(response));
@@ -185,6 +200,62 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       return UserModel.fromJson(json['user']);
     } else {
       throw Exception(_parseError(response));
+    }
+  }
+
+  @override
+  Future<void> logout() async {
+    final refreshToken = sharedPreferences.getString(refreshTokenKey);
+    try {
+      await client.post(
+        Uri.parse('$baseUrl/auth/logout'),
+        headers: _headers,
+        body: jsonEncode({
+          if (refreshToken != null) 'refresh_token': refreshToken,
+        }),
+      );
+    } catch (_) {
+      // Ignore network errors to guarantee local logout
+    } finally {
+      await sharedPreferences.remove(tokenKey);
+      await sharedPreferences.remove(refreshTokenKey);
+    }
+  }
+
+  @override
+  Future<bool> refreshToken() async {
+    final refreshToken = sharedPreferences.getString(refreshTokenKey);
+    if (refreshToken == null) {
+      return false;
+    }
+
+    try {
+      final response = await client.post(
+        Uri.parse('$baseUrl/auth/refresh'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({'refresh_token': refreshToken}),
+      );
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        final newAccessToken = json['access_token'] ?? json['token'];
+        if (newAccessToken != null) {
+          await sharedPreferences.setString(tokenKey, newAccessToken as String);
+        }
+        if (json['refresh_token'] != null) {
+          await sharedPreferences.setString(refreshTokenKey, json['refresh_token'] as String);
+        }
+        return true;
+      } else {
+        await sharedPreferences.remove(tokenKey);
+        await sharedPreferences.remove(refreshTokenKey);
+        return false;
+      }
+    } catch (_) {
+      return false;
     }
   }
 }

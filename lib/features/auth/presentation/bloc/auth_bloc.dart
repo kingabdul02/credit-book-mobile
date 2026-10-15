@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/error/error_handler.dart';
+import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -69,17 +70,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
     try {
       await authRepository.logout();
-      emit(AuthInitial());
-    } catch (e) {
-      emit(AuthError(_cleanError(e)));
+    } catch (_) {
+      // Local tokens and cache are cleared even if remote call fails
     }
+    emit(AuthInitial());
   }
 
   Future<void> _onSetPinRequested(SetPinRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
       await authRepository.setLoginPin(event.pin);
-      emit(PinSetSuccess());
+      User? user;
+      try {
+        user = await authRepository.getCurrentUser();
+      } catch (_) {
+        user = await authRepository.getCachedUser();
+      }
+      emit(PinSetSuccess(user));
     } catch (e) {
       emit(AuthError(_cleanError(e)));
     }
@@ -110,41 +117,65 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onUploadAvatarRequested(UploadAvatarRequested event, Emitter<AuthState> emit) async {
+    User? currentUser;
     if (state is AuthSuccess) {
-      final current = state as AuthSuccess;
-      emit(current.copyWith(isUpdatingAvatar: true, clearMessages: true));
-      try {
-        final updatedUser = await authRepository.uploadAvatar(event.imageFile);
-        emit(current.copyWith(
-          user: updatedUser,
-          isUpdatingAvatar: false,
-          successMessage: 'Profile photo updated successfully.',
-        ));
-      } catch (e) {
-        emit(current.copyWith(
+      currentUser = (state as AuthSuccess).user;
+      emit((state as AuthSuccess).copyWith(isUpdatingAvatar: true, clearMessages: true));
+    } else if (state is PinSetSuccess) {
+      currentUser = (state as PinSetSuccess).user;
+      emit(AuthLoading());
+    } else {
+      emit(AuthLoading());
+    }
+
+    try {
+      final updatedUser = await authRepository.uploadAvatar(event.imageFile);
+      emit(AuthSuccess(
+        updatedUser,
+        isUpdatingAvatar: false,
+        successMessage: 'Profile photo updated successfully.',
+      ));
+    } catch (e) {
+      if (currentUser != null) {
+        emit(AuthSuccess(
+          currentUser,
           isUpdatingAvatar: false,
           errorMessage: _cleanError(e),
         ));
+      } else {
+        emit(AuthError(_cleanError(e)));
       }
     }
   }
 
   Future<void> _onDeleteAvatarRequested(DeleteAvatarRequested event, Emitter<AuthState> emit) async {
+    User? currentUser;
     if (state is AuthSuccess) {
-      final current = state as AuthSuccess;
-      emit(current.copyWith(isUpdatingAvatar: true, clearMessages: true));
-      try {
-        final updatedUser = await authRepository.deleteAvatar();
-        emit(current.copyWith(
-          user: updatedUser,
-          isUpdatingAvatar: false,
-          successMessage: 'Profile photo removed.',
-        ));
-      } catch (e) {
-        emit(current.copyWith(
+      currentUser = (state as AuthSuccess).user;
+      emit((state as AuthSuccess).copyWith(isUpdatingAvatar: true, clearMessages: true));
+    } else if (state is PinSetSuccess) {
+      currentUser = (state as PinSetSuccess).user;
+      emit(AuthLoading());
+    } else {
+      emit(AuthLoading());
+    }
+
+    try {
+      final updatedUser = await authRepository.deleteAvatar();
+      emit(AuthSuccess(
+        updatedUser,
+        isUpdatingAvatar: false,
+        successMessage: 'Profile photo removed.',
+      ));
+    } catch (e) {
+      if (currentUser != null) {
+        emit(AuthSuccess(
+          currentUser,
           isUpdatingAvatar: false,
           errorMessage: _cleanError(e),
         ));
+      } else {
+        emit(AuthError(_cleanError(e)));
       }
     }
   }

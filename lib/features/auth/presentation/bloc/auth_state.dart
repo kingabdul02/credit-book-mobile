@@ -66,4 +66,10 @@ class AuthError extends AuthState {
   List<Object?> get props => [message];
 }
 
-class PinSetSuccess extends AuthState {}
+class PinSetSuccess extends AuthState {
+  final User? user;
+  const PinSetSuccess([this.user]);
+
+  @override
+  List<Object?> get props => [user];
+}

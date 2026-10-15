@@ -26,6 +26,8 @@ class _MockAuthRepository implements AuthRepository {
   Future<User> uploadAvatar(File imageFile) async => throw UnimplementedError();
   @override
   Future<User> deleteAvatar() async => throw UnimplementedError();
+  @override
+  Future<bool> refreshToken() async => true;
 }
 
 void main() {

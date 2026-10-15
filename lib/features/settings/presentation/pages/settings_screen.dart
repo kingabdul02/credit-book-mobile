@@ -7,6 +7,7 @@ import '../../../../core/widgets/custom_app_bar.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
 import '../../../../core/widgets/user_avatar.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../../core/services/transaction_pin_service.dart';
 import '../../../../core/services/face_auth_service.dart';
@@ -80,13 +81,76 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (result == true) _loadFaceStatus();
   }
 
+  Future<void> _handleLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Log Out',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            color: AppTheme.textDark,
+          ),
+        ),
+        content: const Text(
+          'Are you sure you want to log out of CreditBook?',
+          style: TextStyle(
+            fontSize: 14,
+            color: AppTheme.textMuted,
+          ),
+        ),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                color: AppTheme.textDark,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.errorColor,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Log Out',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      context.read<AuthBloc>().add(LogoutRequested());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
     final user = authState is AuthSuccess ? authState.user : null;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is AuthInitial) {
+          context.go('/auth');
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF8FAFC),
       appBar: const CustomAppBar(
         title: 'Settings',
         showBackButton: false,
@@ -286,9 +350,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             SizedBox(
               width: double.infinity,
               child: TextButton(
-                onPressed: () {
-                  // Handle logout
-                },
+                onPressed: authState is AuthLoading ? null : _handleLogout,
                 style: TextButton.styleFrom(
                   backgroundColor: AppTheme.errorColor.withValues(alpha: 0.05),
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -297,14 +359,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     side: BorderSide(color: AppTheme.errorColor.withValues(alpha: 0.2)),
                   ),
                 ),
-                child: const Text(
-                  'Log Out',
-                  style: TextStyle(
-                    color: AppTheme.errorColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                child: authState is AuthLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(AppTheme.errorColor),
+                        ),
+                      )
+                    : const Text(
+                        'Log Out',
+                        style: TextStyle(
+                          color: AppTheme.errorColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 24),
@@ -323,6 +394,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, curve: Curves.easeOutQuad),
       ),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 3),
+      ),
     );
   }
 

@@ -63,6 +63,9 @@ class _MockProfileAuthRepository implements AuthRepository {
     currentUser = updated;
     return updated;
   }
+
+  @override
+  Future<bool> refreshToken() async => true;
 }
 
 void main() {
