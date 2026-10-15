@@ -3,6 +3,7 @@ import 'package:flutter_face_liveness/flutter_face_liveness.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/custom_app_bar.dart';
 import '../../../../core/services/face_auth_service.dart';
 
 class FaceVerifyScreen extends StatefulWidget {
@@ -87,19 +88,8 @@ class _FaceVerifyScreenState extends State<FaceVerifyScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white, // F8FAFC like the screenshot? The screenshot looks white/light gray
-      appBar: AppBar(
-        title: const Text(
-          'Identity Verification',
-          style: TextStyle(
-            color: AppTheme.textDark,
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: AppTheme.textDark),
+      appBar: CustomAppBar(
+        title: 'Identity Verification',
         actions: [
           IconButton(
             icon: const Icon(Icons.help_outline, color: Colors.grey),

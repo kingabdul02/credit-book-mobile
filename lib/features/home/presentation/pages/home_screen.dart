@@ -172,6 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: false,
         titleSpacing: 24,
         title: Row(
           children: [

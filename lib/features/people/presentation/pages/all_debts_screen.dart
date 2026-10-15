@@ -120,7 +120,7 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
               title: _getTitle(state),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.sync, color: AppTheme.textDark),
+                  icon: const Icon(Icons.sync_rounded, color: AppTheme.textDark),
                   onPressed: () {
                     final status = state is AllDebtsLoaded
                         ? state.currentFilter

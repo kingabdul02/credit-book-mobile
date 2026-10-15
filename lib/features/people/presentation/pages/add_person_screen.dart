@@ -77,9 +77,6 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
         backgroundColor: AppTheme.onBackground,
         appBar: const CustomAppBar(
           title: 'Add New Person',
-          actions: [
-            Icon(Icons.more_vert, color: AppTheme.textDark),
-          ],
         ),
         body: SafeArea(
           child: SingleChildScrollView(

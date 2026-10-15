@@ -52,7 +52,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
           title: 'Ledger',
           actions: [
             IconButton(
-              icon: const Icon(Icons.sync, color: AppTheme.textDark),
+              icon: const Icon(Icons.sync_rounded, color: AppTheme.textDark),
               onPressed: () {
                 context.read<LedgerBloc>().add(LoadLedger(widget.contactId));
               },

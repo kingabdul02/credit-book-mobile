@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_face_liveness/flutter_face_liveness.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/custom_app_bar.dart';
 import '../../../../core/services/face_auth_service.dart';
 
 class FaceSetupScreen extends StatelessWidget {
@@ -11,19 +12,8 @@ class FaceSetupScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text(
-          'Biometric Setup',
-          style: TextStyle(
-            color: AppTheme.textDark,
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: AppTheme.textDark),
+      appBar: const CustomAppBar(
+        title: 'Biometric Setup',
       ),
       body: FlutterFaceLiveness(
         actions: const [

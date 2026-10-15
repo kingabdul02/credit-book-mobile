@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/custom_app_bar.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
 import '../bloc/insights_bloc.dart';
 import '../bloc/insights_event.dart';
@@ -30,18 +31,17 @@ class _InsightsScreenState extends State<InsightsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.onBackground,
-      appBar: AppBar(
-        backgroundColor: AppTheme.onBackground,
-        elevation: 0,
-        title: const Text(
-          'Insights',
-          style: TextStyle(
-            color: AppTheme.textDark,
-            fontWeight: FontWeight.w800,
-            fontSize: 24,
+      appBar: CustomAppBar(
+        title: 'Insights',
+        showBackButton: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.sync_rounded, color: AppTheme.textDark),
+            onPressed: () {
+              context.read<InsightsBloc>().add(const FetchInsightsData(timeframe: 'monthly'));
+            },
           ),
-        ),
-        centerTitle: false,
+        ],
       ),
       body: BlocBuilder<InsightsBloc, InsightsState>(
         builder: (context, state) {

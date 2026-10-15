@@ -4,23 +4,34 @@ import '../theme/app_theme.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
+  final Widget? titleWidget;
   final List<Widget>? actions;
   final bool showBackButton;
   final VoidCallback? onBack;
+  final bool? showAvatar;
+  final Color? backgroundColor;
+  final bool centerTitle;
 
   const CustomAppBar({
     super.key,
     required this.title,
+    this.titleWidget,
     this.actions,
     this.showBackButton = true,
     this.onBack,
+    this.showAvatar,
+    this.backgroundColor,
+    this.centerTitle = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final shouldShowAvatar = showAvatar ?? !showBackButton;
+
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: backgroundColor ?? Colors.white,
       elevation: 0,
+      centerTitle: centerTitle,
       titleSpacing: showBackButton ? 0 : 24,
       automaticallyImplyLeading: showBackButton,
       leading: showBackButton
@@ -33,22 +44,26 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               },
             )
           : null,
-      title: Text(
-        title,
-        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: AppTheme.textDark,
-              fontWeight: FontWeight.w800,
-            ),
-      ),
+      title: titleWidget ??
+          Text(
+            title,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: AppTheme.textDark,
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
       actions: [
         if (actions != null) ...actions!,
-        const Padding(
-          padding: EdgeInsets.only(right: 24.0, left: 8.0),
-          child: CircleAvatar(
-            radius: 16,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'), 
-          ),
-        )
+        if (shouldShowAvatar)
+          const Padding(
+            padding: EdgeInsets.only(right: 24.0, left: 8.0),
+            child: CircleAvatar(
+              radius: 16,
+              backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
+            ),
+          )
+        else if (actions != null && actions!.isNotEmpty)
+          const SizedBox(width: 12),
       ],
     );
   }

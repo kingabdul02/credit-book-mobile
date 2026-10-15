@@ -40,7 +40,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
         showBackButton: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.sync, color: AppTheme.textDark),
+            icon: const Icon(Icons.sync_rounded, color: AppTheme.textDark),
             onPressed: () {
               context.read<PeopleBloc>().add(LoadPeopleDataRequested());
             },
