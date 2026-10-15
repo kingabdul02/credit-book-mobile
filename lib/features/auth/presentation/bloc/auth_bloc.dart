@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/error/error_handler.dart';
 import '../../domain/repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -7,16 +8,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
 
   AuthBloc({required this.authRepository}) : super(AuthInitial()) {
+    on<CheckAuthStatus>(_onCheckAuthStatus);
     on<LoginRequested>(_onLoginRequested);
     on<SignupRequested>(_onSignupRequested);
     on<LogoutRequested>(_onLogoutRequested);
     on<SetPinRequested>(_onSetPinRequested);
+    on<UpdateProfileRequested>(_onUpdateProfileRequested);
+    on<UploadAvatarRequested>(_onUploadAvatarRequested);
+    on<DeleteAvatarRequested>(_onDeleteAvatarRequested);
+    on<UpdateUserLocally>(_onUpdateUserLocally);
   }
 
-  /// Strips the "Exception: " prefix Dart adds to Exception.toString().
+  /// Sanitizes exceptions into friendly messages (detecting network issues, 401s, etc.)
   String _cleanError(Object e) {
-    final msg = e.toString();
-    return msg.startsWith('Exception: ') ? msg.substring(11) : msg;
+    return ErrorHandler.getFriendlyMessage(e);
+  }
+
+  Future<void> _onCheckAuthStatus(CheckAuthStatus event, Emitter<AuthState> emit) async {
+    final cached = await authRepository.getCachedUser();
+    if (cached != null) {
+      emit(AuthSuccess(cached));
+    }
+    try {
+      final fresh = await authRepository.getCurrentUser();
+      emit(AuthSuccess(fresh));
+    } catch (_) {
+      // If offline, continue using cached user if available
+      if (cached == null && state is! AuthSuccess) {
+        emit(AuthInitial());
+      }
+    }
   }
 
   Future<void> _onLoginRequested(LoginRequested event, Emitter<AuthState> emit) async {
@@ -61,6 +82,78 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(PinSetSuccess());
     } catch (e) {
       emit(AuthError(_cleanError(e)));
+    }
+  }
+
+  Future<void> _onUpdateProfileRequested(UpdateProfileRequested event, Emitter<AuthState> emit) async {
+    if (state is AuthSuccess) {
+      final current = state as AuthSuccess;
+      emit(current.copyWith(isUpdatingProfile: true, clearMessages: true));
+      try {
+        final updatedUser = await authRepository.updateProfile(
+          name: event.name,
+          email: event.email,
+          defaultCurrency: event.defaultCurrency,
+        );
+        emit(current.copyWith(
+          user: updatedUser,
+          isUpdatingProfile: false,
+          successMessage: 'Profile updated successfully.',
+        ));
+      } catch (e) {
+        emit(current.copyWith(
+          isUpdatingProfile: false,
+          errorMessage: _cleanError(e),
+        ));
+      }
+    }
+  }
+
+  Future<void> _onUploadAvatarRequested(UploadAvatarRequested event, Emitter<AuthState> emit) async {
+    if (state is AuthSuccess) {
+      final current = state as AuthSuccess;
+      emit(current.copyWith(isUpdatingAvatar: true, clearMessages: true));
+      try {
+        final updatedUser = await authRepository.uploadAvatar(event.imageFile);
+        emit(current.copyWith(
+          user: updatedUser,
+          isUpdatingAvatar: false,
+          successMessage: 'Profile photo updated successfully.',
+        ));
+      } catch (e) {
+        emit(current.copyWith(
+          isUpdatingAvatar: false,
+          errorMessage: _cleanError(e),
+        ));
+      }
+    }
+  }
+
+  Future<void> _onDeleteAvatarRequested(DeleteAvatarRequested event, Emitter<AuthState> emit) async {
+    if (state is AuthSuccess) {
+      final current = state as AuthSuccess;
+      emit(current.copyWith(isUpdatingAvatar: true, clearMessages: true));
+      try {
+        final updatedUser = await authRepository.deleteAvatar();
+        emit(current.copyWith(
+          user: updatedUser,
+          isUpdatingAvatar: false,
+          successMessage: 'Profile photo removed.',
+        ));
+      } catch (e) {
+        emit(current.copyWith(
+          isUpdatingAvatar: false,
+          errorMessage: _cleanError(e),
+        ));
+      }
+    }
+  }
+
+  void _onUpdateUserLocally(UpdateUserLocally event, Emitter<AuthState> emit) {
+    if (state is AuthSuccess) {
+      emit((state as AuthSuccess).copyWith(user: event.user));
+    } else {
+      emit(AuthSuccess(event.user));
     }
   }
 }

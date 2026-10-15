@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/error/error_handler.dart';
 import '../../domain/entities/contact_entity.dart';
 import '../../domain/repositories/people_repository.dart';
 
@@ -41,7 +42,7 @@ class PeopleBloc extends Bloc<PeopleEvent, PeopleState> {
       final data = await repository.getPeopleData();
       emit(PeopleLoaded(data));
     } catch (e) {
-      emit(PeopleError(e.toString()));
+      emit(PeopleError(ErrorHandler.getFriendlyMessage(e)));
     }
   }
 }

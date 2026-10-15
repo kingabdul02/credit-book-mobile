@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -9,6 +10,9 @@ abstract class AuthRemoteDataSource {
   Future<UserModel> register(String name, String phoneNumber, {String? currency});
   Future<void> setLoginPin(String pin);
   Future<UserModel> getUser();
+  Future<UserModel> updateProfile({String? name, String? email, String? defaultCurrency});
+  Future<UserModel> uploadAvatar(File imageFile);
+  Future<UserModel> deleteAvatar();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -107,6 +111,72 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserModel> getUser() async {
     final response = await client.get(
       Uri.parse('$baseUrl/auth/user'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return UserModel.fromJson(json['user']);
+    } else {
+      throw Exception(_parseError(response));
+    }
+  }
+
+  @override
+  Future<UserModel> updateProfile({String? name, String? email, String? defaultCurrency}) async {
+    final Map<String, dynamic> body = {};
+    if (name != null) body['name'] = name;
+    if (email != null) body['email'] = email;
+    if (defaultCurrency != null) body['default_currency'] = defaultCurrency;
+
+    final response = await client.put(
+      Uri.parse('$baseUrl/auth/user'),
+      headers: _headers,
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return UserModel.fromJson(json['user']);
+    } else {
+      throw Exception(_parseError(response));
+    }
+  }
+
+  @override
+  Future<UserModel> uploadAvatar(File imageFile) async {
+    final token = sharedPreferences.getString(tokenKey);
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/auth/avatar'),
+    );
+
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+    request.headers['Accept'] = 'application/json';
+
+    final multipartFile = await http.MultipartFile.fromPath(
+      'avatar',
+      imageFile.path,
+    );
+    request.files.add(multipartFile);
+
+    final streamedResponse = await client.send(request);
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return UserModel.fromJson(json['user']);
+    } else {
+      throw Exception(_parseError(response));
+    }
+  }
+
+  @override
+  Future<UserModel> deleteAvatar() async {
+    final response = await client.delete(
+      Uri.parse('$baseUrl/auth/avatar'),
       headers: _headers,
     );
 

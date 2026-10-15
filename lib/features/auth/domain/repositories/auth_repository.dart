@@ -1,3 +1,4 @@
+import 'dart:io';
 import '../entities/user.dart';
 
 abstract class AuthRepository {
@@ -5,5 +6,9 @@ abstract class AuthRepository {
   Future<User> register(String name, String phoneNumber, {String? currency});
   Future<void> setLoginPin(String pin);
   Future<User> getCurrentUser();
+  Future<User?> getCachedUser();
+  Future<User> updateProfile({String? name, String? email, String? defaultCurrency});
+  Future<User> uploadAvatar(File imageFile);
+  Future<User> deleteAvatar();
   Future<void> logout();
 }

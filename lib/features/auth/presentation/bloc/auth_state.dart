@@ -14,11 +14,38 @@ class AuthLoading extends AuthState {}
 
 class AuthSuccess extends AuthState {
   final User user;
+  final bool isUpdatingAvatar;
+  final bool isUpdatingProfile;
+  final String? successMessage;
+  final String? errorMessage;
 
-  const AuthSuccess(this.user);
+  const AuthSuccess(
+    this.user, {
+    this.isUpdatingAvatar = false,
+    this.isUpdatingProfile = false,
+    this.successMessage,
+    this.errorMessage,
+  });
+
+  AuthSuccess copyWith({
+    User? user,
+    bool? isUpdatingAvatar,
+    bool? isUpdatingProfile,
+    String? successMessage,
+    String? errorMessage,
+    bool clearMessages = false,
+  }) {
+    return AuthSuccess(
+      user ?? this.user,
+      isUpdatingAvatar: isUpdatingAvatar ?? this.isUpdatingAvatar,
+      isUpdatingProfile: isUpdatingProfile ?? this.isUpdatingProfile,
+      successMessage: clearMessages ? null : (successMessage ?? this.successMessage),
+      errorMessage: clearMessages ? null : (errorMessage ?? this.errorMessage),
+    );
+  }
 
   @override
-  List<Object?> get props => [user];
+  List<Object?> get props => [user, isUpdatingAvatar, isUpdatingProfile, successMessage, errorMessage];
 }
 
 class AuthNeedsPinSet extends AuthState {

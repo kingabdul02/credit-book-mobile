@@ -5,7 +5,7 @@ import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'core/di/injection_container.dart' as di;
 import 'features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:flutter/foundation.dart';
+import 'features/auth/presentation/bloc/auth_event.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => di.sl<AuthBloc>(),
+      create: (_) => di.sl<AuthBloc>()..add(CheckAuthStatus()),
       child: MaterialApp.router(
         title: 'CreditBook',
         theme: AppTheme.darkTheme,

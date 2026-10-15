@@ -69,7 +69,9 @@
 		<key>NSContactsUsageDescription</key>
 		<string>This app requires contacts access to allow you to import people into your credit book.</string>
 		<key>NSCameraUsageDescription</key>
-		<string>Camera is required for face liveness verification of large transactions.</string>
+		<string>Camera is required for face liveness verification and profile photos.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Photo library access is required to choose and upload your profile photo.</string>
 		<key>UIStatusBarHidden</key>
 		<false/>
 	</dict>

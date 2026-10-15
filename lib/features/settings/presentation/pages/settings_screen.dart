@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
+import '../../../../core/widgets/user_avatar.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../../core/services/transaction_pin_service.dart';
 import '../../../../core/services/face_auth_service.dart';
 import '../../../../core/services/sync_service.dart';
@@ -78,6 +82,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = context.watch<AuthBloc>().state;
+    final user = authState is AuthSuccess ? authState.user : null;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: const CustomAppBar(
@@ -93,9 +100,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildSectionContainer(
               children: [
                 _buildListTile(
+                  leadingWidget: UserAvatar(
+                    avatarUrl: user?.avatarUrl,
+                    radius: 18,
+                  ),
                   icon: Icons.person_outline,
                   title: 'Personal Profile',
-                  subtitle: 'Adebayo Johnson',
+                  subtitle: user?.name.isNotEmpty == true ? user!.name : 'Set up your profile',
+                  onTap: () => context.push('/profile'),
                 ),
                 _buildDivider(),
                 _buildListTile(
@@ -363,6 +375,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String title,
     String? subtitle,
     Widget? subtitleWidget,
+    Widget? leadingWidget,
     Widget? trailing,
     Color? subtitleColor,
     VoidCallback? onTap,
@@ -374,14 +387,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryVariant.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: AppTheme.primaryVariant, size: 20),
-            ),
+            leadingWidget ??
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryVariant.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: AppTheme.primaryVariant, size: 20),
+                ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(

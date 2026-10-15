@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/error/error_handler.dart';
 import '../../domain/repositories/insights_repository.dart';
 import 'insights_event.dart';
 import 'insights_state.dart';
@@ -19,7 +20,7 @@ class InsightsBloc extends Bloc<InsightsEvent, InsightsState> {
       final data = await repository.getInsightsData(event.timeframe);
       emit(InsightsLoaded(data: data, currentTimeframe: event.timeframe));
     } catch (e) {
-      emit(InsightsError(e.toString(), currentTimeframe: event.timeframe));
+      emit(InsightsError(ErrorHandler.getFriendlyMessage(e), currentTimeframe: event.timeframe));
     }
   }
 }

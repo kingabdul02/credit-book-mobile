@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
+import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/services/sync_service.dart';
 import '../bloc/people_bloc.dart';
 import '../../domain/entities/contact_entity.dart';
@@ -52,20 +53,9 @@ class _PeopleScreenState extends State<PeopleScreen> {
           if (state is PeopleInitial || state is PeopleLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is PeopleError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 48, color: AppTheme.errorColor),
-                  const SizedBox(height: 16),
-                  Text(state.message, style: const TextStyle(color: AppTheme.textDark)),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context.read<PeopleBloc>().add(LoadPeopleDataRequested()),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
+            return AppErrorView(
+              error: state.message,
+              onRetry: () => context.read<PeopleBloc>().add(LoadPeopleDataRequested()),
             );
           } else if (state is PeopleLoaded) {
             return RefreshIndicator(

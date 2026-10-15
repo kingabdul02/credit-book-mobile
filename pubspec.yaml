@@ -54,6 +54,7 @@ dependencies:
   flutter_face_liveness: ^3.2.0
   fl_chart: ^1.2.0
   local_auth: ^3.0.1
+  image_picker: ^1.2.4
 
 dependency_overrides:
   tflite_flutter:

@@ -1,15 +1,17 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:creditbook/features/auth/presentation/pages/auth_screen.dart';
 import 'package:creditbook/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:creditbook/features/auth/presentation/bloc/auth_state.dart';
 import 'package:creditbook/features/auth/domain/repositories/auth_repository.dart';
 import 'package:creditbook/features/auth/domain/entities/user.dart';
 
 class _MockAuthRepository implements AuthRepository {
   @override
   Future<User> getCurrentUser() async => throw UnimplementedError();
+  @override
+  Future<User?> getCachedUser() async => null;
   @override
   Future<User> login(String phoneNumber, String pin) async => throw UnimplementedError();
   @override
@@ -18,6 +20,12 @@ class _MockAuthRepository implements AuthRepository {
   Future<User> register(String name, String phoneNumber, {String? currency}) async => throw UnimplementedError();
   @override
   Future<void> setLoginPin(String pin) async => throw UnimplementedError();
+  @override
+  Future<User> updateProfile({String? name, String? email, String? defaultCurrency}) async => throw UnimplementedError();
+  @override
+  Future<User> uploadAvatar(File imageFile) async => throw UnimplementedError();
+  @override
+  Future<User> deleteAvatar() async => throw UnimplementedError();
 }
 
 void main() {

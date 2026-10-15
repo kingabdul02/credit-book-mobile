@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/error/error_handler.dart';
+import '../../../../core/widgets/app_error_view.dart';
 import '../bloc/ledger_bloc.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
 import '../../domain/entities/ledger_transaction_entity.dart';
@@ -40,7 +42,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
         } else if (state is PaymentFailed) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error: ${state.message}'),
+              content: Text(ErrorHandler.getFriendlyMessage(state.message)),
               backgroundColor: AppTheme.errorColor,
             ),
           );
@@ -66,17 +68,9 @@ class _LedgerScreenState extends State<LedgerScreen> {
             }
 
             if (state is LedgerError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('Error: ${state.message}', style: const TextStyle(color: AppTheme.errorColor)),
-                    ElevatedButton(
-                      onPressed: () => context.read<LedgerBloc>().add(LoadLedger(widget.contactId)),
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
+              return AppErrorView(
+                error: state.message,
+                onRetry: () => context.read<LedgerBloc>().add(LoadLedger(widget.contactId)),
               );
             }
 

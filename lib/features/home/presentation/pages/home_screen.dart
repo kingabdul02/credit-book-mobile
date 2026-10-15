@@ -10,6 +10,10 @@ import '../bloc/home_state.dart';
 import '../../domain/entities/dashboard_entities.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
+import '../../../../core/widgets/user_avatar.dart';
+import '../../../../core/widgets/app_error_view.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../../core/services/sync_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -167,6 +171,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = context.watch<AuthBloc>().state;
+    final user = authState is AuthSuccess ? authState.user : null;
+
     return Scaffold(
       backgroundColor: AppTheme.onBackground,
       appBar: AppBar(
@@ -176,9 +183,10 @@ class _HomeScreenState extends State<HomeScreen> {
         titleSpacing: 24,
         title: Row(
           children: [
-            const CircleAvatar(
+            UserAvatar(
+              avatarUrl: user?.avatarUrl,
               radius: 16,
-              backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
+              onTap: () => context.push('/profile'),
             ),
             const SizedBox(width: 12),
             Text(
@@ -205,28 +213,10 @@ class _HomeScreenState extends State<HomeScreen> {
           if (state is HomeInitial || state is HomeLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is HomeError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 48,
-                    color: AppTheme.errorColor,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    state.message,
-                    style: const TextStyle(color: AppTheme.textDark),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () =>
-                        context.read<HomeBloc>().add(LoadDashboardRequested()),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
+            return AppErrorView(
+              error: state.message,
+              onRetry: () =>
+                  context.read<HomeBloc>().add(LoadDashboardRequested()),
             );
           } else if (state is HomeLoaded) {
             final filteredTransactions = _getFilteredTransactions(

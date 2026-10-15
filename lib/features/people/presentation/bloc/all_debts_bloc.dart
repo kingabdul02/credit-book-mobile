@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/error/error_handler.dart';
 import '../../domain/entities/debt_with_contact_entity.dart';
 import '../../domain/repositories/people_repository.dart';
 
@@ -204,7 +205,7 @@ class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
         ),
       );
     } catch (e) {
-      emit(AllDebtsError(e.toString()));
+      emit(AllDebtsError(ErrorHandler.getFriendlyMessage(e)));
     }
   }
 
@@ -351,7 +352,7 @@ class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
       // Reload debts to reflect the payment, preserving current filters
       add(LoadAllDebts(statusFilter: currentStatus, typeFilter: currentType));
     } catch (e) {
-      emit(PaymentFailed(e.toString()));
+      emit(PaymentFailed(ErrorHandler.getFriendlyMessage(e)));
     }
   }
 }

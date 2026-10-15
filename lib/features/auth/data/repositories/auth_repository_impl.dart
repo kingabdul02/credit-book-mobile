@@ -1,25 +1,43 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_data_source.dart';
+import '../models/user_model.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
   final SharedPreferences sharedPreferences;
+
+  static const String cachedUserKey = 'cached_user';
 
   AuthRepositoryImpl({
     required this.remoteDataSource,
     required this.sharedPreferences,
   });
 
+  Future<void> _cacheUser(User user) async {
+    try {
+      final userModel = UserModel.fromEntity(user);
+      await sharedPreferences.setString(cachedUserKey, jsonEncode(userModel.toJson()));
+    } catch (_) {
+      // Graceful degradation if local serialization fails
+    }
+  }
+
   @override
   Future<User> login(String phoneNumber, String pin) async {
-    return await remoteDataSource.login(phoneNumber, pin);
+    final user = await remoteDataSource.login(phoneNumber, pin);
+    await _cacheUser(user);
+    return user;
   }
 
   @override
   Future<User> register(String name, String phoneNumber, {String? currency}) async {
-    return await remoteDataSource.register(name, phoneNumber, currency: currency);
+    final user = await remoteDataSource.register(name, phoneNumber, currency: currency);
+    await _cacheUser(user);
+    return user;
   }
 
   @override
@@ -29,11 +47,53 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<User> getCurrentUser() async {
-    return await remoteDataSource.getUser();
+    final user = await remoteDataSource.getUser();
+    await _cacheUser(user);
+    return user;
+  }
+
+  @override
+  Future<User?> getCachedUser() async {
+    final jsonStr = sharedPreferences.getString(cachedUserKey);
+    if (jsonStr != null && jsonStr.isNotEmpty) {
+      try {
+        final jsonMap = jsonDecode(jsonStr) as Map<String, dynamic>;
+        return UserModel.fromJson(jsonMap);
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  @override
+  Future<User> updateProfile({String? name, String? email, String? defaultCurrency}) async {
+    final user = await remoteDataSource.updateProfile(
+      name: name,
+      email: email,
+      defaultCurrency: defaultCurrency,
+    );
+    await _cacheUser(user);
+    return user;
+  }
+
+  @override
+  Future<User> uploadAvatar(File imageFile) async {
+    final user = await remoteDataSource.uploadAvatar(imageFile);
+    await _cacheUser(user);
+    return user;
+  }
+
+  @override
+  Future<User> deleteAvatar() async {
+    final user = await remoteDataSource.deleteAvatar();
+    await _cacheUser(user);
+    return user;
   }
 
   @override
   Future<void> logout() async {
     await sharedPreferences.remove(AuthRemoteDataSourceImpl.tokenKey);
+    await sharedPreferences.remove(cachedUserKey);
   }
 }

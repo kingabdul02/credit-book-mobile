@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
+import '../../../../core/error/error_handler.dart';
 import '../../domain/repositories/people_repository.dart';
 import '../../domain/entities/contact_entity.dart';
 
@@ -179,7 +180,7 @@ class AddTransactionBloc extends Bloc<AddTransactionEvent, AddTransactionState> 
 
       emit(state.copyWith(isLoading: false, isSuccess: true));
     } catch (e) {
-      emit(state.copyWith(isLoading: false, error: e.toString()));
+      emit(state.copyWith(isLoading: false, error: ErrorHandler.getFriendlyMessage(e)));
     }
   }
 }

@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/error/error_handler.dart';
+import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
 import '../bloc/all_debts_bloc.dart';
 import '../../domain/entities/debt_with_contact_entity.dart';
@@ -105,7 +107,7 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
         } else if (state is PaymentFailed) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error: ${state.message}'),
+              content: Text(ErrorHandler.getFriendlyMessage(state.message)),
               backgroundColor: AppTheme.errorColor,
               duration: const Duration(seconds: 3),
             ),
@@ -233,35 +235,16 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                       }
 
                       if (state is AllDebtsError) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.error_outline,
-                                size: 48,
-                                color: AppTheme.errorColor,
+                        return AppErrorView(
+                          error: state.message,
+                          onRetry: () {
+                            context.read<AllDebtsBloc>().add(
+                              LoadAllDebts(
+                                statusFilter: widget.initialFilter,
+                                typeFilter: widget.initialTypeFilter,
                               ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Error: ${state.message}',
-                                style: const TextStyle(color: AppTheme.errorColor),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 16),
-                              ElevatedButton(
-                                onPressed: () {
-                                  context.read<AllDebtsBloc>().add(
-                                    LoadAllDebts(
-                                      statusFilter: widget.initialFilter,
-                                      typeFilter: widget.initialTypeFilter,
-                                    ),
-                                  );
-                                },
-                                child: const Text('Retry'),
-                              ),
-                            ],
-                          ),
+                            );
+                          },
                         );
                       }
 

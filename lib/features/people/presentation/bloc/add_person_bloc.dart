@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../../../../core/error/error_handler.dart';
 import '../../domain/repositories/people_repository.dart';
 
 // Events
@@ -69,7 +70,7 @@ class AddPersonBloc extends Bloc<AddPersonEvent, AddPersonState> {
       });
       emit(AddPersonSuccess());
     } catch (e) {
-      emit(AddPersonError(e.toString()));
+      emit(AddPersonError(ErrorHandler.getFriendlyMessage(e)));
     }
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
+import '../../../../core/widgets/app_error_view.dart';
 import '../bloc/insights_bloc.dart';
 import '../bloc/insights_event.dart';
 import '../bloc/insights_state.dart';
@@ -50,28 +51,10 @@ class _InsightsScreenState extends State<InsightsScreen> {
           }
 
           if (state is InsightsError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.error_outline, size: 48, color: AppTheme.errorColor),
-                    const SizedBox(height: 12),
-                    Text(
-                      state.message,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: AppTheme.textMuted),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () => context.read<InsightsBloc>().add(
-                        FetchInsightsData(timeframe: state.currentTimeframe),
-                      ),
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
+            return AppErrorView(
+              error: state.message,
+              onRetry: () => context.read<InsightsBloc>().add(
+                FetchInsightsData(timeframe: state.currentTimeframe),
               ),
             );
           }

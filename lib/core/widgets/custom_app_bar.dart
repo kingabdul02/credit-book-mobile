@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../theme/app_theme.dart';
+import 'user_avatar.dart';
+import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../features/auth/presentation/bloc/auth_state.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -27,6 +31,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final shouldShowAvatar = showAvatar ?? !showBackButton;
+    final authState = shouldShowAvatar ? context.watch<AuthBloc>().state : null;
+    final user = authState is AuthSuccess ? authState.user : null;
 
     return AppBar(
       backgroundColor: backgroundColor ?? Colors.white,
@@ -55,11 +61,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         if (actions != null) ...actions!,
         if (shouldShowAvatar)
-          const Padding(
-            padding: EdgeInsets.only(right: 24.0, left: 8.0),
-            child: CircleAvatar(
+          Padding(
+            padding: const EdgeInsets.only(right: 24.0, left: 8.0),
+            child: UserAvatar(
+              avatarUrl: user?.avatarUrl,
               radius: 16,
-              backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
+              onTap: () => context.push('/profile'),
             ),
           )
         else if (actions != null && actions!.isNotEmpty)

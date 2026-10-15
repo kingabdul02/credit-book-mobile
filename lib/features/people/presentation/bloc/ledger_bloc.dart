@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/error/error_handler.dart';
 import '../../domain/entities/contact_entity.dart';
 import '../../data/models/debt_model.dart';
 import '../../data/models/transaction_model.dart';
@@ -149,7 +150,7 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
         history: history,
       ));
     } catch (e) {
-      emit(LedgerError(e.toString()));
+      emit(LedgerError(ErrorHandler.getFriendlyMessage(e)));
     }
   }
 
@@ -189,7 +190,7 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
       // Reload ledger so the UI reflects the new payment
       add(LoadLedger(event.contactId));
     } catch (e) {
-      emit(PaymentFailed(e.toString()));
+      emit(PaymentFailed(ErrorHandler.getFriendlyMessage(e)));
     }
   }
 }
