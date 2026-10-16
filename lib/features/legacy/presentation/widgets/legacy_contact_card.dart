@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/legacy_contact_entity.dart';
 
@@ -159,6 +160,68 @@ class LegacyContactCard extends StatelessWidget {
                 _InfoRow(icon: Icons.email_outlined, label: contact.email),
                 const SizedBox(height: 6),
                 _InfoRow(icon: Icons.phone_outlined, label: contact.phone),
+                if (contact.accessCode != null && contact.accessCode!.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isDark ? AppTheme.darkBorder : const Color(0xFFE2E8F0),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.key_rounded, size: 14, color: AppTheme.primaryVariant),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'NOMINEE ACCESS CODE',
+                                style: TextStyle(
+                                  color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                contact.accessCode!,
+                                style: TextStyle(
+                                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 2,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.copy_rounded, size: 16, color: AppTheme.primaryVariant),
+                          tooltip: 'Copy Access Code',
+                          constraints: const BoxConstraints(),
+                          padding: const EdgeInsets.all(6),
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: contact.accessCode!));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Access code for ${contact.fullName} copied to clipboard!'),
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

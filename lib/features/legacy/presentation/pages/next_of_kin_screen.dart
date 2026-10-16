@@ -322,7 +322,7 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
                               letterSpacing: 1.5,
                             ),
                           ),
-                          if (settings?.legacyAccessEnabled == true && primaryContact == null)
+                          if (primaryContact == null)
                             _AddButton(onTap: () => context.push('/next-of-kin/add', extra: {'isPrimary': true, 'bloc': context.read<LegacyBloc>()})),
                         ],
                       ),
@@ -340,7 +340,7 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
                       else
                         _EmptySlot(
                           label: 'No primary nominee added',
-                          enabled: settings?.legacyAccessEnabled == true,
+                          enabled: true,
                           onAdd: () => context.push('/next-of-kin/add', extra: {'isPrimary': true, 'bloc': context.read<LegacyBloc>()}),
                         ),
 
@@ -359,7 +359,7 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
                               letterSpacing: 1.5,
                             ),
                           ),
-                          if (settings?.legacyAccessEnabled == true && secondaryContacts.length < 3)
+                          if (secondaryContacts.length < 3)
                             _AddButton(onTap: () => context.push('/next-of-kin/add', extra: {'isPrimary': false, 'bloc': context.read<LegacyBloc>()})),
                         ],
                       ),
@@ -367,7 +367,7 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
                       if (secondaryContacts.isEmpty)
                         _EmptySlot(
                           label: 'Add a secondary nominee (optional)',
-                          enabled: settings?.legacyAccessEnabled == true,
+                          enabled: true,
                           onAdd: () => context.push('/next-of-kin/add', extra: {'isPrimary': false, 'bloc': context.read<LegacyBloc>()}),
                         )
                       else

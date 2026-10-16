@@ -10,6 +10,7 @@ class LegacyContactModel extends LegacyContactEntity {
     required super.isPrimary,
     required super.verificationStatus,
     super.verifiedAt,
+    super.accessCode,
     super.accessRequestsCount,
     super.createdAt,
   });
@@ -24,6 +25,7 @@ class LegacyContactModel extends LegacyContactEntity {
       isPrimary: json['is_primary'] == true || json['is_primary'] == 1,
       verificationStatus: json['verification_status']?.toString() ?? 'PENDING',
       verifiedAt: json['verified_at']?.toString(),
+      accessCode: json['access_code']?.toString(),
       accessRequestsCount: (json['access_requests_count'] as num?)?.toInt() ?? 0,
       createdAt: json['created_at']?.toString(),
     );

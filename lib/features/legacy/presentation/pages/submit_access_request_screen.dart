@@ -22,10 +22,22 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
     {'value': 'permanent_incapacity', 'label': 'Permanent Incapacity', 'icon': '🏥'},
     {'value': 'medical_emergency', 'label': 'Medical Emergency', 'icon': '🚑'},
   ];
-  String? _selectedReason;
+  String? _selectedReason = 'medical_emergency';
   bool _hasRecoveryCode = false;
   bool _isSubmitting = false;
   bool _submitted = false;
+  dynamic _lastRequest;
+
+  @override
+  void initState() {
+    super.initState();
+    _contactIdController.addListener(() {
+      if (mounted) setState(() {});
+    });
+    _recoveryCodeController.addListener(() {
+      if (mounted) setState(() {});
+    });
+  }
 
   @override
   void dispose() {
@@ -35,21 +47,18 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
   }
 
   bool get _canSubmit {
-    if (_selectedReason == null) return false;
-    
     if (_hasRecoveryCode) {
       return _recoveryCodeController.text.trim().isNotEmpty;
     } else {
-      return _contactIdController.text.trim().isNotEmpty && 
-             _contactIdController.text.trim().length == 8;
+      return _contactIdController.text.trim().length == 8;
     }
   }
 
   void _submit() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    final data = {
-      'reason': _selectedReason,
+    final data = <String, dynamic>{
+      'reason': _selectedReason ?? 'Legacy financial access inquiry',
     };
 
     if (_hasRecoveryCode) {
@@ -71,6 +80,7 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
           setState(() {
             _isSubmitting = false;
             _submitted = true;
+            _lastRequest = state.request;
           });
         } else if (state is AccessRequestActionLoading) {
           setState(() => _isSubmitting = true);
@@ -89,27 +99,34 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
       },
       child: Scaffold(
         backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
-        appBar: const CustomAppBar(title: 'Request Access'),
+        appBar: const CustomAppBar(title: 'Nominee Access Portal'),
         body: _submitted ? _buildSuccessView(isDark) : _buildFormView(isDark),
       ),
     );
   }
 
   Widget _buildSuccessView(bool isDark) {
+    final bool isApproved = _lastRequest != null && _lastRequest.grantsAccess == true;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          const SizedBox(height: 40),
-          // Success icon
+          const SizedBox(height: 32),
+          // Status icon
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  AppTheme.primaryColor.withValues(alpha: 0.1),
-                  AppTheme.primaryColor.withValues(alpha: 0.05),
-                ],
+                colors: isApproved
+                    ? [
+                        AppTheme.primaryColor.withValues(alpha: 0.15),
+                        AppTheme.primaryColor.withValues(alpha: 0.05),
+                      ]
+                    : [
+                        const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                        const Color(0xFFF59E0B).withValues(alpha: 0.05),
+                      ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -118,19 +135,21 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                color: isApproved
+                    ? AppTheme.primaryColor.withValues(alpha: 0.2)
+                    : const Color(0xFFF59E0B).withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.send_rounded,
-                color: AppTheme.primaryVariant,
+              child: Icon(
+                isApproved ? Icons.verified_user_rounded : Icons.schedule_rounded,
+                color: isApproved ? AppTheme.primaryVariant : const Color(0xFFF59E0B),
                 size: 40,
               ),
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 24),
           Text(
-            'Request Submitted',
+            isApproved ? 'Access Authorized' : 'Request Pending',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
@@ -139,7 +158,9 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Your access request has been submitted successfully. The account owner has been notified.',
+            isApproved
+                ? 'Your access has been authorized. You can now securely inspect the estate financial records and debts.'
+                : 'Your access request has been submitted. The account owner has been notified. Access will automatically activate after the waiting period.',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
@@ -149,49 +170,72 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
           ),
           const SizedBox(height: 32),
 
+          if (isApproved && _lastRequest != null) ...[
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  context.push('/estate-report/${_lastRequest.id}');
+                },
+                icon: const Icon(Icons.account_balance_wallet_rounded, color: Colors.white, size: 20),
+                label: const Text(
+                  'View Financial Ledger',
+                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryVariant,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  elevation: 0,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
           // Info cards
           _InfoCard(
-            icon: Icons.timer_outlined,
-            title: 'Waiting Period',
-            description:
-                'The account owner has a waiting period to respond. If they do not respond, access will be granted automatically.',
-            color: const Color(0xFFF59E0B),
+            icon: isApproved ? Icons.verified_rounded : Icons.timer_outlined,
+            title: isApproved ? 'Read-Only Ledger Access' : 'Waiting Period',
+            description: isApproved
+                ? 'You have complete visibility of the receivables, payables, and net estate position.'
+                : 'The account owner has ${_lastRequest?.waitingPeriodDays ?? 30} days to respond. If they do not respond, access will be granted automatically.',
+            color: isApproved ? AppTheme.primaryColor : const Color(0xFFF59E0B),
           ),
           const SizedBox(height: 12),
           _InfoCard(
-            icon: Icons.notifications_active_outlined,
-            title: 'Owner Notified',
+            icon: Icons.shield_outlined,
+            title: 'Protected & Audited',
             description:
-                'The account owner has been notified via push notification and email about your request.',
+                'All ledger visibility is securely logged and protected with end-to-end encryption.',
             color: AppTheme.secondaryColor,
           ),
-          const SizedBox(height: 12),
-          _InfoCard(
-            icon: Icons.visibility_outlined,
-            title: 'Read-Only Access',
-            description:
-                'Once approved, you will receive read-only access to view debts, credits, and financial records.',
-            color: AppTheme.primaryColor,
-          ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 32),
 
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
+            child: OutlinedButton(
               onPressed: () {
                 if (context.canPop()) {
                   context.pop();
+                } else {
+                  setState(() => _submitted = false);
                 }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryVariant,
+              style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
+                side: BorderSide(
+                  color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.3),
+                ),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                elevation: 0,
               ),
-              child: const Text(
-                'Done',
-                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
+              child: Text(
+                'Close',
+                style: TextStyle(
+                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),

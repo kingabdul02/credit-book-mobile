@@ -419,7 +419,20 @@ class _AuthScreenState extends State<AuthScreen> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 12),
+                              TextButton.icon(
+                                onPressed: () => context.push('/submit-access-request'),
+                                icon: const Icon(Icons.shield_outlined, size: 16, color: AppTheme.primaryVariant),
+                                label: const Text(
+                                  'I am a Nominee / Next of Kin',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.primaryVariant,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
                               
                               if (_isLogin) ...[
                                 Wrap(

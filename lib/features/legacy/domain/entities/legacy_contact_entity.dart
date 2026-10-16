@@ -7,6 +7,7 @@ class LegacyContactEntity {
   final bool isPrimary;
   final String verificationStatus; // PENDING | VERIFIED | REVOKED
   final String? verifiedAt;
+  final String? accessCode;
   final int accessRequestsCount;
   final String? createdAt;
 
@@ -19,6 +20,7 @@ class LegacyContactEntity {
     required this.isPrimary,
     required this.verificationStatus,
     this.verifiedAt,
+    this.accessCode,
     this.accessRequestsCount = 0,
     this.createdAt,
   });
