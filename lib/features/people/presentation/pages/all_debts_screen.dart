@@ -123,25 +123,6 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                 : const Color(0xFFF8F9FA),
             appBar: CustomAppBar(
               title: _getTitle(state),
-              actions: [
-                IconButton(
-                  icon: Icon(
-                    Icons.sync_rounded,
-                    color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
-                  ),
-                  onPressed: () {
-                    final status = state is AllDebtsLoaded
-                        ? state.currentFilter
-                        : widget.initialFilter;
-                    final type = state is AllDebtsLoaded
-                        ? state.typeFilter
-                        : widget.initialTypeFilter;
-                    context.read<AllDebtsBloc>().add(
-                      LoadAllDebts(statusFilter: status, typeFilter: type),
-                    );
-                  },
-                ),
-              ],
             ),
             body: Column(
               children: [

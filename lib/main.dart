@@ -7,6 +7,7 @@ import 'core/router/app_router.dart';
 import 'core/di/injection_container.dart' as di;
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_event.dart';
+import 'features/notifications/presentation/bloc/notification_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +38,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (_) => di.sl<ThemeCubit>(),
+        ),
+        BlocProvider(
+          create: (_) => di.sl<NotificationCubit>(),
         ),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(

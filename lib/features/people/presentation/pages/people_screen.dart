@@ -38,17 +38,9 @@ class _PeopleScreenState extends State<PeopleScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
-      appBar: CustomAppBar(
+      appBar: const CustomAppBar(
         title: 'People',
         showBackButton: false,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.sync_rounded, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
-            onPressed: () {
-              context.read<PeopleBloc>().add(LoadPeopleDataRequested());
-            },
-          ),
-        ],
       ),
       body: BlocBuilder<PeopleBloc, PeopleState>(
         builder: (context, state) {

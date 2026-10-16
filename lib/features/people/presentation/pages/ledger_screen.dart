@@ -52,16 +52,8 @@ class _LedgerScreenState extends State<LedgerScreen> {
       },
       child: Scaffold(
         backgroundColor: isDark ? AppTheme.darkBackground : const Color(0xFFF8F9FA),
-        appBar: CustomAppBar(
+        appBar: const CustomAppBar(
           title: 'Ledger',
-          actions: [
-            IconButton(
-              icon: Icon(Icons.sync_rounded, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
-              onPressed: () {
-                context.read<LedgerBloc>().add(LoadLedger(widget.contactId));
-              },
-            ),
-          ],
         ),
         body: BlocBuilder<LedgerBloc, LedgerState>(
           builder: (context, state) {

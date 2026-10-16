@@ -34,7 +34,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     final defaultBg = isDark ? AppTheme.darkBackground : Colors.white;
     final defaultTextColor = isDark ? AppTheme.darkTextPrimary : AppTheme.textDark;
 
-    final shouldShowAvatar = showAvatar ?? !showBackButton;
+    final shouldShowAvatar = showAvatar ?? false;
     final authState = shouldShowAvatar ? context.watch<AuthBloc>().state : null;
     final user = authState is AuthSuccess ? authState.user : null;
 

@@ -312,20 +312,44 @@ class AccessRequestCard extends StatelessWidget {
                   ),
                 ],
                 if (request.isApproved)
-                  Expanded(
-                    child: TextButton.icon(
-                      onPressed: onViewReport,
-                      icon: const Icon(Icons.assessment_outlined, size: 16, color: AppTheme.primaryVariant),
-                      label: const Text(
-                        'View Estate Report',
-                        style: TextStyle(
-                          color: AppTheme.primaryVariant,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
+                  if (onViewReport != null)
+                    Expanded(
+                      child: TextButton.icon(
+                        onPressed: onViewReport,
+                        icon: const Icon(Icons.assessment_outlined, size: 16, color: AppTheme.primaryVariant),
+                        label: const Text(
+                          'View Estate Report',
+                          style: TextStyle(
+                            color: AppTheme.primaryVariant,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    Expanded(
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.verified_user_rounded, size: 16, color: AppTheme.primaryColor),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Access Granted to Nominee',
+                                style: TextStyle(
+                                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
                 if (request.isDenied)
                   Expanded(
                     child: Center(

@@ -28,6 +28,10 @@ import '../../features/legacy/data/datasources/legacy_remote_data_source.dart';
 import '../../features/legacy/data/repositories/legacy_repository_impl.dart';
 import '../../features/legacy/domain/repositories/legacy_repository.dart';
 import '../../features/legacy/presentation/bloc/legacy_bloc.dart';
+import '../../features/notifications/domain/repositories/notification_repository.dart';
+import '../../features/notifications/data/repositories/notification_repository_impl.dart';
+import '../../features/notifications/data/datasources/notification_remote_data_source.dart';
+import '../../features/notifications/presentation/bloc/notification_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -107,4 +111,18 @@ Future<void> init() async {
 
   // Theme
   sl.registerLazySingleton<ThemeCubit>(() => ThemeCubit(sharedPreferences: sl()));
+
+  // Features - Notifications
+  sl.registerLazySingleton<NotificationRemoteDataSource>(
+    () => NotificationRemoteDataSourceImpl(client: sl(), sharedPreferences: sl()),
+  );
+  sl.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepositoryImpl(
+      sharedPreferences: sl(),
+      remoteDataSource: sl(),
+    ),
+  );
+  sl.registerLazySingleton<NotificationCubit>(
+    () => NotificationCubit(repository: sl()),
+  );
 }

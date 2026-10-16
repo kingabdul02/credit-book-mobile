@@ -244,8 +244,6 @@ class _AccessRequestsScreenState extends State<AccessRequestsScreen>
                             emptyTitle: 'No Approved Requests',
                             emptySubtitle: 'Approved requests with active access will appear here.',
                             isActionLoading: isActionLoading,
-                            onViewReport: (r) =>
-                                context.push('/estate-report/${r.id}', extra: {'bloc': context.read<LegacyBloc>()}),
                           ),
                           _RequestsList(
                             requests: denied,

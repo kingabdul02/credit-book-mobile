@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
 import '../../domain/entities/legacy_access_request_entity.dart';
@@ -28,6 +30,61 @@ class _EstateReportScreenState extends State<EstateReportScreen> {
           (m) => '${m[1]},',
         );
     return '$symbol$formatted';
+  }
+
+  Future<void> _promptForAccessCode(BuildContext context) async {
+    final controller = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Enter Access Code'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Please enter your 8-character access code provided in your nomination email to view this estate report.',
+              style: TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              textCapitalization: TextCapitalization.characters,
+              maxLength: 8,
+              style: const TextStyle(
+                fontFamily: 'monospace',
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+              ),
+              decoration: const InputDecoration(
+                hintText: 'e.g. ABC2XYZ9',
+                counterText: '',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final code = controller.text.trim();
+              if (code.isNotEmpty) {
+                Navigator.pop(ctx);
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setString('last_nominee_access_code', code);
+                if (context.mounted) {
+                  context.read<LegacyBloc>().add(LoadEstateReport(widget.requestId));
+                }
+              }
+            },
+            child: const Text('Verify & Open'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -59,6 +116,7 @@ class _EstateReportScreenState extends State<EstateReportScreen> {
           }
 
           if (state is EstateReportError) {
+            final isApproverBlocked = state.message.toLowerCase().contains('approver');
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(40),
@@ -71,11 +129,11 @@ class _EstateReportScreenState extends State<EstateReportScreen> {
                         color: AppTheme.errorColor.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.error_outline_rounded, size: 40, color: AppTheme.errorColor),
+                      child: const Icon(Icons.shield_outlined, size: 40, color: AppTheme.errorColor),
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'Unable to Load Report',
+                      isApproverBlocked ? 'Nominee Only Access' : 'Unable to Load Report',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
@@ -93,16 +151,36 @@ class _EstateReportScreenState extends State<EstateReportScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    ElevatedButton.icon(
-                      onPressed: () => context.read<LegacyBloc>().add(LoadEstateReport(widget.requestId)),
-                      icon: const Icon(Icons.refresh_rounded, size: 18),
-                      label: const Text('Retry'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryVariant,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    if (isApproverBlocked)
+                      ElevatedButton.icon(
+                        onPressed: () => context.go('/home'),
+                        icon: const Icon(Icons.home_rounded, size: 18),
+                        label: const Text('Back to Dashboard'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      )
+                    else ...[
+                      ElevatedButton.icon(
+                        onPressed: () => _promptForAccessCode(context),
+                        icon: const Icon(Icons.key_rounded, size: 18),
+                        label: const Text('Enter Access Code'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryVariant,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 10),
+                      TextButton.icon(
+                        onPressed: () => context.read<LegacyBloc>().add(LoadEstateReport(widget.requestId)),
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        label: const Text('Retry'),
+                      ),
+                    ],
                   ],
                 ),
               ),

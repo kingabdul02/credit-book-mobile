@@ -34,6 +34,9 @@ import '../../features/legacy/presentation/pages/submit_access_request_screen.da
 import '../../features/legacy/presentation/pages/estate_report_screen.dart';
 import '../../features/legacy/presentation/bloc/legacy_bloc.dart';
 import '../../features/legacy/domain/entities/legacy_contact_entity.dart';
+import '../../features/notifications/presentation/pages/notifications_screen.dart';
+import '../../features/notifications/presentation/pages/notification_detail_screen.dart';
+import '../../features/notifications/domain/entities/app_notification.dart';
 import '../di/injection_container.dart' as di;
 
 class AppRouter {
@@ -468,6 +471,43 @@ class AppRouter {
                     create: (_) => di.sl<LegacyBloc>(),
                     child: EstateReportScreen(requestId: id),
                   ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(1.0, 0.0),
+                        end: Offset.zero,
+                      ).animate(animation),
+                      child: child,
+                    ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/notifications',
+        name: 'notifications',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const NotificationsScreen(),
+          transitionsBuilder:
+              (context, animation, secondaryAnimation, child) =>
+                  SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(1.0, 0.0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  ),
+        ),
+      ),
+      GoRoute(
+        path: '/notification-detail',
+        name: 'notification-detail',
+        pageBuilder: (context, state) {
+          final notification = state.extra as AppNotification;
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: NotificationDetailScreen(notification: notification),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) =>
                     SlideTransition(

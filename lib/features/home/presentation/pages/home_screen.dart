@@ -15,6 +15,8 @@ import '../../../../core/widgets/app_error_view.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../../core/services/sync_service.dart';
+import 'package:creditbook/features/notifications/presentation/widgets/notification_bell_button.dart';
+import 'package:creditbook/features/notifications/presentation/bloc/notification_cubit.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -200,17 +202,17 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              context.read<HomeBloc>().add(LoadDashboardRequested());
-            },
-            icon: Icon(Icons.sync_rounded, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
-          ),
-          const SizedBox(width: 12),
+        actions: const [
+          NotificationBellButton(),
+          SizedBox(width: 8),
         ],
       ),
-      body: BlocBuilder<HomeBloc, HomeState>(
+      body: BlocConsumer<HomeBloc, HomeState>(
+        listener: (context, state) {
+          if (state is HomeLoaded) {
+            context.read<NotificationCubit>().syncDashboard(state.dashboardData);
+          }
+        },
         builder: (context, state) {
           if (state is HomeInitial || state is HomeLoading) {
             return const Center(child: CircularProgressIndicator());

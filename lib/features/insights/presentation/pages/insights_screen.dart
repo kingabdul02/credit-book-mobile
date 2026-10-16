@@ -34,17 +34,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
-      appBar: CustomAppBar(
+      appBar: const CustomAppBar(
         title: 'Insights',
         showBackButton: false,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.sync_rounded, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
-            onPressed: () {
-              context.read<InsightsBloc>().add(const FetchInsightsData(timeframe: 'monthly'));
-            },
-          ),
-        ],
       ),
       body: BlocBuilder<InsightsBloc, InsightsState>(
         builder: (context, state) {
