@@ -34,14 +34,16 @@ class _PeopleScreenState extends State<PeopleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppTheme.onBackground,
+      backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
       appBar: CustomAppBar(
         title: 'People',
         showBackButton: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.sync_rounded, color: AppTheme.textDark),
+            icon: Icon(Icons.sync_rounded, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
             onPressed: () {
               context.read<PeopleBloc>().add(LoadPeopleDataRequested());
             },
@@ -74,22 +76,22 @@ class _PeopleScreenState extends State<PeopleScreen> {
                           child: Container(
                             height: 48,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: isDark ? AppTheme.darkSurface : Colors.white,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.3)),
+                              border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.3)),
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Row(
                               children: [
-                                Icon(Icons.search, size: 20, color: AppTheme.textMuted),
+                                Icon(Icons.search, size: 20, color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: TextField(
                                     controller: _searchController,
-                                    style: const TextStyle(fontSize: 14, color: AppTheme.textDark),
+                                    style: TextStyle(fontSize: 14, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
                                     decoration: InputDecoration(
                                       hintText: 'Find a person or group...',
-                                      hintStyle: TextStyle(color: AppTheme.textMuted.withValues(alpha: 0.8), fontWeight: FontWeight.w500),
+                                      hintStyle: TextStyle(color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted.withValues(alpha: 0.8), fontWeight: FontWeight.w500),
                                       border: InputBorder.none,
                                     ),
                                   ),
@@ -110,7 +112,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                             height: 48,
                             width: 48,
                             decoration: BoxDecoration(
-                              color: AppTheme.textDark,
+                              color: isDark ? const Color(0xFF334155) : AppTheme.textDark,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(Icons.person_add_alt_1_rounded, color: Colors.white, size: 20),
@@ -124,7 +126,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                       Text(
                         'FAVORITES',
                         style: TextStyle(
-                          color: AppTheme.textDark.withValues(alpha: 0.6),
+                          color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.6),
                           fontWeight: FontWeight.w800,
                           fontSize: 12,
                           letterSpacing: 1.2,
@@ -152,7 +154,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                       Text(
                         'FREQUENTLY CONTACTED',
                         style: TextStyle(
-                          color: AppTheme.textDark.withValues(alpha: 0.6),
+                          color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.6),
                           fontWeight: FontWeight.w800,
                           fontSize: 12,
                           letterSpacing: 1.2,
@@ -166,9 +168,9 @@ class _PeopleScreenState extends State<PeopleScreen> {
                         separatorBuilder: (context, index) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           return _buildFrequentCard(state.peopleData.frequentlyContacted[index])
-                              .animate()
-                              .fadeIn()
-                              .slideY(begin: 0.1, end: 0);
+                                .animate()
+                                .fadeIn()
+                                .slideY(begin: 0.1, end: 0);
                         },
                       ),
                       const SizedBox(height: 32),
@@ -180,7 +182,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                         Text(
                           'ALL CONTACTS',
                           style: TextStyle(
-                            color: AppTheme.textDark.withValues(alpha: 0.6),
+                            color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.6),
                             fontWeight: FontWeight.w800,
                             fontSize: 12,
                             letterSpacing: 1.2,
@@ -188,11 +190,11 @@ class _PeopleScreenState extends State<PeopleScreen> {
                         ),
                         Row(
                           children: [
-                            Icon(Icons.sort_rounded, size: 16, color: AppTheme.textDark),
+                            Icon(Icons.sort_rounded, size: 16, color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark),
                             const SizedBox(width: 4),
                             Text(
                               'Sorted by Activity',
-                              style: TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w700, fontSize: 12),
+                              style: TextStyle(color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark, fontWeight: FontWeight.w700, fontSize: 12),
                             ),
                           ],
                         ),
@@ -202,9 +204,9 @@ class _PeopleScreenState extends State<PeopleScreen> {
                     
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: isDark ? AppTheme.darkSurface : Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
+                        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.2)),
                       ),
                       child: ListView.separated(
                         shrinkWrap: true,
@@ -213,7 +215,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                         separatorBuilder: (context, index) => Divider(
                           height: 1,
                           thickness: 1,
-                          color: AppTheme.textMuted.withValues(alpha: 0.15),
+                          color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.15),
                         ),
                         itemBuilder: (context, index) {
                           return _buildAllContactTile(state.peopleData.allContacts[index])
@@ -240,7 +242,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
             context.read<PeopleBloc>().add(LoadPeopleDataRequested());
           }
         },
-        backgroundColor: AppTheme.textDark,
+        backgroundColor: AppTheme.primaryColor,
         child: const Icon(Icons.person_add_alt_1_rounded, color: Colors.white, size: 24),
       ).animate().scale(delay: 600.ms, duration: 400.ms, curve: Curves.easeOutBack),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 1),
@@ -266,6 +268,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
   }
 
   Widget _buildFavoriteItem(ContactEntity contact) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     // Show green dot randomly or based on logic (totalOwed > 0)
     final isActive = contact.totalOwedToUser > 0 || contact.totalUserOwes > 0;
 
@@ -294,7 +297,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                       )
                     : Text(
                         contact.initials,
-                        style: const TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w800, fontSize: 20),
+                        style: TextStyle(color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark, fontWeight: FontWeight.w800, fontSize: 20),
                       ),
               ),
             ),
@@ -308,7 +311,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+                    border: Border.all(color: isDark ? AppTheme.darkSurface : Colors.white, width: 2),
                   ),
                 ),
               ),
@@ -317,7 +320,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
         const SizedBox(height: 8),
         Text(
           contact.fullName,
-          style: const TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w700, fontSize: 12),
+          style: TextStyle(color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark, fontWeight: FontWeight.w700, fontSize: 12),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -328,6 +331,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
 
   Widget _buildFrequentCard(ContactEntity contact) {
     final formatCurrency = NumberFormat.currency(symbol: '\₦', decimalDigits: 2);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     double amount = 0;
     String status = 'Settled';
@@ -350,16 +354,18 @@ class _PeopleScreenState extends State<PeopleScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.2)),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Row(
         children: [
@@ -383,7 +389,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
               children: [
                 Text(
                   contact.fullName,
-                  style: const TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w600, fontSize: 16),
+                  style: TextStyle(color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark, fontWeight: FontWeight.w600, fontSize: 16),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -405,7 +411,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
               const SizedBox(height: 4),
               Text(
                 lastActivity,
-                style: TextStyle(color: AppTheme.textDark.withValues(alpha: 0.6), fontSize: 11, fontWeight: FontWeight.w500),
+                style: TextStyle(color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.6), fontSize: 11, fontWeight: FontWeight.w500),
               ),
             ],
           )
@@ -417,6 +423,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
 
   Widget _buildAllContactTile(ContactEntity contact) {
     final formatCurrency = NumberFormat.currency(symbol: '\₦', decimalDigits: 2);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     double amount = 0;
     String status = 'Settled';
@@ -448,7 +455,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                   )
                 : Text(
                     contact.initials,
-                    style: const TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w800, fontSize: 14),
+                    style: TextStyle(color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark, fontWeight: FontWeight.w800, fontSize: 14),
                   ),
           ),
           const SizedBox(width: 16),
@@ -458,7 +465,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
               children: [
                 Text(
                   contact.fullName,
-                  style: const TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w600, fontSize: 15),
+                  style: TextStyle(color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark, fontWeight: FontWeight.w600, fontSize: 15),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -473,7 +480,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                     const SizedBox(width: 6),
                     Text(
                       status,
-                      style: const TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w700, fontSize: 12),
+                      style: TextStyle(color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark, fontWeight: FontWeight.w700, fontSize: 12),
                     ),
                   ],
                 ),
@@ -488,7 +495,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                 style: TextStyle(color: statusColor, fontWeight: FontWeight.w800, fontSize: 15),
               ),
               const SizedBox(height: 4),
-              Icon(Icons.chevron_right, size: 16, color: AppTheme.textMuted.withValues(alpha: 0.6)),
+              Icon(Icons.chevron_right, size: 16, color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted.withValues(alpha: 0.6)),
             ],
           )
         ],

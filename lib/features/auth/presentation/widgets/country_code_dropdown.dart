@@ -29,6 +29,7 @@ class CountryCodeDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () => _showCountryPicker(context),
       child: Padding(
@@ -42,13 +43,13 @@ class CountryCodeDropdown extends StatelessWidget {
               selectedCountry.dialCode,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: AppTheme.textDark,
+                color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
               ),
             ),
             const SizedBox(width: 4),
-            const Icon(
+            Icon(
               Icons.keyboard_arrow_down_rounded,
-              color: AppTheme.textDark,
+              color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
               size: 20,
             ),
           ],
@@ -104,11 +105,12 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       height: MediaQuery.of(context).size.height * 0.7,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkSurface : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         children: [
@@ -118,7 +120,9 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppTheme.textMuted.withValues(alpha: 0.3),
+              color: isDark
+                  ? AppTheme.darkBorder
+                  : AppTheme.textMuted.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -130,7 +134,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
               'Select Country',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.w800,
-                color: AppTheme.textDark,
+                color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
               ),
             ),
           ),
@@ -141,22 +145,36 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
             child: TextField(
               controller: _searchController,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppTheme.textDark,
+                color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
               ),
               decoration: InputDecoration(
                 hintText: 'Search country or code...',
                 hintStyle: TextStyle(
-                  color: AppTheme.textMuted.withValues(alpha: 0.6),
+                  color: isDark
+                      ? AppTheme.darkTextSecondary.withValues(alpha: 0.6)
+                      : AppTheme.textMuted.withValues(alpha: 0.6),
                 ),
                 prefixIcon: Icon(
                   Icons.search_rounded,
-                  color: AppTheme.textMuted.withValues(alpha: 0.6),
+                  color: isDark
+                      ? AppTheme.darkTextSecondary.withValues(alpha: 0.6)
+                      : AppTheme.textMuted.withValues(alpha: 0.6),
                 ),
                 filled: true,
-                fillColor: AppTheme.textMuted.withValues(alpha: 0.08),
+                fillColor: isDark
+                    ? AppTheme.darkBackground
+                    : AppTheme.textMuted.withValues(alpha: 0.08),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+                  borderSide: isDark
+                      ? const BorderSide(color: AppTheme.darkBorder)
+                      : BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: isDark
+                      ? const BorderSide(color: AppTheme.darkBorder)
+                      : BorderSide.none,
                 ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -190,7 +208,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                     country.name,
                     style: TextStyle(
                       fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                      color: AppTheme.textDark,
+                      color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                     ),
                   ),
                   trailing: Text(

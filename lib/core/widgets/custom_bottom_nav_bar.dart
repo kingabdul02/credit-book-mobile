@@ -23,13 +23,15 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: (index) => _onTap(context, index),
       type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.white,
-      selectedItemColor: AppTheme.textDark,
-      unselectedItemColor: AppTheme.textMuted,
+      backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
+      selectedItemColor: isDark ? AppTheme.primaryColor : AppTheme.textDark,
+      unselectedItemColor: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
       showUnselectedLabels: true,
       selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
       unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),

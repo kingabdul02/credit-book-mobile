@@ -32,21 +32,26 @@ class _EstateReportScreenState extends State<EstateReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppTheme.onBackground,
+      backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
       appBar: const CustomAppBar(title: 'Estate Report'),
       body: BlocBuilder<LegacyBloc, LegacyState>(
         builder: (context, state) {
           if (state is EstateReportLoading) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(color: AppTheme.primaryColor),
-                  SizedBox(height: 20),
+                  const CircularProgressIndicator(color: AppTheme.primaryColor),
+                  const SizedBox(height: 20),
                   Text(
                     'Loading estate report...',
-                    style: TextStyle(color: AppTheme.textMuted, fontSize: 14),
+                    style: TextStyle(
+                      color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),
@@ -69,15 +74,23 @@ class _EstateReportScreenState extends State<EstateReportScreen> {
                       child: const Icon(Icons.error_outline_rounded, size: 40, color: AppTheme.errorColor),
                     ),
                     const SizedBox(height: 20),
-                    const Text(
+                    Text(
                       'Unable to Load Report',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.textDark),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       state.message,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: AppTheme.textMuted, fontSize: 13, height: 1.5),
+                      style: TextStyle(
+                        color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                        fontSize: 13,
+                        height: 1.5,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
@@ -125,9 +138,11 @@ class _EstateReportScreenState extends State<EstateReportScreen> {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: AppTheme.secondaryColor.withValues(alpha: 0.06),
+                      color: isDark ? AppTheme.darkSurface : AppTheme.secondaryColor.withValues(alpha: 0.06),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.secondaryColor.withValues(alpha: 0.2)),
+                      border: Border.all(
+                        color: isDark ? AppTheme.darkBorder : AppTheme.secondaryColor.withValues(alpha: 0.2),
+                      ),
                     ),
                     child: Row(
                       children: [
@@ -137,7 +152,7 @@ class _EstateReportScreenState extends State<EstateReportScreen> {
                           child: Text(
                             'Read-only access. You cannot modify any records.',
                             style: TextStyle(
-                              color: AppTheme.textDark.withValues(alpha: 0.8),
+                              color: isDark ? AppTheme.darkTextPrimary.withValues(alpha: 0.9) : AppTheme.textDark.withValues(alpha: 0.8),
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),
@@ -334,16 +349,18 @@ class _NetPositionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isPositive = netPosition >= 0;
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(20),
+        border: isDark ? Border.all(color: AppTheme.darkBorder) : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.06),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -355,7 +372,7 @@ class _NetPositionCard extends StatelessWidget {
           Text(
             'Net Position',
             style: TextStyle(
-              color: AppTheme.textMuted,
+              color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
               fontSize: 12,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.5,
@@ -387,7 +404,7 @@ class _NetPositionCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          Divider(height: 1, color: isDark ? AppTheme.darkBorder : const Color(0xFFF1F5F9)),
           const SizedBox(height: 16),
 
           // Breakdown row
@@ -408,9 +425,13 @@ class _NetPositionCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        const Text(
+                        Text(
                           'Receivables',
-                          style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
@@ -429,7 +450,7 @@ class _NetPositionCard extends StatelessWidget {
               Container(
                 width: 1,
                 height: 40,
-                color: const Color(0xFFE2E8F0),
+                color: isDark ? AppTheme.darkBorder : const Color(0xFFE2E8F0),
               ),
               Expanded(
                 child: Column(
@@ -446,9 +467,13 @@ class _NetPositionCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        const Text(
+                        Text(
                           'Payables',
-                          style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
@@ -491,6 +516,8 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Row(
       children: [
         Container(
@@ -508,15 +535,18 @@ class _SectionHeader extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  color: AppTheme.textDark,
+                style: TextStyle(
+                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
                 ),
               ),
               Text(
                 subtitle,
-                style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                style: TextStyle(
+                  color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                  fontSize: 11,
+                ),
               ),
             ],
           ),
@@ -534,7 +564,10 @@ class _SectionHeader extends StatelessWidget {
             ),
             Text(
               '$count ${count == 1 ? 'entry' : 'entries'}',
-              style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
+              style: TextStyle(
+                color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                fontSize: 11,
+              ),
             ),
           ],
         ),
@@ -558,17 +591,19 @@ class _DebtItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final color = isReceivable ? AppTheme.primaryColor : AppTheme.errorColor;
     final initials = _getInitials(item.contactName);
 
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(14),
+        border: isDark ? Border.all(color: AppTheme.darkBorder) : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -607,8 +642,8 @@ class _DebtItemCard extends StatelessWidget {
               children: [
                 Text(
                   item.contactName,
-                  style: const TextStyle(
-                    color: AppTheme.textDark,
+                  style: TextStyle(
+                    color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),
@@ -616,7 +651,10 @@ class _DebtItemCard extends StatelessWidget {
                 if (item.note != null && item.note!.isNotEmpty)
                   Text(
                     item.note!,
-                    style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                    style: TextStyle(
+                      color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                      fontSize: 12,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -638,7 +676,11 @@ class _DebtItemCard extends StatelessWidget {
               ),
               Text(
                 isReceivable ? 'owes them' : 'they owe',
-                style: const TextStyle(color: AppTheme.textMuted, fontSize: 10, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
@@ -662,13 +704,17 @@ class _EmptyDebtSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 28),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.15)),
+        border: Border.all(
+          color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.15),
+        ),
       ),
       child: Column(
         children: [
@@ -677,7 +723,7 @@ class _EmptyDebtSection extends StatelessWidget {
           Text(
             message,
             style: TextStyle(
-              color: AppTheme.textMuted.withValues(alpha: 0.7),
+              color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted.withValues(alpha: 0.7),
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),

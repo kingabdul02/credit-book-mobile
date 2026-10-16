@@ -72,11 +72,13 @@ class _ProfilePhotoSetupScreenState extends State<ProfilePhotoSetupScreen> {
   }
 
   void _showPhotoOptions(bool hasPhoto) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (modalCtx) => Material(
-        color: Colors.white,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         child: SafeArea(
           top: false,
@@ -91,7 +93,7 @@ class _ProfilePhotoSetupScreenState extends State<ProfilePhotoSetupScreen> {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 20),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: isDark ? Colors.white24 : Colors.grey.shade300,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -99,13 +101,16 @@ class _ProfilePhotoSetupScreenState extends State<ProfilePhotoSetupScreen> {
                   'Profile Photo',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textDark,
+                        color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                       ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                Text(
                   'Choose how you want to add your profile photo',
-                  style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
+                  style: TextStyle(
+                    color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                    fontSize: 13,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 ListTile(
@@ -117,8 +122,20 @@ class _ProfilePhotoSetupScreenState extends State<ProfilePhotoSetupScreen> {
                     ),
                     child: const Icon(Icons.camera_alt_outlined, color: AppTheme.primaryColor),
                   ),
-                  title: const Text('Take Photo', style: TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: const Text('Use your device camera', style: TextStyle(fontSize: 12)),
+                  title: Text(
+                    'Take Photo',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Use your device camera',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                    ),
+                  ),
                   onTap: () => _pickImage(ImageSource.camera),
                 ),
                 const SizedBox(height: 8),
@@ -131,8 +148,20 @@ class _ProfilePhotoSetupScreenState extends State<ProfilePhotoSetupScreen> {
                     ),
                     child: const Icon(Icons.photo_library_outlined, color: AppTheme.primaryColor),
                   ),
-                  title: const Text('Choose from Gallery', style: TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: const Text('Select a picture from your library', style: TextStyle(fontSize: 12)),
+                  title: Text(
+                    'Choose from Gallery',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Select a picture from your library',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                    ),
+                  ),
                   onTap: () => _pickImage(ImageSource.gallery),
                 ),
                 if (hasPhoto) ...[
@@ -213,8 +242,10 @@ class _ProfilePhotoSetupScreenState extends State<ProfilePhotoSetupScreen> {
         final hasExistingAvatar = user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty;
         final hasAnyPhoto = hasSelectedPhoto || hasExistingAvatar;
 
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+
         return Scaffold(
-          backgroundColor: AppTheme.onBackground,
+          backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -222,10 +253,10 @@ class _ProfilePhotoSetupScreenState extends State<ProfilePhotoSetupScreen> {
             actions: [
               TextButton(
                 onPressed: _isUploading ? null : _finishAndGoHome,
-                child: const Text(
+                child: Text(
                   'Skip',
                   style: TextStyle(
-                    color: AppTheme.textDark,
+                    color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
                   ),
@@ -271,7 +302,7 @@ class _ProfilePhotoSetupScreenState extends State<ProfilePhotoSetupScreen> {
                             'Add a Profile Photo',
                             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                   fontWeight: FontWeight.w800,
-                                  color: AppTheme.textDark,
+                                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                                   letterSpacing: -0.5,
                                 ),
                             textAlign: TextAlign.center,
@@ -285,7 +316,7 @@ class _ProfilePhotoSetupScreenState extends State<ProfilePhotoSetupScreen> {
                             child: Text(
                               'Help your clients, suppliers, and contacts easily identify and recognize you on CreditBook.',
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: AppTheme.textMuted,
+                                    color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
                                     height: 1.45,
                                   ),
                               textAlign: TextAlign.center,
@@ -435,7 +466,7 @@ class _ProfilePhotoSetupScreenState extends State<ProfilePhotoSetupScreen> {
                               child: Text(
                                 hasSelectedPhoto ? 'Skip photo for now' : 'I\'ll do this later',
                                 style: TextStyle(
-                                  color: AppTheme.textDark.withValues(alpha: 0.6),
+                                  color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.6),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                 ),

@@ -70,14 +70,16 @@ class AccessRequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final contactName = request.legacyContact?.fullName ?? 'Unknown Contact';
     final contactRelation = request.legacyContact?.relationship ?? '';
     final initials = request.legacyContact?.initials ?? '?';
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: isDark ? Border.all(color: AppTheme.darkBorder) : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -129,8 +131,8 @@ class AccessRequestCard extends StatelessWidget {
                     children: [
                       Text(
                         contactName,
-                        style: const TextStyle(
-                          color: AppTheme.textDark,
+                        style: TextStyle(
+                          color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
                         ),
@@ -138,8 +140,8 @@ class AccessRequestCard extends StatelessWidget {
                       if (contactRelation.isNotEmpty)
                         Text(
                           contactRelation,
-                          style: const TextStyle(
-                            color: AppTheme.textMuted,
+                          style: TextStyle(
+                            color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
@@ -185,8 +187,9 @@ class AccessRequestCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
+                    color: isDark ? AppTheme.darkBackground : const Color(0xFFF8FAFC),
                     borderRadius: BorderRadius.circular(8),
+                    border: isDark ? Border.all(color: AppTheme.darkBorder) : null,
                   ),
                   child: Row(
                     children: [
@@ -195,8 +198,8 @@ class AccessRequestCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           'Reason: ${request.reasonLabel}',
-                          style: const TextStyle(
-                            color: AppTheme.textDark,
+                          style: TextStyle(
+                            color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                           ),
@@ -238,13 +241,13 @@ class AccessRequestCard extends StatelessWidget {
                       Icon(
                         request.isPending ? Icons.timer_outlined : Icons.calendar_today_outlined,
                         size: 13,
-                        color: request.isPending ? const Color(0xFFF59E0B) : AppTheme.textMuted,
+                        color: request.isPending ? const Color(0xFFF59E0B) : (isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted),
                       ),
                       const SizedBox(width: 6),
                       Text(
                         _timeInfo,
                         style: TextStyle(
-                          color: request.isPending ? const Color(0xFFF59E0B) : AppTheme.textMuted,
+                          color: request.isPending ? const Color(0xFFF59E0B) : (isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -257,7 +260,10 @@ class AccessRequestCard extends StatelessWidget {
           const SizedBox(height: 12),
 
           // ── Actions ──────────────────────────────────────────
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          Divider(
+            height: 1,
+            color: isDark ? AppTheme.darkBorder : const Color(0xFFF1F5F9),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: Row(
@@ -281,7 +287,11 @@ class AccessRequestCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Container(width: 1, height: 24, color: const Color(0xFFE2E8F0)),
+                  Container(
+                    width: 1,
+                    height: 24,
+                    color: isDark ? AppTheme.darkBorder : const Color(0xFFE2E8F0),
+                  ),
                   Expanded(
                     child: TextButton.icon(
                       onPressed: isActionLoading ? null : onApprove,

@@ -144,11 +144,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showPhotoOptionsModal(BuildContext context, bool hasCustomAvatar) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (modalCtx) => Material(
-        color: Colors.white,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
@@ -292,9 +293,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             : user?.avatarUrl;
 
         final bool hasCustomAvatar = avatarToDisplay != null && avatarToDisplay.isNotEmpty;
+        final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF8FAFC),
+          backgroundColor: isDark ? AppTheme.darkBackground : const Color(0xFFF8FAFC),
           appBar: const CustomAppBar(
             title: 'Personal Profile',
             showBackButton: true,
@@ -313,19 +315,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Container(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.08),
-                                blurRadius: 18,
-                                offset: const Offset(0, 6),
-                              ),
-                            ],
+                            boxShadow: isDark
+                                ? []
+                                : [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.08),
+                                      blurRadius: 18,
+                                      offset: const Offset(0, 6),
+                                    ),
+                                  ],
                           ),
                           child: UserAvatar(
                             avatarUrl: avatarToDisplay,
                             radius: 54,
                             showBorder: true,
-                            borderColor: Colors.white,
+                            borderColor: isDark ? AppTheme.darkSurface : Colors.white,
                             isLoading: isUpdatingAvatar,
                             onTap: () => _showPhotoOptionsModal(context, hasCustomAvatar),
                           ),
@@ -341,7 +345,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               decoration: BoxDecoration(
                                 color: AppTheme.primaryColor,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2.5),
+                                border: Border.all(color: isDark ? AppTheme.darkSurface : Colors.white, width: 2.5),
                                 boxShadow: [
                                   BoxShadow(
                                     color: AppTheme.primaryColor.withValues(alpha: 0.4),
@@ -367,10 +371,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Display Name & Badge
                   Text(
                     user?.name ?? 'User',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
-                      color: AppTheme.textDark,
+                      color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                     ),
                   ),
 
@@ -430,16 +434,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? AppTheme.darkSurface : Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                      border: Border.all(color: isDark ? AppTheme.darkBorder : const Color(0xFFE2E8F0)),
+                      boxShadow: isDark
+                          ? []
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.02),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -489,25 +495,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         const SizedBox(height: 16),
 
                         // Default Currency
-                        const Text(
+                        Text(
                           'Default Currency',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: AppTheme.textDark,
+                            color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark,
                           ),
                         ),
                         const SizedBox(height: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF8FAFC),
+                            color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            border: Border.all(color: isDark ? AppTheme.darkBorder : const Color(0xFFE2E8F0)),
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
                               value: _selectedCurrency,
+                              dropdownColor: isDark ? AppTheme.darkSurface : Colors.white,
                               isExpanded: true,
                               icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppTheme.textMuted),
                               items: _currencies.map((curr) {
@@ -537,10 +544,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         child: Text(
                                           curr['name']!,
                                           overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w600,
-                                            color: AppTheme.textDark,
+                                            color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                                           ),
                                         ),
                                       ),
@@ -569,9 +576,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? AppTheme.darkSurface : Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      border: Border.all(color: isDark ? AppTheme.darkBorder : const Color(0xFFE2E8F0)),
                     ),
                     child: Column(
                       children: [
@@ -582,14 +589,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ? DateFormat('dd MMMM yyyy').format(user!.createdAt!)
                               : 'Recent',
                         ),
-                        const Divider(height: 24),
+                        Divider(height: 24, color: isDark ? AppTheme.darkBorder : null),
                         _buildAccountInfoRow(
                           icon: Icons.cloud_done_outlined,
                           title: 'Cloud Sync',
                           value: 'Connected & Secure',
                           valueColor: AppTheme.primaryColor,
                         ),
-                        const Divider(height: 24),
+                        Divider(height: 24, color: isDark ? AppTheme.darkBorder : null),
                         _buildAccountInfoRow(
                           icon: Icons.lock_outline_rounded,
                           title: 'Security PIN',
@@ -664,15 +671,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String? hint,
     String? Function(String?)? validator,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: AppTheme.textDark,
+            color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark,
           ),
         ),
         const SizedBox(height: 6),
@@ -680,25 +688,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
           controller: controller,
           keyboardType: keyboardType,
           validator: validator,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: AppTheme.textDark,
+            color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
           ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 13),
             prefixIcon: Icon(icon, color: AppTheme.textMuted, size: 20),
             filled: true,
-            fillColor: const Color(0xFFF8FAFC),
+            fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : const Color(0xFFE2E8F0)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : const Color(0xFFE2E8F0)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -715,15 +723,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String value,
     required IconData icon,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: AppTheme.textDark,
+            color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark,
           ),
         ),
         const SizedBox(height: 6),
@@ -731,9 +740,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
           decoration: BoxDecoration(
-            color: const Color(0xFFF1F5F9),
+            color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: isDark ? AppTheme.darkBorder : const Color(0xFFE2E8F0)),
           ),
           child: Row(
             children: [
@@ -741,10 +750,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(width: 10),
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.textDark,
+                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                 ),
               ),
               const Spacer(),
@@ -762,6 +771,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String value,
     Color? valueColor,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: [
         Icon(icon, size: 18, color: AppTheme.textMuted),
@@ -769,10 +779,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Expanded(
           child: Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: AppTheme.textDark,
+              color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
             ),
           ),
         ),

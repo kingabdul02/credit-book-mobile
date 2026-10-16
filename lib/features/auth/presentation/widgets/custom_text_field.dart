@@ -43,6 +43,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -56,7 +57,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                   widget.label!,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.textDark,
+                    color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                   ),
                 ),
               if (widget.trailingLabel != null) widget.trailingLabel!,
@@ -66,10 +67,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
         ],
         Container(
           decoration: BoxDecoration(
-            color: Colors.transparent,
+            color: isDark ? AppTheme.darkSurface : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: AppTheme.textMuted.withValues(alpha: 0.3),
+              color: isDark
+                  ? AppTheme.darkBorder
+                  : AppTheme.textMuted.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -79,7 +82,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 Container(
                   width: 1,
                   height: 24,
-                  color: AppTheme.textMuted.withValues(alpha: 0.3),
+                  color: isDark
+                      ? AppTheme.darkBorder
+                      : AppTheme.textMuted.withValues(alpha: 0.3),
                 ),
               ],
               Expanded(
@@ -91,13 +96,15 @@ class _CustomTextFieldState extends State<CustomTextField> {
                   maxLength: widget.maxLength,
                   inputFormatters: widget.inputFormatters,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppTheme.textDark,
+                    color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                   ),
                   decoration: InputDecoration(
                     counterText: '', // Hide the max length counter
                     hintText: widget.hintText,
                     hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppTheme.textMuted.withValues(alpha: 0.6),
+                      color: isDark
+                          ? AppTheme.darkTextSecondary.withValues(alpha: 0.6)
+                          : AppTheme.textMuted.withValues(alpha: 0.6),
                     ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
@@ -110,7 +117,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
                               _obscureText
                                   ? Icons.visibility_off_outlined
                                   : Icons.visibility_outlined,
-                              color: AppTheme.textMuted,
+                              color: isDark
+                                  ? AppTheme.darkTextSecondary
+                                  : AppTheme.textMuted,
                             ),
                             onPressed: () {
                               setState(() {

@@ -116,13 +116,19 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
       },
       child: BlocBuilder<AllDebtsBloc, AllDebtsState>(
         builder: (context, state) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
           return Scaffold(
-            backgroundColor: const Color(0xFFF8F9FA),
+            backgroundColor: isDark
+                ? AppTheme.darkBackground
+                : const Color(0xFFF8F9FA),
             appBar: CustomAppBar(
               title: _getTitle(state),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.sync_rounded, color: AppTheme.textDark),
+                  icon: Icon(
+                    Icons.sync_rounded,
+                    color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                  ),
                   onPressed: () {
                     final status = state is AllDebtsLoaded
                         ? state.currentFilter
@@ -141,31 +147,36 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
               children: [
                 // Search Bar
                 Container(
-                  color: Colors.white,
+                  color: isDark ? AppTheme.darkSurface : Colors.white,
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                   child: TextField(
                     controller: _searchController,
                     onChanged: (query) {
                       context.read<AllDebtsBloc>().add(SearchDebts(query));
                     },
-                    style: const TextStyle(fontSize: 14, color: AppTheme.textDark),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                    ),
                     decoration: InputDecoration(
                       hintText: 'Search by name, note, or category...',
                       hintStyle: TextStyle(
-                        color: AppTheme.textMuted.withValues(alpha: 0.5),
+                        color: isDark
+                            ? AppTheme.darkTextSecondary.withValues(alpha: 0.6)
+                            : AppTheme.textMuted.withValues(alpha: 0.5),
                         fontSize: 14,
                       ),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.search,
                         size: 20,
-                        color: AppTheme.textMuted,
+                        color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
                       ),
                       suffixIcon: _searchController.text.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.close,
                                 size: 18,
-                                color: AppTheme.textMuted,
+                                color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
                               ),
                               onPressed: () {
                                 _searchController.clear();
@@ -174,10 +185,18 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                             )
                           : null,
                       filled: true,
-                      fillColor: AppTheme.onBackground,
+                      fillColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
+                        borderSide: isDark
+                            ? const BorderSide(color: AppTheme.darkBorder)
+                            : BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: isDark
+                            ? const BorderSide(color: AppTheme.darkBorder)
+                            : BorderSide.none,
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -189,14 +208,16 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
 
                 // Tab Bar
                 Container(
-                  color: Colors.white,
+                  color: isDark ? AppTheme.darkSurface : Colors.white,
                   child: state is AllDebtsLoaded
                       ? TabBar(
                           controller: _tabController,
                           indicatorColor: AppTheme.primaryColor,
                           indicatorWeight: 3,
                           labelColor: AppTheme.primaryColor,
-                          unselectedLabelColor: AppTheme.textMuted,
+                          unselectedLabelColor: isDark
+                              ? AppTheme.darkTextSecondary
+                              : AppTheme.textMuted,
                           labelStyle: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
@@ -215,7 +236,9 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                           controller: _tabController,
                           indicatorColor: AppTheme.primaryColor,
                           labelColor: AppTheme.primaryColor,
-                          unselectedLabelColor: AppTheme.textMuted,
+                          unselectedLabelColor: isDark
+                              ? AppTheme.darkTextSecondary
+                              : AppTheme.textMuted,
                           tabs: const [
                             Tab(text: 'All'),
                             Tab(text: 'Pending'),
@@ -302,6 +325,7 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
   }
 
   Widget _buildTypeFilterPills(AllDebtsLoaded state) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     Widget buildPill(String title, String type, int count, Color color) {
       final isSelected = state.typeFilter == type;
       return GestureDetector(
@@ -312,12 +336,16 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? color : Colors.white,
+            color: isSelected
+                ? color
+                : (isDark ? AppTheme.darkBackground : Colors.white),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isSelected
                   ? color
-                  : AppTheme.textMuted.withValues(alpha: 0.25),
+                  : (isDark
+                      ? AppTheme.darkBorder
+                      : AppTheme.textMuted.withValues(alpha: 0.25)),
               width: 1.5,
             ),
             boxShadow: isSelected
@@ -338,7 +366,9 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                  color: isSelected ? Colors.white : AppTheme.textDark,
+                  color: isSelected
+                      ? Colors.white
+                      : (isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
                 ),
               ),
               const SizedBox(width: 6),
@@ -347,7 +377,7 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                 decoration: BoxDecoration(
                   color: isSelected
                       ? Colors.white.withValues(alpha: 0.25)
-                      : Colors.grey.shade200,
+                      : (isDark ? AppTheme.darkSurface : Colors.grey.shade200),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -355,7 +385,9 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: isSelected ? Colors.white : AppTheme.textDark,
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
                   ),
                 ),
               ),
@@ -385,13 +417,18 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
             : state.allDebts.where((d) => d.isIOweThem).length);
 
     return Container(
-      color: Colors.white,
+      color: isDark ? AppTheme.darkSurface : Colors.white,
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            buildPill('All Debts', 'all', totalCount, AppTheme.textDark),
+            buildPill(
+              'All Debts',
+              'all',
+              totalCount,
+              isDark ? AppTheme.primaryColor : AppTheme.textDark,
+            ),
             const SizedBox(width: 8),
             buildPill(
               'Receivables (Owed Me)',
@@ -413,11 +450,12 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
   }
 
   Widget _buildSummarySection(AllDebtsLoaded state) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isPayableSelected = state.typeFilter == 'payable';
     final isReceivableSelected = state.typeFilter == 'receivable';
 
     return Container(
-      color: Colors.white,
+      color: isDark ? AppTheme.darkSurface : Colors.white,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Row(
         children: [
@@ -547,6 +585,7 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
   }
 
   Widget _buildEmptyState(String searchQuery, [String typeFilter = 'all']) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     String message = 'No debts found';
     String submessage = 'Start by adding a transaction';
 
@@ -572,13 +611,15 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                   ? Icons.inbox_outlined
                   : Icons.search_off_rounded,
               size: 64,
-              color: AppTheme.textMuted.withValues(alpha: 0.3),
+              color: isDark
+                  ? AppTheme.darkTextSecondary.withValues(alpha: 0.4)
+                  : AppTheme.textMuted.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 16),
             Text(
               message,
-              style: const TextStyle(
-                color: AppTheme.textDark,
+              style: TextStyle(
+                color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
               ),
@@ -587,7 +628,9 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
             Text(
               submessage,
               style: TextStyle(
-                color: AppTheme.textMuted.withValues(alpha: 0.8),
+                color: isDark
+                    ? AppTheme.darkTextSecondary.withValues(alpha: 0.8)
+                    : AppTheme.textMuted.withValues(alpha: 0.8),
                 fontSize: 14,
               ),
               textAlign: TextAlign.center,
@@ -599,6 +642,7 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
   }
 
   Widget _buildDebtCard(BuildContext context, DebtWithContactEntity debt) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isIOweThem = debt.isIOweThem;
     final contactName = debt.contact?.fullName ?? 'Unknown';
     final initials = debt.contact?.initials ?? '?';
@@ -613,7 +657,7 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
         : Icons.south_west_rounded;
 
     // Status badge
-    Color statusColor = AppTheme.textMuted;
+    Color statusColor = isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted;
     String statusText = debt.statusLabel;
     if (debt.isSettled) {
       statusColor = AppTheme.primaryVariant;
@@ -636,9 +680,13 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
+        border: Border.all(
+          color: isDark
+              ? AppTheme.darkBorder
+              : AppTheme.textMuted.withValues(alpha: 0.2),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -699,8 +747,10 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                         children: [
                           Text(
                             contactName,
-                            style: const TextStyle(
-                              color: AppTheme.textDark,
+                            style: TextStyle(
+                              color: isDark
+                                  ? AppTheme.darkTextPrimary
+                                  : AppTheme.textDark,
                               fontWeight: FontWeight.w700,
                               fontSize: 16,
                             ),
@@ -760,7 +810,9 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                         Text(
                           debt.isSettled ? 'Total Amount' : 'Outstanding',
                           style: TextStyle(
-                            color: AppTheme.textMuted.withValues(alpha: 0.8),
+                            color: isDark
+                                ? AppTheme.darkTextSecondary.withValues(alpha: 0.8)
+                                : AppTheme.textMuted.withValues(alpha: 0.8),
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),
@@ -786,7 +838,9 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                           Text(
                             'Progress',
                             style: TextStyle(
-                              color: AppTheme.textMuted.withValues(alpha: 0.8),
+                              color: isDark
+                                  ? AppTheme.darkTextSecondary.withValues(alpha: 0.8)
+                                  : AppTheme.textMuted.withValues(alpha: 0.8),
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                             ),
@@ -794,8 +848,10 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                           const SizedBox(height: 4),
                           Text(
                             '${debt.progressPercentage.toStringAsFixed(0)}%',
-                            style: const TextStyle(
-                              color: AppTheme.textDark,
+                            style: TextStyle(
+                              color: isDark
+                                  ? AppTheme.darkTextPrimary
+                                  : AppTheme.textDark,
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                             ),
@@ -811,7 +867,9 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                           Text(
                             'Settled on',
                             style: TextStyle(
-                              color: AppTheme.textMuted.withValues(alpha: 0.8),
+                              color: isDark
+                                  ? AppTheme.darkTextSecondary.withValues(alpha: 0.8)
+                                  : AppTheme.textMuted.withValues(alpha: 0.8),
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                             ),
@@ -819,8 +877,10 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                           const SizedBox(height: 4),
                           Text(
                             formattedDate,
-                            style: const TextStyle(
-                              color: AppTheme.textDark,
+                            style: TextStyle(
+                              color: isDark
+                                  ? AppTheme.darkTextPrimary
+                                  : AppTheme.textDark,
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
                             ),
@@ -829,9 +889,13 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                             Text(
                               formattedTime,
                               style: TextStyle(
-                                color: AppTheme.textMuted.withValues(
-                                  alpha: 0.7,
-                                ),
+                                color: isDark
+                                    ? AppTheme.darkTextSecondary.withValues(
+                                        alpha: 0.7,
+                                      )
+                                    : AppTheme.textMuted.withValues(
+                                        alpha: 0.7,
+                                      ),
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -849,9 +913,11 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       value: debt.progressPercentage / 100,
-                      backgroundColor: AppTheme.textMuted.withValues(
-                        alpha: 0.1,
-                      ),
+                      backgroundColor: isDark
+                          ? AppTheme.darkBorder
+                          : AppTheme.textMuted.withValues(
+                              alpha: 0.1,
+                            ),
                       valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                       minHeight: 6,
                     ),
@@ -864,7 +930,9 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                   Text(
                     debt.note ?? debt.category ?? '',
                     style: TextStyle(
-                      color: AppTheme.textMuted.withValues(alpha: 0.7),
+                      color: isDark
+                          ? AppTheme.darkTextSecondary.withValues(alpha: 0.7)
+                          : AppTheme.textMuted.withValues(alpha: 0.7),
                       fontSize: 12,
                       fontStyle: FontStyle.italic,
                     ),
@@ -919,6 +987,7 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
     BuildContext context,
     DebtWithContactEntity debt,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final amountController = TextEditingController();
     final noteController = TextEditingController();
     final formKey = GlobalKey<FormState>();
@@ -937,9 +1006,9 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
             expand: false,
             builder: (_, scrollController) {
               return Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                decoration: BoxDecoration(
+                  color: isDark ? AppTheme.darkSurface : Colors.white,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                 ),
                 child: Column(
                   children: [
@@ -950,7 +1019,9 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                         width: 40,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: AppTheme.textMuted.withValues(alpha: 0.3),
+                          color: isDark
+                              ? AppTheme.darkBorder
+                              : AppTheme.textMuted.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -981,13 +1052,15 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                                         : AppTheme.primaryColor,
                                   ),
                                   const SizedBox(width: 10),
-                                  const Expanded(
+                                  Expanded(
                                     child: Text(
                                       'Record Payment',
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.w800,
-                                        color: AppTheme.textDark,
+                                        color: isDark
+                                            ? AppTheme.darkTextPrimary
+                                            : AppTheme.textDark,
                                       ),
                                     ),
                                   ),
@@ -996,8 +1069,10 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                               const SizedBox(height: 6),
                               Text(
                                 'Settle debt with ${debt.contact?.fullName ?? "Unknown"}',
-                                style: const TextStyle(
-                                  color: AppTheme.textMuted,
+                                style: TextStyle(
+                                  color: isDark
+                                      ? AppTheme.darkTextSecondary
+                                      : AppTheme.textMuted,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -1008,17 +1083,24 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.onBackground,
+                                  color: isDark
+                                      ? AppTheme.darkBackground
+                                      : AppTheme.onBackground,
                                   borderRadius: BorderRadius.circular(12),
+                                  border: isDark
+                                      ? Border.all(color: AppTheme.darkBorder)
+                                      : null,
                                 ),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'Outstanding Amount',
                                       style: TextStyle(
-                                        color: AppTheme.textDark,
+                                        color: isDark
+                                            ? AppTheme.darkTextPrimary
+                                            : AppTheme.textDark,
                                         fontSize: 13,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -1041,12 +1123,14 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                               const SizedBox(height: 24),
 
                               // Amount field
-                              const Text(
+                              Text(
                                 'Payment Amount',
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: AppTheme.textDark,
+                                  color: isDark
+                                      ? AppTheme.darkTextPrimary
+                                      : AppTheme.textDark,
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -1057,10 +1141,12 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                                       decimal: true,
                                     ),
                                 autofocus: true,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w800,
-                                  color: AppTheme.textDark,
+                                  color: isDark
+                                      ? AppTheme.darkTextPrimary
+                                      : AppTheme.textDark,
                                 ),
                                 decoration: InputDecoration(
                                   prefixText: '₦ ',
@@ -1073,16 +1159,30 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                                   ),
                                   hintText: '0.00',
                                   hintStyle: TextStyle(
-                                    color: AppTheme.textMuted.withValues(
-                                      alpha: 0.5,
-                                    ),
+                                    color: isDark
+                                        ? AppTheme.darkTextSecondary.withValues(
+                                            alpha: 0.5,
+                                          )
+                                        : AppTheme.textMuted.withValues(
+                                            alpha: 0.5,
+                                          ),
                                     fontWeight: FontWeight.w400,
                                   ),
                                   filled: true,
-                                  fillColor: AppTheme.onBackground,
+                                  fillColor: isDark
+                                      ? AppTheme.darkBackground
+                                      : AppTheme.onBackground,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide.none,
+                                    borderSide: isDark
+                                        ? const BorderSide(color: AppTheme.darkBorder)
+                                        : BorderSide.none,
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: isDark
+                                        ? const BorderSide(color: AppTheme.darkBorder)
+                                        : BorderSide.none,
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
@@ -1115,35 +1215,53 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                               const SizedBox(height: 20),
 
                               // Note field
-                              const Text(
+                              Text(
                                 'Note (optional)',
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: AppTheme.textDark,
+                                  color: isDark
+                                      ? AppTheme.darkTextPrimary
+                                      : AppTheme.textDark,
                                 ),
                               ),
                               const SizedBox(height: 8),
                               TextFormField(
                                 controller: noteController,
                                 maxLines: 2,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
-                                  color: AppTheme.textDark,
+                                  color: isDark
+                                      ? AppTheme.darkTextPrimary
+                                      : AppTheme.textDark,
                                 ),
                                 decoration: InputDecoration(
                                   hintText: 'e.g. Partial payment via transfer',
                                   hintStyle: TextStyle(
-                                    color: AppTheme.textMuted.withValues(
-                                      alpha: 0.5,
-                                    ),
+                                    color: isDark
+                                        ? AppTheme.darkTextSecondary.withValues(
+                                            alpha: 0.5,
+                                          )
+                                        : AppTheme.textMuted.withValues(
+                                            alpha: 0.5,
+                                          ),
                                     fontWeight: FontWeight.w400,
                                   ),
                                   filled: true,
-                                  fillColor: AppTheme.onBackground,
+                                  fillColor: isDark
+                                      ? AppTheme.darkBackground
+                                      : AppTheme.onBackground,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide.none,
+                                    borderSide: isDark
+                                        ? const BorderSide(color: AppTheme.darkBorder)
+                                        : BorderSide.none,
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: isDark
+                                        ? const BorderSide(color: AppTheme.darkBorder)
+                                        : BorderSide.none,
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),

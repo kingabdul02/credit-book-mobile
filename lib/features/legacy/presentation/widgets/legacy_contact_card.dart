@@ -57,10 +57,12 @@ class LegacyContactCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: isDark ? Border.all(color: AppTheme.darkBorder) : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -110,8 +112,8 @@ class LegacyContactCard extends StatelessWidget {
                     children: [
                       Text(
                         contact.fullName,
-                        style: const TextStyle(
-                          color: AppTheme.textDark,
+                        style: TextStyle(
+                          color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
                         ),
@@ -119,7 +121,11 @@ class LegacyContactCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         contact.relationship,
-                        style: const TextStyle(color: AppTheme.textMuted, fontSize: 13, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                          color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
@@ -159,7 +165,10 @@ class LegacyContactCard extends StatelessWidget {
           const SizedBox(height: 12),
 
           // ── Divider + Actions ────────────────────────────────
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          Divider(
+            height: 1,
+            color: isDark ? AppTheme.darkBorder : const Color(0xFFF1F5F9),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Row(
@@ -182,7 +191,7 @@ class LegacyContactCard extends StatelessWidget {
                 _ActionButton(
                   icon: Icons.edit_outlined,
                   label: 'Edit',
-                  color: AppTheme.textMuted,
+                  color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
                   onTap: isActionLoading ? null : onEdit,
                 ),
                 const SizedBox(width: 4),
@@ -208,14 +217,23 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: [
-        Icon(icon, size: 14, color: AppTheme.textMuted),
+        Icon(
+          icon,
+          size: 14,
+          color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+        ),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(color: AppTheme.textMuted, fontSize: 13, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
             overflow: TextOverflow.ellipsis,
           ),
         ),

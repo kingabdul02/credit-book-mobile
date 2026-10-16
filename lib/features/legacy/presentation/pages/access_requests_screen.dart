@@ -137,8 +137,10 @@ class _AccessRequestsScreenState extends State<AccessRequestsScreen>
         final approved = allRequests.where((r) => r.isApproved).toList();
         final denied = allRequests.where((r) => r.isDenied).toList();
 
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+
         return Scaffold(
-          backgroundColor: AppTheme.onBackground,
+          backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
           appBar: const CustomAppBar(title: 'Access Requests'),
           body: isLoading
               ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
@@ -148,17 +150,17 @@ class _AccessRequestsScreenState extends State<AccessRequestsScreen>
                     Container(
                       margin: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
+                        color: isDark ? AppTheme.darkSurface : const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: TabBar(
                         controller: _tabController,
                         indicator: BoxDecoration(
-                          color: Colors.white,
+                          color: isDark ? AppTheme.darkBackground : Colors.white,
                           borderRadius: BorderRadius.circular(10),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.06),
+                              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.06),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
                             ),
@@ -166,8 +168,8 @@ class _AccessRequestsScreenState extends State<AccessRequestsScreen>
                         ),
                         indicatorSize: TabBarIndicatorSize.tab,
                         indicatorPadding: const EdgeInsets.all(3),
-                        labelColor: AppTheme.textDark,
-                        unselectedLabelColor: AppTheme.textMuted,
+                        labelColor: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                        unselectedLabelColor: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
                         labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                         unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                         dividerColor: Colors.transparent,
@@ -288,6 +290,8 @@ class _RequestsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (requests.isEmpty) {
       return Center(
         child: Padding(
@@ -306,8 +310,8 @@ class _RequestsList extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 emptyTitle,
-                style: const TextStyle(
-                  color: AppTheme.textDark,
+                style: TextStyle(
+                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                   fontSize: 17,
                   fontWeight: FontWeight.w800,
                 ),
@@ -316,8 +320,8 @@ class _RequestsList extends StatelessWidget {
               Text(
                 emptySubtitle,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: AppTheme.textMuted,
+                style: TextStyle(
+                  color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
                   fontSize: 13,
                   height: 1.5,
                 ),
@@ -371,10 +375,12 @@ class _ConfirmDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       elevation: 0,
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -391,17 +397,21 @@ class _ConfirmDialog extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
-                color: AppTheme.textDark,
+                color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
               ),
             ),
             const SizedBox(height: 10),
             Text(
               description,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppTheme.textMuted, fontSize: 13, height: 1.5),
+              style: TextStyle(
+                color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                fontSize: 13,
+                height: 1.5,
+              ),
             ),
             const SizedBox(height: 24),
             Row(
@@ -411,12 +421,15 @@ class _ConfirmDialog extends StatelessWidget {
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: BorderSide(color: AppTheme.textMuted.withValues(alpha: 0.3)),
+                      side: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.3)),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Cancel',
-                      style: TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),

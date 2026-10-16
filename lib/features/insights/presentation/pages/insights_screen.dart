@@ -30,14 +30,16 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppTheme.onBackground,
+      backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
       appBar: CustomAppBar(
         title: 'Insights',
         showBackButton: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.sync_rounded, color: AppTheme.textDark),
+            icon: Icon(Icons.sync_rounded, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
             onPressed: () {
               context.read<InsightsBloc>().add(const FetchInsightsData(timeframe: 'monthly'));
             },
@@ -104,11 +106,13 @@ class _InsightsScreenState extends State<InsightsScreen> {
   }
 
   Widget _buildSegmentControl(BuildContext context, String currentVal) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withValues(alpha: 0.1),
+        color: isDark ? AppTheme.darkSurface : AppTheme.primaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: isDark ? AppTheme.darkBorder : Colors.transparent),
       ),
       child: Row(
         children: [
@@ -121,6 +125,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
   }
 
   Widget _buildSegmentButton(BuildContext context, String value, String currentVal) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = value == currentVal;
     final label = '${value[0].toUpperCase()}${value.substring(1)}'; // "weekly" → "Weekly"
     return GestureDetector(
@@ -131,12 +136,14 @@ class _InsightsScreenState extends State<InsightsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
+          color: isSelected
+              ? (isDark ? const Color(0xFF334155) : Colors.white)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -147,7 +154,9 @@ class _InsightsScreenState extends State<InsightsScreen> {
           child: Text(
             label,
             style: TextStyle(
-              color: isSelected ? AppTheme.textDark : AppTheme.textMuted,
+              color: isSelected
+                  ? (isDark ? AppTheme.darkTextPrimary : AppTheme.textDark)
+                  : (isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted),
               fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
               fontSize: 14,
             ),

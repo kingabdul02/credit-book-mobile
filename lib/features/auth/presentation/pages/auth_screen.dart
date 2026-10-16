@@ -130,9 +130,10 @@ class _AuthScreenState extends State<AuthScreen> {
       },
       builder: (context, state) {
         final isLoading = state is AuthLoading;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
 
         return Scaffold(
-          backgroundColor: AppTheme.onBackground,
+          backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -157,12 +158,12 @@ class _AuthScreenState extends State<AuthScreen> {
                                   alignment: WrapAlignment.center,
                                   crossAxisAlignment: WrapCrossAlignment.center,
                                   children: [
-                                    Icon(Icons.account_balance_wallet, size: 32, color: AppTheme.textDark),
+                                    Icon(Icons.account_balance_wallet, size: 32, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
                                     const SizedBox(width: 8),
                                     Text(
                                       'CreditBook',
                                       style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                        color: AppTheme.textDark,
+                                        color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                                         fontWeight: FontWeight.w900,
                                       ),
                                     ),
@@ -172,7 +173,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                 Text(
                                   'CreditBook',
                                   style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                    color: AppTheme.textDark,
+                                    color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                                     fontWeight: FontWeight.w900,
                                   ),
                                 ),
@@ -182,7 +183,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                     ? 'Welcome back to clarity.' 
                                     : 'Financial clarity for your business.',
                                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: AppTheme.textDark.withValues(alpha: 0.7),
+                                  color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.7),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -196,14 +197,14 @@ class _AuthScreenState extends State<AuthScreen> {
                         Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: isDark ? AppTheme.darkSurface : Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: AppTheme.textMuted.withValues(alpha: 0.2),
+                              color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.2),
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.02),
+                                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
                                 blurRadius: 20,
                                 offset: const Offset(0, 10),
                               ),
@@ -229,14 +230,14 @@ class _AuthScreenState extends State<AuthScreen> {
                                     'Create Account',
                                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                       fontWeight: FontWeight.w800,
-                                      color: AppTheme.textDark,
+                                      color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     'Join thousands of entrepreneurs today.',
                                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: AppTheme.textDark.withValues(alpha: 0.7),
+                                      color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.7),
                                     ),
                                   ),
                                   const SizedBox(height: 24),
@@ -319,9 +320,9 @@ class _AuthScreenState extends State<AuthScreen> {
                                       }
                                     },
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppTheme.textDark, // Black button
+                                      backgroundColor: isDark ? AppTheme.primaryColor : AppTheme.textDark,
                                       foregroundColor: Colors.white,
-                                      disabledBackgroundColor: AppTheme.textDark.withValues(alpha: 0.5),
+                                      disabledBackgroundColor: (isDark ? AppTheme.primaryColor : AppTheme.textDark).withValues(alpha: 0.5),
                                       padding: const EdgeInsets.symmetric(vertical: 16),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
@@ -403,7 +404,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                   Text(
                                     _isLogin ? "New to CreditBook? " : "Already have an account? ",
                                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: AppTheme.textDark.withValues(alpha: 0.8),
+                                      color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.8),
                                     ),
                                   ),
                                   GestureDetector(

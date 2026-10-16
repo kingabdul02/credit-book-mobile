@@ -134,6 +134,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         }
       },
       builder: (context, state) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         // Create a sorted list so the selected contact is always first
         final displayContacts = List<ContactEntity>.from(state.contacts);
         if (state.selectedContact != null) {
@@ -142,7 +143,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         }
 
         return Scaffold(
-          backgroundColor: AppTheme.onBackground,
+          backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
           appBar: const CustomAppBar(title: '', showBackButton: true),
           body: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
@@ -153,6 +154,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         children: [
                           Expanded(
                             child: _buildToggleButton(
+                              context: context,
                               title: 'THEY OWE ME',
                               icon: Icons.arrow_downward,
                               isSelected: state.transactionType == 'THEY_OWE_ME',
@@ -162,6 +164,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _buildToggleButton(
+                              context: context,
                               title: 'I OWE THEM',
                               icon: Icons.arrow_upward,
                               isSelected: state.transactionType == 'I_OWE_THEM',
@@ -176,16 +179,26 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('SELECT CONTACT', style: TextStyle(color: AppTheme.textDark.withOpacity(0.6), fontWeight: FontWeight.w800, fontSize: 12, letterSpacing: 1.2)),
+                          Text(
+                            'SELECT CONTACT',
+                            style: TextStyle(
+                              color: isDark
+                                  ? AppTheme.darkTextSecondary
+                                  : AppTheme.textDark.withOpacity(0.6),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
                           GestureDetector(
                             onTap: () {
                               _showDirectoryBottomSheet(context, state);
                             },
-                            child: Row(
+                            child: const Row(
                               children: [
-                                const Icon(Icons.search, size: 16, color: AppTheme.primaryVariant),
-                                const SizedBox(width: 4),
-                                const Text('Directory', style: TextStyle(color: AppTheme.primaryVariant, fontWeight: FontWeight.w700, fontSize: 13)),
+                                Icon(Icons.search, size: 16, color: AppTheme.primaryVariant),
+                                SizedBox(width: 4),
+                                Text('Directory', style: TextStyle(color: AppTheme.primaryVariant, fontWeight: FontWeight.w700, fontSize: 13)),
                               ],
                             ),
                           ),
@@ -216,11 +229,25 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.only(top: 8.0, right: 4.0),
-                            child: Text('\₦', style: TextStyle(color: AppTheme.textMuted.withOpacity(0.8), fontSize: 28, fontWeight: FontWeight.w700)),
+                            child: Text(
+                              '\₦',
+                              style: TextStyle(
+                                color: isDark
+                                    ? AppTheme.darkTextSecondary
+                                    : AppTheme.textMuted.withOpacity(0.8),
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
                           Text(
                             _formatAmount(state.amountString),
-                            style: const TextStyle(color: AppTheme.textDark, fontSize: 55, fontWeight: FontWeight.w800, height: 1.0),
+                            style: TextStyle(
+                              color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                              fontSize: 55,
+                              fontWeight: FontWeight.w800,
+                              height: 1.0,
+                            ),
                           ),
                         ],
                       ),
@@ -230,10 +257,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       TextField(
                         controller: _noteController,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 16, color: AppTheme.textDark, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                          fontWeight: FontWeight.w500,
+                        ),
                         decoration: InputDecoration(
                           hintText: 'Add a note (Lunch, Rent...)',
-                          hintStyle: TextStyle(color: AppTheme.textMuted.withOpacity(0.6)),
+                          hintStyle: TextStyle(
+                            color: isDark
+                                ? AppTheme.darkTextSecondary.withOpacity(0.6)
+                                : AppTheme.textMuted.withOpacity(0.6),
+                          ),
                           border: InputBorder.none,
                         ),
                       ),
@@ -251,14 +286,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                               ? null 
                               : () => _handleSave(context, state),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.textDark, // Changed from dull grey to match screen's primary interactive color
-                            disabledBackgroundColor: AppTheme.textDark.withOpacity(0.3),
+                            backgroundColor: isDark ? AppTheme.primaryColor : AppTheme.textDark,
+                            disabledBackgroundColor: isDark
+                                ? AppTheme.primaryColor.withOpacity(0.3)
+                                : AppTheme.textDark.withOpacity(0.3),
                             foregroundColor: Colors.white,
                             disabledForegroundColor: Colors.white.withOpacity(0.7),
                             padding: const EdgeInsets.symmetric(vertical: 20),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             elevation: 8,
-                            shadowColor: AppTheme.textDark.withOpacity(0.3),
+                            shadowColor: isDark
+                                ? Colors.transparent
+                                : AppTheme.textDark.withOpacity(0.3),
                           ),
                           child: state.isLoading 
                               ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
@@ -269,7 +308,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                     const SizedBox(width: 8),
                                     Container(
                                       decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                                      child: const Icon(Icons.check, color: AppTheme.textDark, size: 16),
+                                      child: Icon(
+                                        Icons.check,
+                                        color: isDark ? AppTheme.primaryColor : AppTheme.textDark,
+                                        size: 16,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -295,26 +338,52 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     }
   }
 
-  Widget _buildToggleButton({required String title, required IconData icon, required bool isSelected, required VoidCallback onTap}) {
+  Widget _buildToggleButton({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : AppTheme.secondaryColor.withOpacity(0.1),
+          color: isSelected
+              ? (isDark ? AppTheme.darkSurface : Colors.white)
+              : (isDark
+                  ? AppTheme.darkSurface.withOpacity(0.5)
+                  : AppTheme.secondaryColor.withOpacity(0.1)),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isSelected ? AppTheme.textDark : Colors.transparent, width: 2),
-          boxShadow: isSelected ? [const BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))] : [],
+          border: Border.all(
+            color: isSelected
+                ? (isDark ? AppTheme.primaryColor : AppTheme.textDark)
+                : (isDark ? AppTheme.darkBorder : Colors.transparent),
+            width: 2,
+          ),
+          boxShadow: isSelected
+              ? [const BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))]
+              : [],
         ),
         child: Column(
           children: [
-            Icon(icon, color: isSelected ? AppTheme.textDark : AppTheme.textMuted, size: 24),
+            Icon(
+              icon,
+              color: isSelected
+                  ? (isDark ? AppTheme.darkTextPrimary : AppTheme.textDark)
+                  : (isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted),
+              size: 24,
+            ),
             const SizedBox(height: 8),
             Text(
               title,
               style: TextStyle(
-                color: isSelected ? AppTheme.textDark : AppTheme.textMuted,
+                color: isSelected
+                    ? (isDark ? AppTheme.darkTextPrimary : AppTheme.textDark)
+                    : (isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted),
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                 fontSize: 12,
               ),
@@ -326,6 +395,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Widget _buildNewContactButton(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () async {
         final result = await context.push('/add-person');
@@ -338,20 +408,28 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           Container(
             width: 60,
             height: 60,
-            decoration: const BoxDecoration(
-              color: AppTheme.textDark,
+            decoration: BoxDecoration(
+              color: isDark ? AppTheme.primaryColor : AppTheme.textDark,
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.add, color: Colors.white, size: 28),
           ),
           const SizedBox(height: 8),
-          const Text('New', style: TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w700, fontSize: 12)),
+          Text(
+            'New',
+            style: TextStyle(
+              color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildContactAvatar(ContactEntity contact, bool isSelected, BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () => context.read<AddTransactionBloc>().add(ContactSelected(contact)),
       child: Column(
@@ -367,7 +445,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ),
             child: CircleAvatar(
               radius: 28,
-              backgroundColor: AppTheme.secondaryColor.withOpacity(0.15),
+              backgroundColor: isDark
+                  ? AppTheme.darkSurface
+                  : AppTheme.secondaryColor.withOpacity(0.15),
               child: contact.profilePicture != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(28),
@@ -375,7 +455,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     )
                   : Text(
                       contact.initials,
-                      style: const TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w800, fontSize: 20),
+                      style: TextStyle(
+                        color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 20,
+                      ),
                     ),
             ),
           ),
@@ -383,7 +467,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           Text(
             contact.fullName.split(' ').first,
             style: TextStyle(
-              color: isSelected ? AppTheme.textDark : AppTheme.textMuted,
+              color: isSelected
+                  ? (isDark ? AppTheme.darkTextPrimary : AppTheme.textDark)
+                  : (isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted),
               fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
               fontSize: 12,
             ),
@@ -442,6 +528,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Widget _buildNumpadButton(BuildContext context, String text, {IconData? icon}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () {
         if (text == 'DEL') {
@@ -456,20 +543,30 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         height: 64,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? AppTheme.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(16),
+          border: isDark ? Border.all(color: AppTheme.darkBorder) : null,
         ),
         child: icon != null
-            ? Icon(icon, color: AppTheme.textDark, size: 24)
+            ? Icon(
+                icon,
+                color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                size: 24,
+              )
             : Text(
                 text,
-                style: const TextStyle(color: AppTheme.textDark, fontSize: 24, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
       ),
     );
   }
 
   void _showDirectoryBottomSheet(BuildContext context, AddTransactionState state) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -489,36 +586,69 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               expand: false,
               builder: (_, scrollController) {
                 return Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppTheme.darkSurface : Colors.white,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                   ),
                   child: Column(
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(top: 12),
                         child: Center(
-                          child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+                          child: Container(
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppTheme.darkBorder
+                                  : Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
                         ),
                       ),
-                      const Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Text('Contact Directory', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.textDark)),
+                      Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          'Contact Directory',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                          ),
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
+                            color: isDark
+                                ? AppTheme.darkBackground
+                                : Colors.grey.shade100,
                             borderRadius: BorderRadius.circular(12),
+                            border: isDark
+                                ? Border.all(color: AppTheme.darkBorder)
+                                : null,
                           ),
                           child: TextField(
                             controller: _directorySearchController,
+                            style: TextStyle(
+                              color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                            ),
                             onChanged: (_) => setModalState(() {}),
                             decoration: InputDecoration(
                               hintText: 'Search contacts...',
-                              hintStyle: TextStyle(color: AppTheme.textMuted.withOpacity(0.6)),
-                              prefixIcon: const Icon(Icons.search, color: AppTheme.textMuted),
+                              hintStyle: TextStyle(
+                                color: isDark
+                                    ? AppTheme.darkTextSecondary.withOpacity(0.6)
+                                    : AppTheme.textMuted.withOpacity(0.6),
+                              ),
+                              prefixIcon: Icon(
+                                Icons.search,
+                                color: isDark
+                                    ? AppTheme.darkTextSecondary
+                                    : AppTheme.textMuted,
+                              ),
                               border: InputBorder.none,
                               contentPadding: const EdgeInsets.symmetric(vertical: 14),
                             ),
@@ -528,7 +658,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       const SizedBox(height: 16),
                       Expanded(
                         child: filteredContacts.isEmpty
-                            ? const Center(child: Text('No contacts found'))
+                            ? Center(
+                                child: Text(
+                                  'No contacts found',
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? AppTheme.darkTextSecondary
+                                        : AppTheme.textMuted,
+                                  ),
+                                ),
+                              )
                             : ListView.separated(
                                 controller: scrollController,
                                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -539,12 +678,30 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                   return ListTile(
                                     contentPadding: EdgeInsets.zero,
                                     leading: CircleAvatar(
-                                      backgroundColor: AppTheme.secondaryColor.withOpacity(0.15),
+                                      backgroundColor: isDark
+                                          ? AppTheme.darkBackground
+                                          : AppTheme.secondaryColor.withOpacity(0.15),
                                       child: contact.profilePicture != null
                                           ? ClipOval(child: Image.network(contact.profilePicture!, width: 40, height: 40, fit: BoxFit.cover))
-                                          : Text(contact.initials, style: const TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.bold)),
+                                          : Text(
+                                              contact.initials,
+                                              style: TextStyle(
+                                                color: isDark
+                                                    ? AppTheme.darkTextPrimary
+                                                    : AppTheme.textDark,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
                                     ),
-                                    title: Text(contact.fullName, style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textDark)),
+                                    title: Text(
+                                      contact.fullName,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        color: isDark
+                                            ? AppTheme.darkTextPrimary
+                                            : AppTheme.textDark,
+                                      ),
+                                    ),
                                     onTap: () {
                                       this.context.read<AddTransactionBloc>().add(ContactSelected(contact));
                                       Navigator.pop(context);

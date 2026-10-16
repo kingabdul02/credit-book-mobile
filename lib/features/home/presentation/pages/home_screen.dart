@@ -72,9 +72,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showFilterBottomSheet() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
       isScrollControlled: true,
       constraints: const BoxConstraints(maxWidth: double.infinity),
       shape: const RoundedRectangleBorder(
@@ -103,14 +104,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppTheme.primaryColor
-                          : Colors.grey.shade200,
+                          : (isDark ? const Color(0xFF0F172A) : Colors.grey.shade200),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     alignment: Alignment.center,
                     child: Text(
                       title,
                       style: TextStyle(
-                        color: isSelected ? Colors.white : AppTheme.textDark,
+                        color: isSelected ? Colors.white : (isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
                         fontWeight: isSelected
                             ? FontWeight.bold
                             : FontWeight.w500,
@@ -131,12 +132,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Filter Transactions',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
-                      color: AppTheme.textDark,
+                      color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -173,11 +174,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
     final user = authState is AuthSuccess ? authState.user : null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppTheme.onBackground,
+      backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
         elevation: 0,
         centerTitle: false,
         titleSpacing: 24,
@@ -192,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(
               'CreditBook',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: AppTheme.textDark,
+                color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -203,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               context.read<HomeBloc>().add(LoadDashboardRequested());
             },
-            icon: const Icon(Icons.sync_rounded, color: AppTheme.textDark),
+            icon: Icon(Icons.sync_rounded, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
           ),
           const SizedBox(width: 12),
         ],
@@ -265,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             'Upcoming Reminders',
                             style: Theme.of(context).textTheme.headlineMedium
                                 ?.copyWith(
-                                  color: AppTheme.textDark,
+                                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                                   fontWeight: FontWeight.w700,
                                 ),
                           ),
@@ -273,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             'View All',
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
-                                  color: AppTheme.textDark,
+                                  color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark,
                                   fontWeight: FontWeight.w600,
                                 ),
                           ),
@@ -314,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   child: Container(
                                     height: 40,
                                     decoration: BoxDecoration(
-                                      color: Colors.grey.shade200,
+                                      color: isDark ? AppTheme.darkSurface : Colors.grey.shade200,
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     padding: const EdgeInsets.symmetric(
@@ -323,14 +325,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: TextField(
                                       controller: _searchController,
                                       autofocus: true,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 14,
-                                        color: AppTheme.textDark,
+                                        color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                                       ),
                                       decoration: InputDecoration(
                                         hintText: 'Search by name...',
                                         hintStyle: TextStyle(
-                                          color: AppTheme.textMuted.withValues(
+                                          color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted.withValues(
                                             alpha: 0.5,
                                           ),
                                         ),
@@ -338,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         icon: Icon(
                                           Icons.search,
                                           size: 18,
-                                          color: AppTheme.textMuted,
+                                          color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
                                         ),
                                         suffixIcon:
                                             _searchController.text.isNotEmpty
@@ -379,10 +381,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       vertical: 8,
                                     ),
                                   ),
-                                  child: const Text(
+                                  child: Text(
                                     'Cancel',
                                     style: TextStyle(
-                                      color: AppTheme.textDark,
+                                      color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -395,7 +397,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             'Recent Transactions',
                             style: Theme.of(context).textTheme.headlineMedium
                                 ?.copyWith(
-                                  color: AppTheme.textDark,
+                                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                                   fontWeight: FontWeight.w700,
                                 ),
                           ),
@@ -407,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Icons.filter_list_rounded,
                                   color: _selectedFilter != 'All'
                                       ? AppTheme.primaryColor
-                                      : AppTheme.textDark,
+                                      : (isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
                                   size: 20,
                                 ),
                                 onPressed: _showFilterBottomSheet,
@@ -417,9 +419,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.search_rounded,
-                                  color: AppTheme.textDark,
+                                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                                   size: 20,
                                 ),
                                 onPressed: () {
@@ -536,28 +538,31 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildNetBalanceCard(DashboardMetrics metrics) {
     final formatCurrency = NumberFormat.currency(symbol: '₦', decimalDigits: 0);
     final balance = double.tryParse(metrics.netBalance) ?? 0.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.2)),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         children: [
           Text(
             'Net Balance',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.textDark.withValues(alpha: 0.7),
+              color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.7),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -567,7 +572,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: Theme.of(context).textTheme.displayLarge?.copyWith(
               color: balance < 0
                   ? AppTheme.errorColor
-                  : (balance > 0 ? AppTheme.primaryColor : AppTheme.textDark),
+                  : (balance > 0 ? AppTheme.primaryColor : (isDark ? AppTheme.darkTextPrimary : AppTheme.textDark)),
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -689,9 +694,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildReceivableCard(DashboardMetrics metrics) {
     final formatCurrency = NumberFormat.currency(symbol: '₦', decimalDigits: 0);
     final amount = double.tryParse(metrics.totalOwedToMe) ?? 0.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Material(
-      color: Colors.white,
+      color: isDark ? AppTheme.darkSurface : Colors.white,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: () => context.push('/all-debts?filter=pending&type=receivable'),
@@ -700,14 +706,16 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.2)),
+            boxShadow: isDark
+                ? []
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.02),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -774,9 +782,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildPayableCard(DashboardMetrics metrics) {
     final formatCurrency = NumberFormat.currency(symbol: '₦', decimalDigits: 0);
     final amount = double.tryParse(metrics.totalIOwe) ?? 0.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Material(
-      color: Colors.white,
+      color: isDark ? AppTheme.darkSurface : Colors.white,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: () => context.push('/all-debts?filter=pending&type=payable'),
@@ -785,14 +794,16 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.2)),
+            boxShadow: isDark
+                ? []
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.02),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -955,6 +966,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildTransactionCard(Transaction transaction) {
     final formatCurrency = NumberFormat.currency(symbol: '₦', decimalDigits: 0);
     final amount = double.tryParse(transaction.amount) ?? 0.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Determine status badge based on transaction properties
     String status = transaction.debt?.statusLabel?.toUpperCase() ?? 'UNPAID';
@@ -989,16 +1001,18 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? AppTheme.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.01),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.2)),
+          boxShadow: isDark
+              ? []
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.01),
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
         ),
         child: Row(
           children: [
@@ -1018,8 +1032,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     transaction.debt?.contact?.fullName ??
                         'Unknown Transaction',
-                    style: const TextStyle(
-                      color: AppTheme.textDark,
+                    style: TextStyle(
+                      color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                       fontWeight: FontWeight.w700,
                     ),
                     maxLines: 1,
@@ -1034,7 +1048,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           )
                         : 'Unknown Date',
                     style: TextStyle(
-                      color: AppTheme.textDark.withValues(alpha: 0.6),
+                      color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.6),
                       fontSize: 12,
                     ),
                   ),

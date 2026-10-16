@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../theme/theme_cubit.dart';
 import '../../core/services/sync_queue_local_data_source.dart';
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
@@ -103,4 +104,7 @@ Future<void> init() async {
   sl.registerLazySingleton<SyncQueueLocalDataSource>(
     () => SyncQueueLocalDataSourceImpl(sharedPreferences: sl()),
   );
+
+  // Theme
+  sl.registerLazySingleton<ThemeCubit>(() => ThemeCubit(sharedPreferences: sl()));
 }

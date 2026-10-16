@@ -131,194 +131,241 @@ class _AddLegacyContactScreenState extends State<AddLegacyContactScreen> {
           );
         }
       },
-      child: Scaffold(
-        backgroundColor: AppTheme.onBackground,
-        appBar: CustomAppBar(title: _isEditing ? 'Edit Nominee' : 'Add Nominee'),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Info Banner ──────────────────────────────────
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.07),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.25)),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(Icons.info_outline_rounded, color: AppTheme.primaryVariant, size: 18),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          _isEditing
-                              ? 'Changes will be saved immediately. Verification status is unaffected by edits.'
-                              : 'A verification email will be sent to this person. They must verify to become an active nominee.',
-                          style: const TextStyle(color: AppTheme.textMuted, fontSize: 12, height: 1.5),
-                        ),
+      child: Builder(
+        builder: (context) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          return Scaffold(
+            backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
+            appBar: CustomAppBar(title: _isEditing ? 'Edit Nominee' : 'Add Nominee'),
+            body: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── Info Banner ──────────────────────────────────
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withValues(alpha: 0.07),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.25)),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 28),
-
-                // ── Full Name ────────────────────────────────────
-                _FieldLabel('Full Legal Name *'),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _nameController,
-                  style: const TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w600),
-                  textCapitalization: TextCapitalization.words,
-                  decoration: _inputDecoration('e.g. Sarah Johnson'),
-                  validator: (v) => v == null || v.trim().isEmpty ? 'Full name is required' : null,
-                ),
-                const SizedBox(height: 20),
-
-                // ── Relationship ─────────────────────────────────
-                _FieldLabel('Relationship *'),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  value: _selectedRelationship,
-                  decoration: _inputDecoration('Select relationship'),
-                  dropdownColor: Colors.white,
-                  style: const TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w600, fontSize: 14),
-                  items: _relationships
-                      .map((r) => DropdownMenuItem(value: r, child: Text(r)))
-                      .toList(),
-                  onChanged: (v) => setState(() => _selectedRelationship = v),
-                  validator: (v) => v == null ? 'Please select a relationship' : null,
-                ),
-                const SizedBox(height: 20),
-
-                // ── Email ────────────────────────────────────────
-                _FieldLabel('Email Address *'),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _emailController,
-                  style: const TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w600),
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: _inputDecoration('sarah@example.com'),
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Email is required';
-                    if (!RegExp(r'^[\w\.\-]+@[\w\-]+\.\w+').hasMatch(v.trim())) {
-                      return 'Enter a valid email address';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-
-                // ── Phone ────────────────────────────────────────
-                CustomTextField(
-                  controller: _phoneController,
-                  label: 'Phone Number *',
-                  hintText: '801 234 5678',
-                  keyboardType: TextInputType.phone,
-                  maxLength: 10,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.deny(RegExp(r'^0')),
-                    FilteringTextInputFormatter.digitsOnly,
-                  ],
-                  prefix: CountryCodeDropdown(
-                    selectedCountry: _selectedCountry,
-                    onChanged: (country) {
-                      setState(() {
-                        _selectedCountry = country;
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // ── Is Primary ───────────────────────────────────
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 22),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Primary Nominee', style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textDark, fontSize: 14)),
-                            Text(
-                              'Primary nominees are contacted first',
-                              style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.info_outline_rounded, color: AppTheme.primaryVariant, size: 18),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              _isEditing
+                                  ? 'Changes will be saved immediately. Verification status is unaffected by edits.'
+                                  : 'A verification email will be sent to this person. They must verify to become an active nominee.',
+                              style: TextStyle(
+                                color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                                fontSize: 12,
+                                height: 1.5,
+                              ),
                             ),
-                          ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+
+                    // ── Full Name ────────────────────────────────────
+                    const _FieldLabel('Full Legal Name *'),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _nameController,
+                      style: TextStyle(
+                        color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textCapitalization: TextCapitalization.words,
+                      decoration: _inputDecoration('e.g. Sarah Johnson', isDark),
+                      validator: (v) => v == null || v.trim().isEmpty ? 'Full name is required' : null,
+                    ),
+                    const SizedBox(height: 20),
+
+                    // ── Relationship ─────────────────────────────────
+                    const _FieldLabel('Relationship *'),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      value: _selectedRelationship,
+                      decoration: _inputDecoration('Select relationship', isDark),
+                      dropdownColor: isDark ? AppTheme.darkSurface : Colors.white,
+                      style: TextStyle(
+                        color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                      items: _relationships
+                          .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                          .toList(),
+                      onChanged: (v) => setState(() => _selectedRelationship = v),
+                      validator: (v) => v == null ? 'Please select a relationship' : null,
+                    ),
+                    const SizedBox(height: 20),
+
+                    // ── Email ────────────────────────────────────────
+                    const _FieldLabel('Email Address *'),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _emailController,
+                      style: TextStyle(
+                        color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: _inputDecoration('sarah@example.com', isDark),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'Email is required';
+                        if (!RegExp(r'^[\w\.\-]+@[\w\-]+\.\w+').hasMatch(v.trim())) {
+                          return 'Enter a valid email address';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+
+                    // ── Phone ────────────────────────────────────────
+                    CustomTextField(
+                      controller: _phoneController,
+                      label: 'Phone Number *',
+                      hintText: '801 234 5678',
+                      keyboardType: TextInputType.phone,
+                      maxLength: 10,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.deny(RegExp(r'^0')),
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      prefix: CountryCodeDropdown(
+                        selectedCountry: _selectedCountry,
+                        onChanged: (country) {
+                          setState(() {
+                            _selectedCountry = country;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // ── Is Primary ───────────────────────────────────
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppTheme.darkSurface : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark
+                              ? AppTheme.darkBorder
+                              : AppTheme.textMuted.withValues(alpha: 0.2),
                         ),
                       ),
-                      Switch(
-                        value: _isPrimary,
-                        onChanged: (v) => setState(() => _isPrimary = v),
-                        activeThumbColor: Colors.white,
-                        activeTrackColor: AppTheme.primaryVariant,
-                        inactiveThumbColor: Colors.white,
-                        inactiveTrackColor: AppTheme.textMuted.withValues(alpha: 0.4),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 40),
-
-                // ── Submit ───────────────────────────────────────
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isSaving ? null : _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryVariant,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      minimumSize: const Size(double.infinity, 56),
-                      elevation: 0,
-                    ),
-                    child: _isSaving
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                          )
-                        : Text(
-                            _isEditing ? 'Save Changes' : 'Add Nominee',
-                            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 22),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Primary Nominee',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                Text(
+                                  'Primary nominees are contacted first',
+                                  style: TextStyle(
+                                    color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                  ),
+                          Switch(
+                            value: _isPrimary,
+                            onChanged: (v) => setState(() => _isPrimary = v),
+                            activeThumbColor: Colors.white,
+                            activeTrackColor: AppTheme.primaryVariant,
+                            inactiveThumbColor: Colors.white,
+                            inactiveTrackColor: isDark
+                                ? AppTheme.darkBorder
+                                : AppTheme.textMuted.withValues(alpha: 0.4),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+
+                    // ── Submit ───────────────────────────────────────
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isSaving ? null : _submit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryVariant,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          minimumSize: const Size(double.infinity, 56),
+                          elevation: 0,
+                        ),
+                        child: _isSaving
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : Text(
+                                _isEditing ? 'Save Changes' : 'Add Nominee',
+                                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                 ),
-                const SizedBox(height: 24),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
 
-  InputDecoration _inputDecoration(String hint) {
+  InputDecoration _inputDecoration(String hint, bool isDark) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(color: AppTheme.textMuted.withValues(alpha: 0.8)),
+      hintStyle: TextStyle(
+        color: isDark
+            ? AppTheme.darkTextSecondary.withValues(alpha: 0.6)
+            : AppTheme.textMuted.withValues(alpha: 0.8),
+      ),
       filled: true,
-      fillColor: Colors.white,
+      fillColor: isDark ? AppTheme.darkSurface : Colors.white,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppTheme.textMuted.withValues(alpha: 0.3)),
+        borderSide: BorderSide(
+          color: isDark
+              ? AppTheme.darkBorder
+              : AppTheme.textMuted.withValues(alpha: 0.3),
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppTheme.textMuted.withValues(alpha: 0.3)),
+        borderSide: BorderSide(
+          color: isDark
+              ? AppTheme.darkBorder
+              : AppTheme.textMuted.withValues(alpha: 0.3),
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -342,9 +389,14 @@ class _FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Text(
       text,
-      style: const TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w700, fontSize: 13),
+      style: TextStyle(
+        color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+        fontWeight: FontWeight.w700,
+        fontSize: 13,
+      ),
     );
   }
 }

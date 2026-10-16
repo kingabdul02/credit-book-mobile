@@ -30,6 +30,8 @@ class _LedgerScreenState extends State<LedgerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return BlocListener<LedgerBloc, LedgerState>(
       listener: (context, state) {
         if (state is PaymentRecorded) {
@@ -49,12 +51,12 @@ class _LedgerScreenState extends State<LedgerScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF8F9FA),
+        backgroundColor: isDark ? AppTheme.darkBackground : const Color(0xFFF8F9FA),
         appBar: CustomAppBar(
           title: 'Ledger',
           actions: [
             IconButton(
-              icon: const Icon(Icons.sync_rounded, color: AppTheme.textDark),
+              icon: Icon(Icons.sync_rounded, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
               onPressed: () {
                 context.read<LedgerBloc>().add(LoadLedger(widget.contactId));
               },
@@ -101,13 +103,13 @@ class _LedgerScreenState extends State<LedgerScreen> {
                                 'Ledger History',
                                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                       fontWeight: FontWeight.w800,
-                                      color: AppTheme.textDark,
+                                      color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                                     ),
                               ),
                               TextButton.icon(
                                 onPressed: () {},
-                                icon: const Icon(Icons.filter_list, size: 18, color: AppTheme.textDark),
-                                label: const Text('Filter', style: TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w600)),
+                                icon: Icon(Icons.filter_list, size: 18, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
+                                label: Text('Filter', style: TextStyle(color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark, fontWeight: FontWeight.w600)),
                                 style: TextButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(horizontal: 8),
                                   minimumSize: Size.zero,
@@ -160,19 +162,23 @@ class _LedgerScreenState extends State<LedgerScreen> {
   }
 
   Widget _buildHeaderCard(BuildContext context, LedgerLoaded state) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.2)),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -210,17 +216,17 @@ class _LedgerScreenState extends State<LedgerScreen> {
                   children: [
                     Text(
                       state.contact.fullName,
-                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20, color: AppTheme.textDark),
+                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Last activity: ${_timeAgo(state.contact.updatedAt)}',
-                      style: TextStyle(color: AppTheme.textMuted, fontSize: 13, fontWeight: FontWeight.w500),
+                      style: TextStyle(color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted, fontSize: 13, fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.info_outline, color: AppTheme.textMuted),
+              Icon(Icons.info_outline, color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted),
             ],
           ),
           const SizedBox(height: 24),
@@ -229,7 +235,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
-              color: AppTheme.textMuted,
+              color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
               letterSpacing: 1.2,
             ),
           ),
@@ -245,7 +251,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
                   fontWeight: FontWeight.w900,
                   color: state.netBalance < 0
                       ? AppTheme.errorColor
-                      : (state.netBalance > 0 ? AppTheme.primaryColor : AppTheme.textDark),
+                      : (state.netBalance > 0 ? AppTheme.primaryColor : (isDark ? AppTheme.darkTextPrimary : AppTheme.textDark)),
                 ),
               ),
               if (state.netBalance != 0)
@@ -270,13 +276,13 @@ class _LedgerScreenState extends State<LedgerScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Repayment Progress',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.textDark),
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
               ),
               Text(
                 '${state.repaymentProgress.toStringAsFixed(1)}% Paid',
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.textDark),
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
               ),
             ],
           ),
@@ -294,8 +300,8 @@ class _LedgerScreenState extends State<LedgerScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('You Owe: ${formatCurrency.format(state.totalUserOwes)}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppTheme.textDark.withValues(alpha: 0.8))),
-              Text('They Owe: ${formatCurrency.format(state.totalOwedToUser)}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppTheme.textDark.withValues(alpha: 0.8))),
+              Text('You Owe: ${formatCurrency.format(state.totalUserOwes)}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.8))),
+              Text('They Owe: ${formatCurrency.format(state.totalOwedToUser)}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.8))),
             ],
           ),
         ],
@@ -304,18 +310,22 @@ class _LedgerScreenState extends State<LedgerScreen> {
   }
 
   Widget _buildHistoryList(BuildContext context, Map<String, List<LedgerTransactionEntity>> groupedHistory) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.2)),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -328,7 +338,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppTheme.secondaryColor.withValues(alpha: 0.05),
+                    color: isDark ? const Color(0xFF0F172A) : AppTheme.secondaryColor.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -336,7 +346,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.textDark.withValues(alpha: 0.7),
+                      color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.7),
                     ),
                   ),
                 ),
@@ -350,7 +360,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: txn.isPositive ? AppTheme.textDark : AppTheme.primaryColor,
+                          color: txn.isPositive ? (isDark ? const Color(0xFF334155) : AppTheme.textDark) : AppTheme.primaryColor,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -366,12 +376,12 @@ class _LedgerScreenState extends State<LedgerScreen> {
                           children: [
                             Text(
                               txn.title,
-                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.textDark),
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               txn.subtitle,
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppTheme.textMuted),
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted),
                             ),
                           ],
                         ),
@@ -394,7 +404,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
                               Text(
                                 txn.transactionType == 'THEY_OWE_ME' ? 'They Owe' : 'You Owe',
                                 style: TextStyle(
-                                  color: AppTheme.textMuted,
+                                  color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -402,7 +412,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
                               const SizedBox(width: 4),
                               Text(
                                 txn.time,
-                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppTheme.textMuted),
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted),
                               ),
                             ],
                           ),
@@ -451,11 +461,13 @@ class _LedgerScreenState extends State<LedgerScreen> {
   }
 
   Widget _buildStickyBottomBar(BuildContext context, LedgerLoaded state) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(16).copyWith(bottom: MediaQuery.of(context).padding.bottom + 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AppTheme.textMuted.withValues(alpha: 0.2))),
+        color: isDark ? AppTheme.darkSurface : Colors.white,
+        border: Border(top: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.2))),
       ),
       child: Row(
         children: [
@@ -464,10 +476,10 @@ class _LedgerScreenState extends State<LedgerScreen> {
               onPressed: () => _showAdjustBalanceSheet(context, state),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                side: const BorderSide(color: AppTheme.textDark),
+                side: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.textDark),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Adjust Balance', style: TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w700)),
+              child: Text('Adjust Balance', style: TextStyle(color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark, fontWeight: FontWeight.w700)),
             ),
           ),
           const SizedBox(width: 16),
@@ -482,7 +494,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
               icon: const Icon(Icons.add, color: Colors.white, size: 18),
               label: const Text('Add Payment', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.textDark,
+                backgroundColor: isDark ? AppTheme.primaryColor : AppTheme.textDark,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
@@ -571,6 +583,8 @@ class _AdjustBalanceSheetState extends State<_AdjustBalanceSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return BlocListener<LedgerBloc, LedgerState>(
       listener: (context, state) {
         if (state is PaymentRecorded) {
@@ -589,9 +603,9 @@ class _AdjustBalanceSheetState extends State<_AdjustBalanceSheet> {
         expand: false,
         builder: (_, scrollController) {
           return Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            decoration: BoxDecoration(
+              color: isDark ? AppTheme.darkSurface : Colors.white,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: Column(
               children: [
@@ -602,7 +616,7 @@ class _AdjustBalanceSheetState extends State<_AdjustBalanceSheet> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppTheme.textMuted.withValues(alpha: 0.3),
+                      color: isDark ? Colors.white24 : AppTheme.textMuted.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -619,14 +633,14 @@ class _AdjustBalanceSheetState extends State<_AdjustBalanceSheet> {
                           // Title
                           Row(
                             children: [
-                              const Icon(Icons.tune_rounded, size: 22, color: AppTheme.textDark),
+                              Icon(Icons.tune_rounded, size: 22, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
                               const SizedBox(width: 10),
                               Text(
                                 'Adjust Balance',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w800,
-                                  color: AppTheme.textDark,
+                                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                                 ),
                               ),
                             ],
@@ -634,36 +648,61 @@ class _AdjustBalanceSheetState extends State<_AdjustBalanceSheet> {
                           const SizedBox(height: 6),
                           Text(
                             'Record a payment with ${widget.contactName}',
-                            style: const TextStyle(color: AppTheme.textMuted, fontSize: 13, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           const SizedBox(height: 24),
 
                           // Debt selector (if multiple open debts)
                           if (widget.debts.length > 1) ...[
-                            const Text('Select Debt', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.textDark)),
+                            Text(
+                              'Select Debt',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                              ),
+                            ),
                             const SizedBox(height: 8),
-                            ...widget.debts.map((debt) => _buildDebtOption(debt)),
+                            ...widget.debts.map((debt) => _buildDebtOption(debt, isDark)),
                             const SizedBox(height: 20),
                           ],
 
                           // Direction indicator
-                          _buildDirectionCard(),
+                          _buildDirectionCard(isDark),
                           const SizedBox(height: 20),
 
                           // Amount field
-                          const Text('Amount', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.textDark)),
+                          Text(
+                            'Amount',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _amountController,
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.textDark),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                            ),
                             decoration: InputDecoration(
                               prefixText: '₦ ',
                               prefixStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.primaryColor),
                               hintText: '0.00',
-                              hintStyle: TextStyle(color: AppTheme.textMuted.withValues(alpha: 0.5), fontWeight: FontWeight.w400),
+                              hintStyle: TextStyle(
+                                color: isDark ? AppTheme.darkTextSecondary.withValues(alpha: 0.5) : AppTheme.textMuted.withValues(alpha: 0.5),
+                                fontWeight: FontWeight.w400,
+                              ),
                               filled: true,
-                              fillColor: AppTheme.onBackground,
+                              fillColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide.none,
@@ -688,22 +727,36 @@ class _AdjustBalanceSheetState extends State<_AdjustBalanceSheet> {
                           // Outstanding hint
                           Text(
                             'Outstanding: ${formatCurrency.format(_selectedDebt.outstandingAmount)}',
-                            style: const TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                              color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                           const SizedBox(height: 20),
 
                           // Note field
-                          const Text('Note (optional)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.textDark)),
+                          Text(
+                            'Note (optional)',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _noteController,
                             maxLines: 2,
-                            style: const TextStyle(fontSize: 14, color: AppTheme.textDark),
+                            style: TextStyle(fontSize: 14, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
                             decoration: InputDecoration(
                               hintText: 'e.g. Partial repayment via transfer',
-                              hintStyle: TextStyle(color: AppTheme.textMuted.withValues(alpha: 0.5), fontWeight: FontWeight.w400),
+                              hintStyle: TextStyle(
+                                color: isDark ? AppTheme.darkTextSecondary.withValues(alpha: 0.5) : AppTheme.textMuted.withValues(alpha: 0.5),
+                                fontWeight: FontWeight.w400,
+                              ),
                               filled: true,
-                              fillColor: AppTheme.onBackground,
+                              fillColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide.none,
@@ -723,8 +776,8 @@ class _AdjustBalanceSheetState extends State<_AdjustBalanceSheet> {
                             child: ElevatedButton(
                               onPressed: _isSubmitting ? null : _submit,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: _isIGave ? AppTheme.primaryColor : AppTheme.textDark,
-                                foregroundColor: Colors.white,
+                                backgroundColor: _isIGave ? AppTheme.primaryColor : (isDark ? Colors.white : AppTheme.textDark),
+                                foregroundColor: _isIGave ? Colors.white : (isDark ? Colors.black : Colors.white),
                                 padding: const EdgeInsets.symmetric(vertical: 18),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                                 minimumSize: const Size(double.infinity, 56),
@@ -754,7 +807,7 @@ class _AdjustBalanceSheetState extends State<_AdjustBalanceSheet> {
     );
   }
 
-  Widget _buildDebtOption(DebtEntity debt) {
+  Widget _buildDebtOption(DebtEntity debt, bool isDark) {
     final isSelected = _selectedDebt.id == debt.id;
     final isIGave = debt.transactionType.toUpperCase() == 'I_OWE_THEM';
     return GestureDetector(
@@ -764,10 +817,14 @@ class _AdjustBalanceSheetState extends State<_AdjustBalanceSheet> {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? (isIGave ? AppTheme.primaryColor.withValues(alpha: 0.08) : AppTheme.errorColor.withValues(alpha: 0.06)) : AppTheme.onBackground,
+          color: isSelected
+              ? (isIGave ? AppTheme.primaryColor.withValues(alpha: 0.12) : AppTheme.errorColor.withValues(alpha: 0.1))
+              : (isDark ? AppTheme.darkBackground : AppTheme.onBackground),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? (isIGave ? AppTheme.primaryColor : AppTheme.errorColor) : AppTheme.textMuted.withValues(alpha: 0.2),
+            color: isSelected
+                ? (isIGave ? AppTheme.primaryColor : AppTheme.errorColor)
+                : (isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.2)),
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -789,7 +846,7 @@ class _AdjustBalanceSheetState extends State<_AdjustBalanceSheet> {
                   ),
                   Text(
                     'Outstanding: ${formatCurrency.format(debt.outstandingAmount)}',
-                    style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                    style: TextStyle(color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted, fontSize: 11),
                   ),
                 ],
               ),
@@ -800,7 +857,7 @@ class _AdjustBalanceSheetState extends State<_AdjustBalanceSheet> {
     );
   }
 
-  Widget _buildDirectionCard() {
+  Widget _buildDirectionCard(bool isDark) {
     final color = _isIGave ? AppTheme.primaryColor : AppTheme.errorColor;
     final icon = _isIGave ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded;
     final label = _isIGave ? 'I Gave — Paying My Debt' : 'I Got — Receiving Payment';
@@ -811,7 +868,7 @@ class _AdjustBalanceSheetState extends State<_AdjustBalanceSheet> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
+        color: color.withValues(alpha: isDark ? 0.15 : 0.08),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
@@ -829,7 +886,14 @@ class _AdjustBalanceSheetState extends State<_AdjustBalanceSheet> {
               children: [
                 Text(label, style: TextStyle(fontWeight: FontWeight.w800, color: color, fontSize: 14)),
                 const SizedBox(height: 2),
-                Text(sublabel, style: const TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.w500)),
+                Text(
+                  sublabel,
+                  style: TextStyle(
+                    color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ),
           ),

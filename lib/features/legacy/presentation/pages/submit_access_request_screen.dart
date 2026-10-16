@@ -63,6 +63,8 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return BlocListener<LegacyBloc, LegacyState>(
       listener: (context, state) {
         if (state is AccessRequestSubmitted) {
@@ -86,14 +88,14 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppTheme.onBackground,
+        backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
         appBar: const CustomAppBar(title: 'Request Access'),
-        body: _submitted ? _buildSuccessView() : _buildFormView(),
+        body: _submitted ? _buildSuccessView(isDark) : _buildFormView(isDark),
       ),
     );
   }
 
-  Widget _buildSuccessView() {
+  Widget _buildSuccessView(bool isDark) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -127,20 +129,20 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
             ),
           ),
           const SizedBox(height: 28),
-          const Text(
+          Text(
             'Request Submitted',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: AppTheme.textDark,
+              color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Your access request has been submitted successfully. The account owner has been notified.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppTheme.textMuted,
+              color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
               fontSize: 14,
               height: 1.6,
             ),
@@ -198,7 +200,7 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
     );
   }
 
-  Widget _buildFormView() {
+  Widget _buildFormView(bool isDark) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Form(
@@ -260,7 +262,7 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
               Text(
                 'This 8-character code was shared with you in your verification email.',
                 style: TextStyle(
-                  color: AppTheme.textMuted.withValues(alpha: 0.8),
+                  color: isDark ? AppTheme.darkTextSecondary.withValues(alpha: 0.8) : AppTheme.textMuted.withValues(alpha: 0.8),
                   fontSize: 11,
                   height: 1.4,
                 ),
@@ -268,15 +270,15 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
               const SizedBox(height: 8),
               TextFormField(
                 controller: _contactIdController,
-                style: const TextStyle(
-                  color: AppTheme.textDark,
+                style: TextStyle(
+                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                   fontWeight: FontWeight.w600,
                   fontFamily: 'monospace',
                   fontSize: 16,
                   letterSpacing: 2,
                 ),
                 textCapitalization: TextCapitalization.characters,
-                decoration: _inputDecoration('e.g. ABC2XYZ9'),
+                decoration: _inputDecoration('e.g. ABC2XYZ9', isDark),
                 validator: (v) {
                   if (!_hasRecoveryCode && (v == null || v.trim().isEmpty)) {
                     return 'Access code is required';
@@ -305,13 +307,13 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppTheme.primaryColor.withValues(alpha: 0.06)
-                          : Colors.white,
+                          ? AppTheme.primaryColor.withValues(alpha: isDark ? 0.15 : 0.06)
+                          : (isDark ? AppTheme.darkSurface : Colors.white),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: isSelected
-                            ? AppTheme.primaryColor.withValues(alpha: 0.4)
-                            : AppTheme.textMuted.withValues(alpha: 0.2),
+                            ? AppTheme.primaryColor.withValues(alpha: 0.5)
+                            : (isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.2)),
                         width: isSelected ? 1.5 : 1,
                       ),
                     ),
@@ -323,7 +325,7 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
                           child: Text(
                             reason['label']!,
                             style: TextStyle(
-                              color: AppTheme.textDark,
+                              color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                               fontSize: 15,
                             ),
@@ -339,7 +341,7 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
                             border: Border.all(
                               color: isSelected
                                   ? AppTheme.primaryColor
-                                  : AppTheme.textMuted.withValues(alpha: 0.4),
+                                  : (isDark ? AppTheme.darkTextSecondary.withValues(alpha: 0.4) : AppTheme.textMuted.withValues(alpha: 0.4)),
                               width: isSelected ? 0 : 2,
                             ),
                           ),
@@ -364,9 +366,9 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDark ? AppTheme.darkSurface : Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
+                border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.2)),
               ),
               child: Row(
                 children: [
@@ -376,11 +378,11 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'I have a Recovery Code',
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
-                            color: AppTheme.textDark,
+                            color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                             fontSize: 14,
                           ),
                         ),
@@ -388,7 +390,7 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
                           _hasRecoveryCode 
                               ? 'Access code not required when using recovery code'
                               : 'Providing a valid code may expedite your request',
-                          style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                          style: TextStyle(color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted, fontSize: 12),
                         ),
                       ],
                     ),
@@ -399,7 +401,7 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
                     activeThumbColor: Colors.white,
                     activeTrackColor: AppTheme.primaryVariant,
                     inactiveThumbColor: Colors.white,
-                    inactiveTrackColor: AppTheme.textMuted.withValues(alpha: 0.4),
+                    inactiveTrackColor: isDark ? Colors.grey.shade700 : AppTheme.textMuted.withValues(alpha: 0.4),
                   ),
                 ],
               ),
@@ -411,7 +413,7 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
               Text(
                 'Enter the recovery code provided by the account owner.',
                 style: TextStyle(
-                  color: AppTheme.textMuted.withValues(alpha: 0.8),
+                  color: isDark ? AppTheme.darkTextSecondary.withValues(alpha: 0.8) : AppTheme.textMuted.withValues(alpha: 0.8),
                   fontSize: 11,
                   height: 1.4,
                 ),
@@ -419,15 +421,15 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
               const SizedBox(height: 8),
               TextFormField(
                 controller: _recoveryCodeController,
-                style: const TextStyle(
-                  color: AppTheme.textDark,
+                style: TextStyle(
+                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                   fontWeight: FontWeight.w700,
                   fontFamily: 'monospace',
                   fontSize: 16,
                   letterSpacing: 2,
                 ),
                 textCapitalization: TextCapitalization.characters,
-                decoration: _inputDecoration('ABX9-2KF7-PQ11'),
+                decoration: _inputDecoration('ABX9-2KF7-PQ11', isDark),
                 validator: (v) {
                   if (_hasRecoveryCode && (v == null || v.trim().isEmpty)) {
                     return 'Recovery code is required';
@@ -455,7 +457,7 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
                     child: Text(
                       'Submitting a false access request is a serious matter. The account owner will be notified and can deny your request.',
                       style: TextStyle(
-                        color: AppTheme.textDark.withValues(alpha: 0.8),
+                        color: isDark ? AppTheme.darkTextPrimary.withValues(alpha: 0.9) : AppTheme.textDark.withValues(alpha: 0.8),
                         fontSize: 12,
                         height: 1.5,
                       ),
@@ -473,7 +475,7 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
                 onPressed: _isSubmitting || !_canSubmit ? null : _submit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryVariant,
-                  disabledBackgroundColor: AppTheme.textMuted.withValues(alpha: 0.3),
+                  disabledBackgroundColor: isDark ? Colors.white10 : AppTheme.textMuted.withValues(alpha: 0.3),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   minimumSize: const Size(double.infinity, 56),
@@ -502,20 +504,28 @@ class _SubmitAccessRequestScreenState extends State<SubmitAccessRequestScreen> {
     );
   }
 
-  InputDecoration _inputDecoration(String hint) {
+  InputDecoration _inputDecoration(String hint, bool isDark) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(color: AppTheme.textMuted.withValues(alpha: 0.6)),
+      hintStyle: TextStyle(
+        color: isDark
+            ? AppTheme.darkTextSecondary.withValues(alpha: 0.6)
+            : AppTheme.textMuted.withValues(alpha: 0.6),
+      ),
       filled: true,
-      fillColor: Colors.white,
+      fillColor: isDark ? AppTheme.darkSurface : Colors.white,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppTheme.textMuted.withValues(alpha: 0.3)),
+        borderSide: BorderSide(
+          color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.3),
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppTheme.textMuted.withValues(alpha: 0.3)),
+        borderSide: BorderSide(
+          color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.3),
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -541,9 +551,14 @@ class _FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Text(
       text,
-      style: const TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w700, fontSize: 13),
+      style: TextStyle(
+        color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+        fontWeight: FontWeight.w700,
+        fontSize: 13,
+      ),
     );
   }
 }
@@ -563,12 +578,15 @@ class _InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.06),
+        color: isDark ? AppTheme.darkSurface : color.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        border: Border.all(
+          color: isDark ? AppTheme.darkBorder : color.withValues(alpha: 0.2),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -588,16 +606,20 @@ class _InfoCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.textDark,
+                    color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                     fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: const TextStyle(color: AppTheme.textMuted, fontSize: 12, height: 1.5),
+                  style: TextStyle(
+                    color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                    fontSize: 12,
+                    height: 1.5,
+                  ),
                 ),
               ],
             ),

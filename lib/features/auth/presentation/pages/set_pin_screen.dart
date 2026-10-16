@@ -88,9 +88,10 @@ class _SetPinScreenState extends State<SetPinScreen> {
       },
       builder: (context, state) {
         final isLoading = state is AuthLoading;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
 
         return Scaffold(
-          backgroundColor: AppTheme.onBackground,
+          backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
           body: SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -110,12 +111,12 @@ class _SetPinScreenState extends State<SetPinScreen> {
                               alignment: WrapAlignment.center,
                               crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
-                                const Icon(Icons.lock_outline, size: 32, color: AppTheme.textDark),
+                                Icon(Icons.lock_outline, size: 32, color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Secure Account',
                                   style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                    color: AppTheme.textDark,
+                                    color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                                     fontWeight: FontWeight.w900,
                                   ),
                                 ),
@@ -128,7 +129,7 @@ class _SetPinScreenState extends State<SetPinScreen> {
                               'Create a 6-digit PIN to securely access your ledger.',
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: AppTheme.textDark.withValues(alpha: 0.7),
+                                color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.7),
                                 fontWeight: FontWeight.w500,
                               ),
                             ).animate().fadeIn(duration: 400.ms, delay: 100.ms),
@@ -139,14 +140,14 @@ class _SetPinScreenState extends State<SetPinScreen> {
                             Container(
                               padding: const EdgeInsets.all(24),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: isDark ? AppTheme.darkSurface : Colors.white,
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: AppTheme.textMuted.withValues(alpha: 0.2),
+                                  color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.2),
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.02),
+                                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
                                     blurRadius: 20,
                                     offset: const Offset(0, 10),
                                   ),
@@ -197,9 +198,9 @@ class _SetPinScreenState extends State<SetPinScreen> {
                                     child: ElevatedButton(
                                       onPressed: isLoading ? null : _submitPin,
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppTheme.textDark,
+                                        backgroundColor: isDark ? AppTheme.primaryColor : AppTheme.textDark,
                                         foregroundColor: Colors.white,
-                                        disabledBackgroundColor: AppTheme.textDark.withValues(alpha: 0.5),
+                                        disabledBackgroundColor: (isDark ? AppTheme.primaryColor : AppTheme.textDark).withValues(alpha: 0.5),
                                         padding: const EdgeInsets.symmetric(vertical: 16),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(12),

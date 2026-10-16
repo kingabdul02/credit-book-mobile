@@ -30,28 +30,30 @@ class FinancialHealthTipCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFEDF4FF),
+        color: isDark ? AppTheme.darkSurface : const Color(0xFFEDF4FF),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.primaryColor.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF334155) : Colors.white,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.lightbulb_outline, color: AppTheme.textDark),
+            child: Icon(Icons.lightbulb_outline, color: isDark ? const Color(0xFFFBBF24) : AppTheme.textDark),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Financial Health Tip',
             style: TextStyle(
-              color: AppTheme.textDark,
+              color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
               fontSize: 18,
               fontWeight: FontWeight.w800,
             ),
@@ -60,8 +62,8 @@ class FinancialHealthTipCard extends StatelessWidget {
           Text(
             _buildTip(),
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppTheme.textMuted,
+            style: TextStyle(
+              color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
               fontSize: 14,
               fontWeight: FontWeight.w500,
               height: 1.5,
@@ -73,7 +75,7 @@ class FinancialHealthTipCard extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.textDark,
+                backgroundColor: isDark ? AppTheme.primaryColor : AppTheme.textDark,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(

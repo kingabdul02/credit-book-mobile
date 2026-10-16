@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/theme_cubit.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
 import '../../../../core/widgets/user_avatar.dart';
@@ -82,34 +83,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _handleLogout() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
+        title: Text(
           'Log Out',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,
-            color: AppTheme.textDark,
+            color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
           ),
         ),
-        content: const Text(
+        content: Text(
           'Are you sure you want to log out of CreditBook?',
           style: TextStyle(
             fontSize: 14,
-            color: AppTheme.textMuted,
+            color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
           ),
         ),
         actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: TextStyle(
-                color: AppTheme.textDark,
+                color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -140,6 +142,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final authState = context.watch<AuthBloc>().state;
     final user = authState is AuthSuccess ? authState.user : null;
 
@@ -150,7 +153,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
+        backgroundColor: isDark ? AppTheme.darkBackground : const Color(0xFFF8FAFC),
       appBar: const CustomAppBar(
         title: 'Settings',
         showBackButton: false,
@@ -205,14 +208,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                             ),
                             const SizedBox(width: 6),
-                            Text(
-                              _syncStatus.hasConflicts
-                                  ? '${_syncStatus.conflictCount} conflict(s) — tap to resolve'
-                                  : 'Active • ${_syncStatus.formattedLastSync}',
-                              style: TextStyle(
-                                color: _syncStatus.hasConflicts ? AppTheme.errorColor : AppTheme.primaryColor,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
+                            Flexible(
+                              child: Text(
+                                _syncStatus.hasConflicts
+                                    ? '${_syncStatus.conflictCount} conflict(s) — tap to resolve'
+                                    : 'Active • ${_syncStatus.formattedLastSync}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: _syncStatus.hasConflicts ? AppTheme.errorColor : AppTheme.primaryColor,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ),
                           ],
@@ -284,44 +291,99 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildSectionContainer(
               children: [
                 _buildListTile(
-                  icon: Icons.payments_outlined,
-                  title: 'Primary Currency',
-                  subtitle: 'NGN - Nigerian Naira (₦)',
-                ),
-                _buildDivider(),
-                _buildListTile(
-                  icon: Icons.dark_mode_outlined,
+                  icon: isDark ? Icons.dark_mode : Icons.light_mode_outlined,
                   title: 'Theme Mode',
                   trailing: Container(
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryVariant.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      color: isDark ? const Color(0xFF0F172A) : AppTheme.primaryVariant.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isDark ? AppTheme.darkBorder : Colors.transparent,
+                      ),
                     ),
                     padding: const EdgeInsets.all(4),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(6),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              )
-                            ],
+                        GestureDetector(
+                          onTap: () => context.read<ThemeCubit>().setThemeMode(ThemeMode.light),
+                          behavior: HitTestBehavior.opaque,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: !isDark ? Colors.white : Colors.transparent,
+                              borderRadius: BorderRadius.circular(6),
+                              boxShadow: !isDark
+                                  ? [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.08),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      )
+                                    ]
+                                  : null,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.wb_sunny_rounded,
+                                  size: 14,
+                                  color: !isDark ? const Color(0xFFD97706) : AppTheme.darkTextSecondary,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Light',
+                                  style: TextStyle(
+                                    color: !isDark ? AppTheme.textDark : AppTheme.darkTextSecondary,
+                                    fontWeight: !isDark ? FontWeight.w700 : FontWeight.w500,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          child: const Text('Light', style: TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w700, fontSize: 12)),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(6),
+                        GestureDetector(
+                          onTap: () => context.read<ThemeCubit>().setThemeMode(ThemeMode.dark),
+                          behavior: HitTestBehavior.opaque,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isDark ? AppTheme.darkSurface : Colors.transparent,
+                              borderRadius: BorderRadius.circular(6),
+                              boxShadow: isDark
+                                  ? [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.3),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      )
+                                    ]
+                                  : null,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.nightlight_round,
+                                  size: 14,
+                                  color: isDark ? const Color(0xFF818CF8) : AppTheme.textDark.withValues(alpha: 0.5),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Dark',
+                                  style: TextStyle(
+                                    color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark.withValues(alpha: 0.5),
+                                    fontWeight: isDark ? FontWeight.w700 : FontWeight.w500,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          child: Text('Dark', style: TextStyle(color: AppTheme.textDark.withValues(alpha: 0.5), fontWeight: FontWeight.w600, fontSize: 12)),
                         ),
                       ],
                     ),
@@ -329,34 +391,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             ),
-            // const SizedBox(height: 32),
-            // _buildSectionTitle('DATA MANAGEMENT'),
-            // _buildSectionContainer(
-            //   children: [
-            //     _buildListTile(
-            //       icon: Icons.download_outlined,
-            //       title: 'Export Data',
-            //       subtitle: 'CSV, PDF, or JSON format',
-            //     ),
-            //     _buildDivider(),
-            //     _buildListTile(
-            //       icon: Icons.upload_outlined,
-            //       title: 'Import Backup',
-            //       subtitle: 'Restore from local or cloud file',
-            //     ),
-            //   ],
-            // ),
             const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
               child: TextButton(
                 onPressed: authState is AuthLoading ? null : _handleLogout,
                 style: TextButton.styleFrom(
-                  backgroundColor: AppTheme.errorColor.withValues(alpha: 0.05),
+                  backgroundColor: AppTheme.errorColor.withValues(alpha: isDark ? 0.1 : 0.05),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: AppTheme.errorColor.withValues(alpha: 0.2)),
+                    side: BorderSide(color: AppTheme.errorColor.withValues(alpha: isDark ? 0.3 : 0.2)),
                   ),
                 ),
                 child: authState is AuthLoading
@@ -383,7 +428,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Text(
                 'CreditBook v2.4.1 (Build 108)',
                 style: TextStyle(
-                  color: AppTheme.textDark.withValues(alpha: 0.5),
+                  color: isDark ? AppTheme.darkTextSecondary.withValues(alpha: 0.6) : AppTheme.textDark.withValues(alpha: 0.5),
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -399,12 +444,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSectionTitle(String title) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 12),
       child: Text(
         title,
         style: TextStyle(
-          color: AppTheme.textDark.withValues(alpha: 0.6),
+          color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.6),
           fontSize: 11,
           fontWeight: FontWeight.w800,
           letterSpacing: 1.2,
@@ -414,18 +460,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSectionContainer({required List<Widget> children}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
+        border: Border.all(
+          color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.2),
+        ),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ],
       ),
       child: Column(
         children: children,
@@ -434,10 +485,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildDivider() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Divider(
       height: 1,
       thickness: 1,
-      color: AppTheme.textMuted.withValues(alpha: 0.1),
+      color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.1),
       indent: 64, // Aligned with the text
     );
   }
@@ -452,6 +504,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Color? subtitleColor,
     VoidCallback? onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: onTap ?? () {},
       borderRadius: BorderRadius.circular(16),
@@ -463,7 +516,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryVariant.withValues(alpha: 0.1),
+                    color: isDark
+                        ? AppTheme.primaryVariant.withValues(alpha: 0.2)
+                        : AppTheme.primaryVariant.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(icon, color: AppTheme.primaryVariant, size: 20),
@@ -475,8 +530,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: AppTheme.textDark,
+                    style: TextStyle(
+                      color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
@@ -487,7 +542,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         Text(
                           subtitle!,
                           style: TextStyle(
-                            color: subtitleColor ?? AppTheme.textDark.withValues(alpha: 0.6),
+                            color: subtitleColor ?? (isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.6)),
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
@@ -496,7 +551,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               ),
             ),
-            if (trailing != null) trailing else const Icon(Icons.chevron_right, color: AppTheme.textMuted, size: 20),
+            if (trailing != null)
+              trailing
+            else
+              Icon(
+                Icons.chevron_right,
+                color: isDark ? AppTheme.darkTextSecondary.withValues(alpha: 0.5) : AppTheme.textMuted,
+                size: 20,
+              ),
           ],
         ),
       ),

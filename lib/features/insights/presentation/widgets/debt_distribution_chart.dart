@@ -10,21 +10,23 @@ class DebtDistributionChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (items.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? AppTheme.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.1)),
+          border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Debt Distribution',
               style: TextStyle(
-                color: AppTheme.textDark,
+                color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
               ),
@@ -35,7 +37,7 @@ class DebtDistributionChart extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: Text(
                   'No category data available yet.',
-                  style: TextStyle(color: AppTheme.textMuted.withValues(alpha: 0.7), fontWeight: FontWeight.w600),
+                  style: TextStyle(color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted.withValues(alpha: 0.7), fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -45,9 +47,9 @@ class DebtDistributionChart extends StatelessWidget {
     }
 
     final colors = [
-      AppTheme.textDark,
+      isDark ? const Color(0xFF818CF8) : AppTheme.textDark,
       AppTheme.primaryColor,
-      Colors.grey.shade300,
+      isDark ? const Color(0xFF64748B) : Colors.grey.shade300,
       Colors.orange,
       Colors.purple,
     ];
@@ -55,24 +57,26 @@ class DebtDistributionChart extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.1)),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Debt Distribution',
             style: TextStyle(
-              color: AppTheme.textDark,
+              color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
               fontSize: 18,
               fontWeight: FontWeight.w800,
             ),
@@ -109,8 +113,8 @@ class DebtDistributionChart extends StatelessWidget {
                         ),
                         Text(
                           '${items[0].percentage.toStringAsFixed(0)}%',
-                          style: const TextStyle(
-                            color: AppTheme.textDark,
+                          style: TextStyle(
+                            color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                             fontSize: 20,
                             fontWeight: FontWeight.w900,
                           ),
@@ -141,8 +145,8 @@ class DebtDistributionChart extends StatelessWidget {
                           Expanded(
                             child: Text(
                               e.value.category,
-                              style: const TextStyle(
-                                color: AppTheme.textDark,
+                              style: TextStyle(
+                                color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -151,8 +155,8 @@ class DebtDistributionChart extends StatelessWidget {
                           ),
                           Text(
                             '${e.value.percentage.toStringAsFixed(0)}%',
-                            style: const TextStyle(
-                              color: AppTheme.textDark,
+                            style: TextStyle(
+                              color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark,
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                             ),

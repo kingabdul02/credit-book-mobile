@@ -185,54 +185,57 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppTheme.textMuted.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  data.icon,
-                  size: 80,
-                  color: AppTheme.textDark,
-                ),
-              )
-              .animate()
-              .scale(duration: 600.ms, curve: Curves.easeOutBack)
-              .fadeIn(duration: 600.ms),
-              
-              const SizedBox(height: 48),
-              
-              Text(
-                data.title,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  color: AppTheme.textDark,
-                  fontWeight: FontWeight.w800,
-                ),
-              )
-              .animate()
-              .slideY(begin: 0.2, end: 0, duration: 500.ms, curve: Curves.easeOut)
-              .fadeIn(duration: 500.ms),
-              
-              const SizedBox(height: 16),
-              
-              Text(
-                data.subtitle,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppTheme.textDark.withValues(alpha: 0.7),
-                  height: 1.5,
-                ),
-              )
-              .animate(delay: 100.ms)
-              .slideY(begin: 0.2, end: 0, duration: 500.ms, curve: Curves.easeOut)
-              .fadeIn(duration: 500.ms),
-            ],
+          child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: AppTheme.textMuted.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    data.icon,
+                    size: 80,
+                    color: AppTheme.textDark,
+                  ),
+                )
+                .animate()
+                .scale(duration: 600.ms, curve: Curves.easeOutBack)
+                .fadeIn(duration: 600.ms),
+                
+                const SizedBox(height: 48),
+                
+                Text(
+                  data.title,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    color: AppTheme.textDark,
+                    fontWeight: FontWeight.w800,
+                  ),
+                )
+                .animate()
+                .slideY(begin: 0.2, end: 0, duration: 500.ms, curve: Curves.easeOut)
+                .fadeIn(duration: 500.ms),
+                
+                const SizedBox(height: 16),
+                
+                Text(
+                  data.subtitle,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppTheme.textDark.withValues(alpha: 0.7),
+                    height: 1.5,
+                  ),
+                )
+                .animate(delay: 100.ms)
+                .slideY(begin: 0.2, end: 0, duration: 500.ms, curve: Curves.easeOut)
+                .fadeIn(duration: 500.ms),
+              ],
+            ),
           ),
         ),
       ),

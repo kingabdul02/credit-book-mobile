@@ -128,16 +128,27 @@ class _ConfirmTransactionPinModalState extends State<ConfirmTransactionPinModal>
   Widget build(BuildContext context) {
     final formatCurrency = NumberFormat.currency(symbol: '₦', decimalDigits: 2);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      decoration: const BoxDecoration(
-        color: Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkBackground : const Color(0xFFF8FAFC),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(width: 40, height: 4, decoration: BoxDecoration(color: AppTheme.textMuted.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(2))),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: isDark
+                  ? AppTheme.darkBorder
+                  : AppTheme.textMuted.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
           const SizedBox(height: 20),
 
           // Transaction summary card
@@ -145,43 +156,98 @@ class _ConfirmTransactionPinModalState extends State<ConfirmTransactionPinModal>
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? AppTheme.darkSurface : Colors.white,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.15)),
-              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 12, offset: const Offset(0, 4))],
+              border: Border.all(
+                color: isDark
+                    ? AppTheme.darkBorder
+                    : AppTheme.textMuted.withValues(alpha: 0.15),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               children: [
                 Container(
                   width: 56,
                   height: 56,
-                  decoration: BoxDecoration(color: AppTheme.primaryColor.withValues(alpha: 0.15), shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
                   child: const Icon(Icons.payments_outlined, size: 26, color: AppTheme.primaryColor),
                 ),
                 const SizedBox(height: 12),
-                Text('Sending to', style: TextStyle(color: AppTheme.textDark.withValues(alpha: 0.6), fontSize: 13, fontWeight: FontWeight.w500)),
+                Text(
+                  'Sending to',
+                  style: TextStyle(
+                    color: isDark
+                        ? AppTheme.darkTextSecondary
+                        : AppTheme.textDark.withValues(alpha: 0.6),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   widget.contactName,
-                  style: const TextStyle(color: AppTheme.textDark, fontSize: 20, fontWeight: FontWeight.w800),
+                  style: TextStyle(
+                    color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 16),
-                const Divider(height: 1, thickness: 1),
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: isDark
+                      ? AppTheme.darkBorder
+                      : AppTheme.textMuted.withValues(alpha: 0.2),
+                ),
                 const SizedBox(height: 16),
-                Text('TOTAL AMOUNT', style: TextStyle(color: AppTheme.textDark.withValues(alpha: 0.5), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+                Text(
+                  'TOTAL AMOUNT',
+                  style: TextStyle(
+                    color: isDark
+                        ? AppTheme.darkTextSecondary
+                        : AppTheme.textDark.withValues(alpha: 0.5),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2,
+                  ),
+                ),
                 const SizedBox(height: 6),
                 Text(
                   formatCurrency.format(widget.amount),
-                  style: const TextStyle(color: AppTheme.textDark, fontSize: 32, fontWeight: FontWeight.w900),
+                  style: TextStyle(
+                    color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ],
             ),
           ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05),
           const SizedBox(height: 28),
 
-          Text('Enter your 4-digit PIN', style: TextStyle(color: AppTheme.textDark.withValues(alpha: 0.7), fontSize: 14, fontWeight: FontWeight.w600)),
+          Text(
+            'Enter your 4-digit PIN',
+            style: TextStyle(
+              color: isDark
+                  ? AppTheme.darkTextSecondary
+                  : AppTheme.textDark.withValues(alpha: 0.7),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 20),
 
           // Dot indicators
@@ -203,7 +269,7 @@ class _ConfirmTransactionPinModalState extends State<ConfirmTransactionPinModal>
                     shape: BoxShape.circle,
                     color: _hasError ? AppTheme.errorColor : filled ? AppTheme.primaryColor : Colors.transparent,
                     border: Border.all(
-                      color: _hasError ? AppTheme.errorColor : filled ? AppTheme.primaryColor : AppTheme.textMuted.withValues(alpha: 0.4),
+                      color: _hasError ? AppTheme.errorColor : filled ? AppTheme.primaryColor : (isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.4)),
                       width: 2,
                     ),
                   ),
@@ -219,7 +285,7 @@ class _ConfirmTransactionPinModalState extends State<ConfirmTransactionPinModal>
           const SizedBox(height: 32),
 
           // Keypad
-          _buildKeypad(),
+          _buildKeypad(isDark),
           const SizedBox(height: 16),
 
           // Security badge
@@ -236,9 +302,14 @@ class _ConfirmTransactionPinModalState extends State<ConfirmTransactionPinModal>
           // Cancel button
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(
+            child: Text(
               'Cancel Transaction',
-              style: TextStyle(color: AppTheme.textDark, fontSize: 14, fontWeight: FontWeight.w700, decoration: TextDecoration.underline),
+              style: TextStyle(
+                color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                decoration: TextDecoration.underline,
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -247,39 +318,39 @@ class _ConfirmTransactionPinModalState extends State<ConfirmTransactionPinModal>
     );
   }
 
-  Widget _buildKeypad() {
+  Widget _buildKeypad(bool isDark) {
     return Column(
       children: [
-        _buildKeyRow(['1', '2', '3']),
+        _buildKeyRow(['1', '2', '3'], isDark),
         const SizedBox(height: 12),
-        _buildKeyRow(['4', '5', '6']),
+        _buildKeyRow(['4', '5', '6'], isDark),
         const SizedBox(height: 12),
-        _buildKeyRow(['7', '8', '9']),
+        _buildKeyRow(['7', '8', '9'], isDark),
         const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildKey('', icon: Icons.fingerprint, iconColor: AppTheme.primaryColor),
+            _buildKey('', isDark, icon: Icons.fingerprint, iconColor: AppTheme.primaryColor),
             const SizedBox(width: 24),
-            _buildKey('0'),
+            _buildKey('0', isDark),
             const SizedBox(width: 24),
-            _buildKey('DEL', icon: Icons.backspace_outlined),
+            _buildKey('DEL', isDark, icon: Icons.backspace_outlined),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildKeyRow(List<String> keys) {
+  Widget _buildKeyRow(List<String> keys, bool isDark) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: keys.asMap().entries.map((e) {
-        return Row(children: [if (e.key > 0) const SizedBox(width: 24), _buildKey(e.value)]);
+        return Row(children: [if (e.key > 0) const SizedBox(width: 24), _buildKey(e.value, isDark)]);
       }).toList(),
     );
   }
 
-  Widget _buildKey(String value, {IconData? icon, Color? iconColor}) {
+  Widget _buildKey(String value, bool isDark, {IconData? icon, Color? iconColor}) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => icon == Icons.fingerprint ? _authenticateWithBiometrics() : _onKeyPress(icon != null ? 'DEL' : value),
@@ -288,8 +359,15 @@ class _ConfirmTransactionPinModalState extends State<ConfirmTransactionPinModal>
         height: 68,
         alignment: Alignment.center,
         child: icon != null
-            ? Icon(icon, size: 28, color: iconColor ?? AppTheme.textMuted)
-            : Text(value, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w600, color: AppTheme.textDark)),
+            ? Icon(icon, size: 28, color: iconColor ?? (isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted))
+            : Text(
+                value,
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                ),
+              ),
       ),
     );
   }

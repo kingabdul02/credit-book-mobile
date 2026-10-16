@@ -49,6 +49,7 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return BlocListener<AddPersonBloc, AddPersonState>(
       listener: (context, state) {
         if (state is AddPersonSuccess) {
@@ -74,7 +75,7 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppTheme.onBackground,
+        backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
         appBar: const CustomAppBar(
           title: 'Add New Person',
         ),
@@ -95,7 +96,9 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                           children: [
                             DottedBorder(
                               options: CircularDottedBorderOptions(
-                                color: AppTheme.textMuted.withValues(alpha: 0.5),
+                                color: isDark
+                                    ? AppTheme.darkBorder
+                                    : AppTheme.textMuted.withValues(alpha: 0.5),
                                 strokeWidth: 2,
                                 dashPattern: const [6, 4],
                               ),
@@ -104,9 +107,15 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                                 height: 100,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: AppTheme.secondaryColor.withValues(alpha: 0.1),
+                                  color: isDark
+                                      ? AppTheme.darkSurface
+                                      : AppTheme.secondaryColor.withValues(alpha: 0.1),
                                 ),
-                                child: const Icon(Icons.camera_alt_outlined, size: 32, color: AppTheme.textDark),
+                                child: Icon(
+                                  Icons.camera_alt_outlined,
+                                  size: 32,
+                                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                                ),
                               ),
                             ),
                             Container(
@@ -114,20 +123,30 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                               decoration: BoxDecoration(
                                 color: AppTheme.primaryVariant,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
+                                border: Border.all(
+                                  color: isDark ? AppTheme.darkSurface : Colors.white,
+                                  width: 2,
+                                ),
                               ),
                               child: const Icon(Icons.add, color: Colors.white, size: 16),
                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           'Add Profile Picture',
-                          style: TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w700),
+                          style: TextStyle(
+                            color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         Text(
                           'Optional but recommended',
-                          style: TextStyle(color: AppTheme.textMuted, fontSize: 12, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ],
                     ),
@@ -135,24 +154,46 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                   const SizedBox(height: 32),
 
                   // Full Name
-                  const Text('Full Name *', style: TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w700, fontSize: 13)),
+                  Text(
+                    'Full Name *',
+                    style: TextStyle(
+                      color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _fullNameController,
-                    style: const TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                      fontWeight: FontWeight.w600,
+                    ),
                     decoration: InputDecoration(
                       hintText: 'e.g. Johnathan Smith',
-                      hintStyle: TextStyle(color: AppTheme.textMuted.withValues(alpha: 0.8)),
+                      hintStyle: TextStyle(
+                        color: isDark
+                            ? AppTheme.darkTextSecondary.withValues(alpha: 0.6)
+                            : AppTheme.textMuted.withValues(alpha: 0.8),
+                      ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: isDark ? AppTheme.darkSurface : Colors.white,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppTheme.textMuted.withValues(alpha: 0.3)),
+                        borderSide: BorderSide(
+                          color: isDark
+                              ? AppTheme.darkBorder
+                              : AppTheme.textMuted.withValues(alpha: 0.3),
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppTheme.textMuted.withValues(alpha: 0.3)),
+                        borderSide: BorderSide(
+                          color: isDark
+                              ? AppTheme.darkBorder
+                              : AppTheme.textMuted.withValues(alpha: 0.3),
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -164,24 +205,46 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                   const SizedBox(height: 20),
 
                   // Nickname
-                  const Text('Nickname (Optional)', style: TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w700, fontSize: 13)),
+                  Text(
+                    'Nickname (Optional)',
+                    style: TextStyle(
+                      color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _nicknameController,
-                    style: const TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                      fontWeight: FontWeight.w600,
+                    ),
                     decoration: InputDecoration(
                       hintText: 'e.g. Johnny',
-                      hintStyle: TextStyle(color: AppTheme.textMuted.withValues(alpha: 0.8)),
+                      hintStyle: TextStyle(
+                        color: isDark
+                            ? AppTheme.darkTextSecondary.withValues(alpha: 0.6)
+                            : AppTheme.textMuted.withValues(alpha: 0.8),
+                      ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: isDark ? AppTheme.darkSurface : Colors.white,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppTheme.textMuted.withValues(alpha: 0.3)),
+                        borderSide: BorderSide(
+                          color: isDark
+                              ? AppTheme.darkBorder
+                              : AppTheme.textMuted.withValues(alpha: 0.3),
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppTheme.textMuted.withValues(alpha: 0.3)),
+                        borderSide: BorderSide(
+                          color: isDark
+                              ? AppTheme.darkBorder
+                              : AppTheme.textMuted.withValues(alpha: 0.3),
+                        ),
                       ),
                     ),
                   ),
@@ -213,20 +276,44 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                     decoration: BoxDecoration(
-                      color: AppTheme.secondaryColor.withValues(alpha: 0.05),
+                      color: isDark
+                          ? AppTheme.darkSurface
+                          : AppTheme.secondaryColor.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
+                      border: Border.all(
+                        color: isDark
+                            ? AppTheme.darkBorder
+                            : AppTheme.textMuted.withValues(alpha: 0.2),
+                      ),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.star_border_rounded, size: 28, color: AppTheme.textDark),
+                        Icon(
+                          Icons.star_border_rounded,
+                          size: 28,
+                          color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                        ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Add to Favorites', style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textDark, fontSize: 15)),
-                              Text('Pin this person to the top of your lists', style: TextStyle(color: AppTheme.textMuted, fontSize: 12, fontWeight: FontWeight.w500)),
+                              Text(
+                                'Add to Favorites',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              Text(
+                                'Pin this person to the top of your lists',
+                                style: TextStyle(
+                                  color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -236,7 +323,9 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                           activeColor: Colors.white,
                           activeTrackColor: AppTheme.primaryVariant,
                           inactiveThumbColor: Colors.white,
-                          inactiveTrackColor: AppTheme.textMuted.withValues(alpha: 0.5),
+                          inactiveTrackColor: isDark
+                              ? AppTheme.darkBorder
+                              : AppTheme.textMuted.withValues(alpha: 0.5),
                         ),
                       ],
                     ),
@@ -254,7 +343,7 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
                       label: const Text('Import from Contacts', style: TextStyle(color: AppTheme.primaryVariant, fontWeight: FontWeight.w700, fontSize: 16)),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: Colors.white,
+                        backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
                         side: const BorderSide(color: AppTheme.primaryVariant),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),

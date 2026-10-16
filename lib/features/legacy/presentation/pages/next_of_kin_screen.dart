@@ -219,8 +219,9 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
             : null;
         final secondaryContacts = contacts.where((c) => !c.isPrimary).toList();
 
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         return Scaffold(
-          backgroundColor: AppTheme.onBackground,
+          backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
           appBar: const CustomAppBar(title: 'Next of Kin'),
           body: isLoading
               ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
@@ -249,8 +250,9 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
                             width: double.infinity,
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: isDark ? AppTheme.darkSurface : Colors.white,
                               borderRadius: BorderRadius.circular(14),
+                              border: isDark ? Border.all(color: AppTheme.darkBorder) : null,
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withValues(alpha: 0.04),
@@ -274,27 +276,33 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 14),
-                                const Expanded(
+                                Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Access Requests',
                                         style: TextStyle(
-                                          color: AppTheme.textDark,
+                                          color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                                           fontSize: 14,
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),
-                                      SizedBox(height: 2),
+                                      const SizedBox(height: 2),
                                       Text(
                                         'Review and manage nominee access requests',
-                                        style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                                        style: TextStyle(
+                                          color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                                          fontSize: 12,
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                const Icon(Icons.chevron_right_rounded, color: AppTheme.textMuted),
+                                Icon(
+                                  Icons.chevron_right_rounded,
+                                  color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                                ),
                               ],
                             ),
                           ),
@@ -634,16 +642,23 @@ class _EmptySlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: enabled ? onAdd : null,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 24),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? AppTheme.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: enabled ? AppTheme.primaryColor.withValues(alpha: 0.35) : AppTheme.textMuted.withValues(alpha: 0.2),
+            color: enabled
+                ? (isDark
+                    ? AppTheme.primaryColor.withValues(alpha: 0.5)
+                    : AppTheme.primaryColor.withValues(alpha: 0.35))
+                : (isDark
+                    ? AppTheme.darkBorder
+                    : AppTheme.textMuted.withValues(alpha: 0.2)),
             style: BorderStyle.solid,
           ),
         ),
@@ -651,14 +666,22 @@ class _EmptySlot extends StatelessWidget {
           children: [
             Icon(
               Icons.person_add_alt_1_outlined,
-              color: enabled ? AppTheme.primaryColor.withValues(alpha: 0.6) : AppTheme.textMuted.withValues(alpha: 0.4),
+              color: enabled
+                  ? AppTheme.primaryColor.withValues(alpha: 0.6)
+                  : (isDark
+                      ? AppTheme.darkTextSecondary.withValues(alpha: 0.4)
+                      : AppTheme.textMuted.withValues(alpha: 0.4)),
               size: 28,
             ),
             const SizedBox(height: 8),
             Text(
               enabled ? label : 'Enable legacy access to add nominees',
               style: TextStyle(
-                color: enabled ? AppTheme.textMuted : AppTheme.textMuted.withValues(alpha: 0.5),
+                color: enabled
+                    ? (isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted)
+                    : (isDark
+                        ? AppTheme.darkTextSecondary.withValues(alpha: 0.5)
+                        : AppTheme.textMuted.withValues(alpha: 0.5)),
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -676,13 +699,14 @@ class _LegacyToggleDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       elevation: 0,
       backgroundColor: Colors.transparent,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? AppTheme.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 24, offset: const Offset(0, 12)),
@@ -738,7 +762,11 @@ class _LegacyToggleDialog extends StatelessWidget {
                     currentlyEnabled
                         ? 'If you disable this feature, your nominees will lose the ability to request access to your account.'
                         : 'Secure your financial legacy by allowing trusted nominees to access your account if you are inactive.',
-                    style: const TextStyle(color: AppTheme.textMuted, fontSize: 14, height: 1.5),
+                    style: TextStyle(
+                      color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                      fontSize: 14,
+                      height: 1.5,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
@@ -763,10 +791,20 @@ class _LegacyToggleDialog extends StatelessWidget {
                           onPressed: () => Navigator.pop(context),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
-                            side: BorderSide(color: AppTheme.textMuted.withValues(alpha: 0.3)),
+                            side: BorderSide(
+                              color: isDark
+                                  ? AppTheme.darkBorder
+                                  : AppTheme.textMuted.withValues(alpha: 0.3),
+                            ),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
-                          child: const Text('Cancel', style: TextStyle(color: AppTheme.textDark, fontWeight: FontWeight.w700)),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),

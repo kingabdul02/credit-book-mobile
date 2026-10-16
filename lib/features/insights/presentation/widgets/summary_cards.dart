@@ -14,6 +14,7 @@ class SummaryCards extends StatelessWidget {
       children: [
         Expanded(
           child: _buildCard(
+            context: context,
             title: 'Total Lent',
             amount: summary.totalLent,
             iconColor: Colors.green,
@@ -24,11 +25,12 @@ class SummaryCards extends StatelessWidget {
         const SizedBox(width: 16),
         Expanded(
           child: _buildCard(
+            context: context,
             title: 'Total Borrowed',
             amount: summary.totalBorrowed,
             iconColor: Colors.red,
             iconData: Icons.arrow_downward_rounded,
-            amountColor: Colors.red.shade700,
+            amountColor: Colors.red.shade400,
           ),
         ),
       ],
@@ -36,27 +38,31 @@ class SummaryCards extends StatelessWidget {
   }
 
   Widget _buildCard({
+    required BuildContext context,
     required String title,
     required double amount,
     required Color iconColor,
     required IconData iconData,
     required Color amountColor,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final formatCurrency = NumberFormat.currency(symbol: '₦', decimalDigits: 0);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.1)),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,8 +74,8 @@ class SummaryCards extends StatelessWidget {
               Flexible(
                 child: Text(
                   title,
-                  style: const TextStyle(
-                    color: AppTheme.textDark,
+                  style: TextStyle(
+                    color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),

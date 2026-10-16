@@ -17,10 +17,13 @@ class TopContactsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       children: [
         if (topDebtors.isNotEmpty) ...[
           _buildCard(
+            context: context,
             tag: 'TOP DEBTOR',
             tagColor: Colors.orange.shade700,
             entity: topDebtors.first,
@@ -31,10 +34,11 @@ class TopContactsCard extends StatelessWidget {
         ],
         if (topCreditors.isNotEmpty)
           _buildCard(
+            context: context,
             tag: 'TOP CREDITOR',
-            tagColor: Colors.red.shade700,
+            tagColor: Colors.red.shade400,
             entity: topCreditors.first,
-            labelColor: Colors.red.shade700,
+            labelColor: Colors.red.shade400,
             valueLabel: 'You Owe',
           ),
         if (topDebtors.isEmpty && topCreditors.isEmpty)
@@ -42,9 +46,9 @@ class TopContactsCard extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? AppTheme.darkSurface : Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.1)),
+              border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.1)),
             ),
             child: const Center(
               child: Text('No top contacts found.', style: TextStyle(color: AppTheme.textMuted)),
@@ -55,27 +59,31 @@ class TopContactsCard extends StatelessWidget {
   }
 
   Widget _buildCard({
+    required BuildContext context,
     required String tag,
     required Color tagColor,
     required TopContactEntity entity,
     required Color labelColor,
     required String valueLabel,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final formatCurrency = NumberFormat.currency(symbol: '₦', decimalDigits: 0);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppTheme.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.textMuted.withValues(alpha: 0.1)),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Row(
         children: [
@@ -115,8 +123,8 @@ class TopContactsCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   entity.contact.displayName,
-                  style: const TextStyle(
-                    color: AppTheme.textDark,
+                  style: TextStyle(
+                    color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                   ),
