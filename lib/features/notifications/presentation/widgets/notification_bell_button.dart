@@ -30,7 +30,10 @@ class NotificationBellButton extends StatelessWidget {
                 size: 24,
               ),
               tooltip: 'Notifications',
-              onPressed: () => context.push('/notifications'),
+              onPressed: () {
+                context.read<NotificationCubit>().loadNotifications();
+                context.push('/notifications');
+              },
             ),
             if (unreadCount > 0)
               Positioned(

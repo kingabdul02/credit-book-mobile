@@ -7,8 +7,23 @@ import '../../domain/entities/app_notification.dart';
 import '../bloc/notification_cubit.dart';
 import '../bloc/notification_state.dart';
 
-class NotificationsScreen extends StatelessWidget {
+class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
+
+  @override
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<NotificationCubit>().loadNotifications();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -201,8 +216,9 @@ class NotificationsScreen extends StatelessWidget {
             if (!notification.isRead) {
               context.read<NotificationCubit>().markAsRead(notification.id);
             }
-            if (notification.actionRoute != null && notification.actionRoute!.isNotEmpty) {
-              context.push(notification.actionRoute!);
+            final route = notification.actionRoute?.trim();
+            if (route != null && route.isNotEmpty && route != '/home') {
+              context.push(route);
             } else {
               context.push('/notification-detail', extra: notification);
             }

@@ -18,6 +18,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<UploadAvatarRequested>(_onUploadAvatarRequested);
     on<DeleteAvatarRequested>(_onDeleteAvatarRequested);
     on<UpdateUserLocally>(_onUpdateUserLocally);
+    on<ForgotPinRequested>(_onForgotPinRequested);
+    on<VerifyPinResetCodeRequested>(_onVerifyPinResetCodeRequested);
+    on<ResetPinRequested>(_onResetPinRequested);
   }
 
   /// Sanitizes exceptions into friendly messages (detecting network issues, 401s, etc.)
@@ -185,6 +188,57 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit((state as AuthSuccess).copyWith(user: event.user));
     } else {
       emit(AuthSuccess(event.user));
+    }
+  }
+
+  Future<void> _onForgotPinRequested(ForgotPinRequested event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    try {
+      final result = await authRepository.forgotPin(event.phoneNumber);
+      emit(ForgotPinCodeSent(
+        phoneNumber: event.phoneNumber,
+        message: result['message'] as String? ?? 'Verification code sent.',
+        hasEmail: result['has_email'] as bool? ?? false,
+        debugCode: result['debug_code'] as String?,
+      ));
+    } catch (e) {
+      emit(AuthError(_cleanError(e)));
+    }
+  }
+
+  Future<void> _onVerifyPinResetCodeRequested(
+    VerifyPinResetCodeRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final resetToken = await authRepository.verifyPinResetCode(event.phoneNumber, event.code);
+      emit(PinResetCodeVerified(
+        phoneNumber: event.phoneNumber,
+        resetToken: resetToken,
+      ));
+    } catch (e) {
+      emit(AuthError(_cleanError(e)));
+    }
+  }
+
+  Future<void> _onResetPinRequested(
+    ResetPinRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final user = await authRepository.resetPin(
+        event.phoneNumber,
+        event.resetToken,
+        event.newPin,
+      );
+      emit(PinResetSuccess(
+        user: user,
+        message: 'Your PIN has been reset successfully.',
+      ));
+    } catch (e) {
+      emit(AuthError(_cleanError(e)));
     }
   }
 }

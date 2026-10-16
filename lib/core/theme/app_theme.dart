@@ -7,6 +7,7 @@ class AppTheme {
   static const Color primaryVariant = Color(0xFF059669);
   static const Color secondaryColor = Color(0xFF3B82F6); // Blue
   static const Color errorColor = Color(0xFFEF4444); // Red 500
+  static const Color successColor = Color(0xFF10B981); // Emerald Green
 
   // Dark Theme Palette
   static const Color darkBackground = Color(0xFF0F172A); // Slate 900

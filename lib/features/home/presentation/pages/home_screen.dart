@@ -33,8 +33,21 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _selectedFilter = 'All';
   late final _syncSub = SyncService.onSyncComplete.listen((_) {
-    if (mounted) context.read<HomeBloc>().add(LoadDashboardRequested());
+    if (mounted) {
+      context.read<HomeBloc>().add(LoadDashboardRequested());
+      context.read<NotificationCubit>().loadNotifications();
+    }
   });
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<NotificationCubit>().loadNotifications();
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -210,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: BlocConsumer<HomeBloc, HomeState>(
         listener: (context, state) {
           if (state is HomeLoaded) {
-            context.read<NotificationCubit>().syncDashboard(state.dashboardData);
+            context.read<NotificationCubit>().loadNotifications();
           }
         },
         builder: (context, state) {
@@ -230,6 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
             return RefreshIndicator(
               onRefresh: () async {
                 context.read<HomeBloc>().add(LoadDashboardRequested());
+                await context.read<NotificationCubit>().loadNotifications();
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),

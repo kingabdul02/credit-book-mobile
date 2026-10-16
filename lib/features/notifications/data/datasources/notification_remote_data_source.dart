@@ -34,6 +34,11 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
 
   @override
   Future<List<AppNotification>> getNotifications() async {
+    final token = sharedPreferences.getString('auth_token');
+    if (token == null || token.isEmpty) {
+      return [];
+    }
+
     final response = await client.get(
       Uri.parse('$baseUrl/notifications'),
       headers: _headers,

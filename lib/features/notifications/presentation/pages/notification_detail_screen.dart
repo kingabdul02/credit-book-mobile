@@ -20,7 +20,9 @@ class NotificationDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final config = _getCategoryConfig(notification.category);
-    final hasActionRoute = notification.actionRoute != null && notification.actionRoute!.trim().isNotEmpty;
+    final hasActionRoute = notification.actionRoute != null &&
+        notification.actionRoute!.trim().isNotEmpty &&
+        notification.actionRoute!.trim() != '/home';
 
     return Scaffold(
       backgroundColor: isDark ? AppTheme.darkBackground : const Color(0xFFF8FAFC),

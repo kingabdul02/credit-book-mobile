@@ -283,7 +283,13 @@ class _AuthScreenState extends State<AuthScreen> {
                                       FilteringTextInputFormatter.digitsOnly,
                                     ],
                                     trailingLabel: GestureDetector(
-                                      onTap: () {},
+                                      onTap: () {
+                                        final rawPhone = _phoneController.text.trim();
+                                        final fullPhone = rawPhone.isNotEmpty
+                                            ? '${_selectedCountry.dialCode}$rawPhone'
+                                            : null;
+                                        context.push('/forgot-pin', extra: fullPhone);
+                                      },
                                       child: Text(
                                         ' Forgot PIN?',
                                         style: Theme.of(context).textTheme.labelLarge?.copyWith(

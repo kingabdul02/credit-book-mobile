@@ -39,6 +39,15 @@ class _MockSettingsAuthRepository implements AuthRepository {
 
   @override
   Future<bool> refreshToken() async => true;
+
+  @override
+  Future<Map<String, dynamic>> forgotPin(String phoneNumber) async => throw UnimplementedError();
+
+  @override
+  Future<String> verifyPinResetCode(String phoneNumber, String code) async => throw UnimplementedError();
+
+  @override
+  Future<User> resetPin(String phoneNumber, String resetToken, String newPin) async => throw UnimplementedError();
 }
 
 void main() {

@@ -68,8 +68,9 @@ class AppNotification extends Equatable {
   factory AppNotification.fromMap(Map<String, dynamic> map) {
     NotificationCategory parseCategory(String? cat) {
       if (cat == null) return NotificationCategory.system;
+      final clean = cat.replaceAll('_', '').toLowerCase();
       return NotificationCategory.values.firstWhere(
-        (e) => e.name.toLowerCase() == cat.toLowerCase(),
+        (e) => e.name.toLowerCase() == clean,
         orElse: () => NotificationCategory.system,
       );
     }
@@ -79,8 +80,10 @@ class AppNotification extends Equatable {
         ? DateTime.tryParse(rawTime.toString()) ?? DateTime.now()
         : DateTime.now();
 
-    final isRead = map['is_read'] as bool? ??
-        (map['isRead'] as bool? ?? (map['read_at'] != null));
+    final bool isRead = map['is_read'] == true ||
+        map['is_read'] == 1 ||
+        map['isRead'] == true ||
+        map['read_at'] != null;
 
     final actionRoute = (map['action_route'] ?? map['actionRoute']) as String?;
     final rawData = map['action_data'] ?? map['actionData'];

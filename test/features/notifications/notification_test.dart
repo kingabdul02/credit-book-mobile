@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:creditbook/features/home/domain/entities/dashboard_entities.dart';
@@ -177,6 +178,55 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('All Caught Up! 🎉'), findsOneWidget);
+    });
+
+    testWidgets('Tapping Welcome notification navigates to /notification-detail instead of /home', (tester) async {
+      var navigatedToDetail = false;
+      var navigatedToHome = false;
+
+      final router = GoRouter(
+        initialLocation: '/notifications',
+        routes: [
+          GoRoute(
+            path: '/notifications',
+            builder: (context, state) => const NotificationsScreen(),
+          ),
+          GoRoute(
+            path: '/notification-detail',
+            builder: (context, state) {
+              navigatedToDetail = true;
+              return const Scaffold(body: Text('Detail Screen'));
+            },
+          ),
+          GoRoute(
+            path: '/home',
+            builder: (context, state) {
+              navigatedToHome = true;
+              return const Scaffold(body: Text('Home Screen'));
+            },
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        BlocProvider<NotificationCubit>.value(
+          value: cubit,
+          child: MaterialApp.router(
+            routerConfig: router,
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      final welcomeFinder = find.text('Welcome to CreditBook! 🎉');
+      expect(welcomeFinder, findsOneWidget);
+
+      await tester.tap(welcomeFinder);
+      await tester.pumpAndSettle();
+
+      expect(navigatedToDetail, isTrue);
+      expect(navigatedToHome, isFalse);
     });
   });
 }

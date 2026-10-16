@@ -76,3 +76,40 @@ class UpdateUserLocally extends AuthEvent {
   @override
   List<Object?> get props => [user];
 }
+
+class ForgotPinRequested extends AuthEvent {
+  final String phoneNumber;
+
+  const ForgotPinRequested({required this.phoneNumber});
+
+  @override
+  List<Object?> get props => [phoneNumber];
+}
+
+class VerifyPinResetCodeRequested extends AuthEvent {
+  final String phoneNumber;
+  final String code;
+
+  const VerifyPinResetCodeRequested({
+    required this.phoneNumber,
+    required this.code,
+  });
+
+  @override
+  List<Object?> get props => [phoneNumber, code];
+}
+
+class ResetPinRequested extends AuthEvent {
+  final String phoneNumber;
+  final String resetToken;
+  final String newPin;
+
+  const ResetPinRequested({
+    required this.phoneNumber,
+    required this.resetToken,
+    required this.newPin,
+  });
+
+  @override
+  List<Object?> get props => [phoneNumber, resetToken, newPin];
+}

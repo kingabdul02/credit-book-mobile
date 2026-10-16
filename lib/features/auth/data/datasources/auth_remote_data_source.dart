@@ -15,6 +15,9 @@ abstract class AuthRemoteDataSource {
   Future<UserModel> deleteAvatar();
   Future<void> logout();
   Future<bool> refreshToken();
+  Future<Map<String, dynamic>> forgotPin(String phoneNumber);
+  Future<String> verifyPinResetCode(String phoneNumber, String code);
+  Future<UserModel> resetPin(String phoneNumber, String resetToken, String newPin);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -256,6 +259,70 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
     } catch (_) {
       return false;
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> forgotPin(String phoneNumber) async {
+    final response = await client.post(
+      Uri.parse('$baseUrl/auth/pin/forgot'),
+      headers: _headers,
+      body: jsonEncode({
+        'phone_number': phoneNumber,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return Map<String, dynamic>.from(jsonDecode(response.body) as Map);
+    } else {
+      throw Exception(_parseError(response));
+    }
+  }
+
+  @override
+  Future<String> verifyPinResetCode(String phoneNumber, String code) async {
+    final response = await client.post(
+      Uri.parse('$baseUrl/auth/pin/verify-code'),
+      headers: _headers,
+      body: jsonEncode({
+        'phone_number': phoneNumber,
+        'code': code,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return json['reset_token'] as String;
+    } else {
+      throw Exception(_parseError(response));
+    }
+  }
+
+  @override
+  Future<UserModel> resetPin(String phoneNumber, String resetToken, String newPin) async {
+    final response = await client.post(
+      Uri.parse('$baseUrl/auth/pin/reset'),
+      headers: _headers,
+      body: jsonEncode({
+        'phone_number': phoneNumber,
+        'reset_token': resetToken,
+        'pin': newPin,
+        'pin_confirmation': newPin,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      final token = json['access_token'] ?? json['token'];
+      if (token != null) {
+        await sharedPreferences.setString(tokenKey, token as String);
+      }
+      if (json['refresh_token'] != null) {
+        await sharedPreferences.setString(refreshTokenKey, json['refresh_token'] as String);
+      }
+      return UserModel.fromJson(json['user']);
+    } else {
+      throw Exception(_parseError(response));
     }
   }
 }

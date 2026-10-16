@@ -97,11 +97,29 @@ class AuthRepositoryImpl implements AuthRepository {
       await remoteDataSource.logout();
     } finally {
       await sharedPreferences.remove(cachedUserKey);
+      await sharedPreferences.remove('app_notifications_list');
     }
   }
 
   @override
   Future<bool> refreshToken() async {
     return await remoteDataSource.refreshToken();
+  }
+
+  @override
+  Future<Map<String, dynamic>> forgotPin(String phoneNumber) async {
+    return await remoteDataSource.forgotPin(phoneNumber);
+  }
+
+  @override
+  Future<String> verifyPinResetCode(String phoneNumber, String code) async {
+    return await remoteDataSource.verifyPinResetCode(phoneNumber, code);
+  }
+
+  @override
+  Future<User> resetPin(String phoneNumber, String resetToken, String newPin) async {
+    final user = await remoteDataSource.resetPin(phoneNumber, resetToken, newPin);
+    await _cacheUser(user);
+    return user;
   }
 }

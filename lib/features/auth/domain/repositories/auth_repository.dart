@@ -12,4 +12,7 @@ abstract class AuthRepository {
   Future<User> deleteAvatar();
   Future<void> logout();
   Future<bool> refreshToken();
+  Future<Map<String, dynamic>> forgotPin(String phoneNumber);
+  Future<String> verifyPinResetCode(String phoneNumber, String code);
+  Future<User> resetPin(String phoneNumber, String resetToken, String newPin);
 }

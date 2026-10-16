@@ -73,3 +73,46 @@ class PinSetSuccess extends AuthState {
   @override
   List<Object?> get props => [user];
 }
+
+class ForgotPinCodeSent extends AuthState {
+  final String phoneNumber;
+  final String message;
+  final bool hasEmail;
+  final String? debugCode;
+
+  const ForgotPinCodeSent({
+    required this.phoneNumber,
+    required this.message,
+    this.hasEmail = false,
+    this.debugCode,
+  });
+
+  @override
+  List<Object?> get props => [phoneNumber, message, hasEmail, debugCode];
+}
+
+class PinResetCodeVerified extends AuthState {
+  final String phoneNumber;
+  final String resetToken;
+
+  const PinResetCodeVerified({
+    required this.phoneNumber,
+    required this.resetToken,
+  });
+
+  @override
+  List<Object?> get props => [phoneNumber, resetToken];
+}
+
+class PinResetSuccess extends AuthState {
+  final User user;
+  final String message;
+
+  const PinResetSuccess({
+    required this.user,
+    required this.message,
+  });
+
+  @override
+  List<Object?> get props => [user, message];
+}
