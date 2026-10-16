@@ -25,7 +25,7 @@ class _ProfilePhotoSetupScreenState extends State<ProfilePhotoSetupScreen> {
   void _finishAndGoHome() {
     context.read<AuthBloc>().add(CheckAuthStatus());
     if (mounted) {
-      context.go('/home');
+      context.go('/setup-theme');
     }
   }
 

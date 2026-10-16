@@ -59,8 +59,8 @@ void main() {
           builder: (context, state) => const ProfilePhotoSetupScreen(),
         ),
         GoRoute(
-          path: '/home',
-          builder: (context, state) => const Scaffold(body: Text('Home Screen')),
+          path: '/setup-theme',
+          builder: (context, state) => const Scaffold(body: Text('Theme Setup Screen')),
         ),
       ],
     );
@@ -90,7 +90,7 @@ void main() {
     expect(find.byType(UserAvatar), findsOneWidget);
   });
 
-  testWidgets('Tapping Skip navigates to /home', (tester) async {
+  testWidgets('Tapping Skip navigates to /setup-theme', (tester) async {
     tester.view.physicalSize = const Size(1080, 1920);
     tester.view.devicePixelRatio = 3.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -101,10 +101,10 @@ void main() {
     await tester.tap(find.text('Skip'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Home Screen'), findsOneWidget);
+    expect(find.text('Theme Setup Screen'), findsOneWidget);
   });
 
-  testWidgets("Tapping I'll do this later navigates to /home", (tester) async {
+  testWidgets("Tapping I'll do this later navigates to /setup-theme", (tester) async {
     tester.view.physicalSize = const Size(1080, 1920);
     tester.view.devicePixelRatio = 3.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -116,7 +116,7 @@ void main() {
     await tester.tap(find.text("I'll do this later"));
     await tester.pumpAndSettle();
 
-    expect(find.text('Home Screen'), findsOneWidget);
+    expect(find.text('Theme Setup Screen'), findsOneWidget);
   });
 
   testWidgets('Tapping Choose Photo opens photo options bottom sheet', (tester) async {

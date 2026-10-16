@@ -252,11 +252,29 @@ class LegacyBloc extends Bloc<LegacyEvent, LegacyState> {
     }
   }
 
+  LegacySettingsEntity get _currentSettings =>
+      _settings ??
+      const LegacySettingsEntity(
+        legacyAccessEnabled: true,
+        legacyWaitingPeriodDays: 30,
+        hasRecoveryCode: false,
+        contactsCount: 0,
+        verifiedContactsCount: 0,
+      );
+
   Future<void> _onAdd(AddLegacyContact event, Emitter<LegacyState> emit) async {
-    emit(LegacyActionLoading(settings: _settings!, contacts: _contacts, action: 'adding'));
+    final settings = _currentSettings;
+    emit(LegacyActionLoading(settings: settings, contacts: _contacts, action: 'adding'));
     try {
       final contact = await repository.createLegacyContact(event.data);
       _contacts = [..._contacts, contact];
+      _settings = LegacySettingsEntity(
+        legacyAccessEnabled: true,
+        legacyWaitingPeriodDays: settings.legacyWaitingPeriodDays,
+        hasRecoveryCode: settings.hasRecoveryCode,
+        contactsCount: _contacts.length,
+        verifiedContactsCount: settings.verifiedContactsCount,
+      );
       emit(LegacyContactAdded(contact: contact, settings: _settings!, contacts: _contacts));
     } catch (e) {
       emit(LegacyError(e.toString().replaceAll('Exception: ', ''), settings: _settings, contacts: _contacts));
@@ -264,22 +282,24 @@ class LegacyBloc extends Bloc<LegacyEvent, LegacyState> {
   }
 
   Future<void> _onUpdate(UpdateLegacyContact event, Emitter<LegacyState> emit) async {
-    emit(LegacyActionLoading(settings: _settings!, contacts: _contacts, action: 'updating'));
+    final settings = _currentSettings;
+    emit(LegacyActionLoading(settings: settings, contacts: _contacts, action: 'updating'));
     try {
       final updated = await repository.updateLegacyContact(event.id, event.data);
       _contacts = _contacts.map((c) => c.id == event.id ? updated : c).toList();
-      emit(LegacyLoaded(settings: _settings!, contacts: _contacts));
+      emit(LegacyLoaded(settings: settings, contacts: _contacts));
     } catch (e) {
       emit(LegacyError(e.toString().replaceAll('Exception: ', ''), settings: _settings, contacts: _contacts));
     }
   }
 
   Future<void> _onDelete(DeleteLegacyContact event, Emitter<LegacyState> emit) async {
-    emit(LegacyActionLoading(settings: _settings!, contacts: _contacts, action: 'deleting'));
+    final settings = _currentSettings;
+    emit(LegacyActionLoading(settings: settings, contacts: _contacts, action: 'deleting'));
     try {
       await repository.deleteLegacyContact(event.id);
       _contacts = _contacts.where((c) => c.id != event.id).toList();
-      emit(LegacyContactDeleted(settings: _settings!, contacts: _contacts));
+      emit(LegacyContactDeleted(settings: settings, contacts: _contacts));
     } catch (e) {
       emit(LegacyError(e.toString().replaceAll('Exception: ', ''), settings: _settings, contacts: _contacts));
     }

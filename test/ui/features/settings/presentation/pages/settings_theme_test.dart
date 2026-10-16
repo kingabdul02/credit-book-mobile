@@ -10,14 +10,11 @@ import 'package:creditbook/features/auth/domain/entities/user.dart';
 import 'package:creditbook/features/settings/presentation/pages/settings_screen.dart';
 
 class _MockSettingsAuthRepository implements AuthRepository {
-  final User? user;
-  _MockSettingsAuthRepository([this.user]);
+  @override
+  Future<User> getCurrentUser() async => const User(id: '1', name: 'Test', hasPin: false);
 
   @override
-  Future<User> getCurrentUser() async => user ?? const User(id: '1', name: 'Test', hasPin: false);
-
-  @override
-  Future<User?> getCachedUser() async => user;
+  Future<User?> getCachedUser() async => const User(id: '1', name: 'Test', hasPin: false);
 
   @override
   Future<User> login(String phoneNumber, String pin) => throw UnimplementedError();
