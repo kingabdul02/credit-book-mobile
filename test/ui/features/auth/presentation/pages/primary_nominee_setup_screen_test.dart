@@ -56,7 +56,7 @@ class _MockLegacyRepo implements LegacyRepository {
   Map<String, dynamic>? lastCreatedData;
 
   @override
-  Future<LegacySettingsEntity> getSettings() async {
+  Future<LegacySettingsEntity> getSettings({bool forceRefresh = false}) async {
     return const LegacySettingsEntity(
       legacyAccessEnabled: true,
       legacyWaitingPeriodDays: 30,
@@ -67,13 +67,22 @@ class _MockLegacyRepo implements LegacyRepository {
   }
 
   @override
+  LegacySettingsEntity? getCachedSettings() => null;
+
+  @override
   Future<String?> enableLegacyAccess() async => 'ABC-123';
 
   @override
   Future<void> disableLegacyAccess() async {}
 
   @override
-  Future<List<LegacyContactEntity>> getLegacyContacts() async => [];
+  Future<List<LegacyContactEntity>> getLegacyContacts({bool forceRefresh = false}) async => [];
+
+  @override
+  List<LegacyContactEntity>? getCachedLegacyContacts() => null;
+
+  @override
+  List<LegacyAccessRequestEntity>? getCachedAccessRequests() => null;
 
   @override
   Future<LegacyContactEntity> createLegacyContact(Map<String, dynamic> data) async {
@@ -100,7 +109,7 @@ class _MockLegacyRepo implements LegacyRepository {
   @override
   Future<LegacyAccessRequestEntity> submitAccessRequest(Map<String, dynamic> data) async => throw UnimplementedError();
   @override
-  Future<List<LegacyAccessRequestEntity>> getAccessRequests() async => [];
+  Future<List<LegacyAccessRequestEntity>> getAccessRequests({bool forceRefresh = false}) async => [];
   @override
   Future<LegacyAccessRequestEntity> approveAccessRequest(String id) async => throw UnimplementedError();
   @override

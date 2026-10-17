@@ -242,7 +242,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             return RefreshIndicator(
               onRefresh: () async {
-                context.read<HomeBloc>().add(LoadDashboardRequested());
+                context.read<HomeBloc>().add(LoadDashboardRequested(forceRefresh: true));
                 await context.read<NotificationCubit>().loadNotifications();
               },
               child: SingleChildScrollView(

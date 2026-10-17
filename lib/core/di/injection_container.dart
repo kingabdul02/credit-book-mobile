@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/theme_cubit.dart';
 import '../../core/services/sync_queue_local_data_source.dart';
+import '../../core/services/app_cache_manager.dart';
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
@@ -55,7 +56,7 @@ Future<void> init() async {
   sl.registerFactory(() => HomeBloc(repository: sl()));
 
   sl.registerLazySingleton<HomeRepository>(
-    () => HomeRepositoryImpl(remoteDataSource: sl(), localDataSource: sl()),
+    () => HomeRepositoryImpl(remoteDataSource: sl(), localDataSource: sl(), cacheManager: sl()),
   );
 
   sl.registerLazySingleton<HomeRemoteDataSource>(
@@ -74,7 +75,7 @@ Future<void> init() async {
   sl.registerFactory(() => AllDebtsBloc(repository: sl()));
 
   sl.registerLazySingleton<PeopleRepository>(
-    () => PeopleRepositoryImpl(remoteDataSource: sl(), syncQueue: sl()),
+    () => PeopleRepositoryImpl(remoteDataSource: sl(), syncQueue: sl(), cacheManager: sl()),
   );
 
   sl.registerLazySingleton<PeopleRemoteDataSource>(
@@ -84,7 +85,7 @@ Future<void> init() async {
   // Features - Insights
   sl.registerFactory(() => InsightsBloc(repository: sl()));
   sl.registerLazySingleton<InsightsRepository>(
-    () => InsightsRepositoryImpl(remoteDataSource: sl()),
+    () => InsightsRepositoryImpl(remoteDataSource: sl(), cacheManager: sl()),
   );
   sl.registerLazySingleton<InsightsRemoteDataSource>(
     () => InsightsRemoteDataSourceImpl(client: sl(), sharedPreferences: sl()),
@@ -93,7 +94,7 @@ Future<void> init() async {
   // Features - Legacy (Next of Kin)
   sl.registerFactory(() => LegacyBloc(repository: sl()));
   sl.registerLazySingleton<LegacyRepository>(
-    () => LegacyRepositoryImpl(remoteDataSource: sl()),
+    () => LegacyRepositoryImpl(remoteDataSource: sl(), cacheManager: sl()),
   );
   sl.registerLazySingleton<LegacyRemoteDataSource>(
     () => LegacyRemoteDataSourceImpl(client: sl(), sharedPreferences: sl()),
@@ -105,6 +106,9 @@ Future<void> init() async {
   sl.registerLazySingleton(() => http.Client());
 
   // Core Services
+  sl.registerLazySingleton<AppCacheManager>(
+    () => AppCacheManager(sharedPreferences: sl()),
+  );
   sl.registerLazySingleton<SyncQueueLocalDataSource>(
     () => SyncQueueLocalDataSourceImpl(sharedPreferences: sl()),
   );

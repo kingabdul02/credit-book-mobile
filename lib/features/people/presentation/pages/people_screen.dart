@@ -54,7 +54,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
           } else if (state is PeopleLoaded) {
             return RefreshIndicator(
               onRefresh: () async {
-                context.read<PeopleBloc>().add(LoadPeopleDataRequested());
+                context.read<PeopleBloc>().add(LoadPeopleDataRequested(forceRefresh: true));
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),

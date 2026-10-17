@@ -12,9 +12,11 @@ abstract class AllDebtsEvent {}
 class LoadAllDebts extends AllDebtsEvent {
   final String statusFilter; // 'all', 'pending', 'settled'
   final String typeFilter; // 'all', 'receivable', 'payable'
+  final bool forceRefresh;
   LoadAllDebts({
     this.statusFilter = 'all',
     this.typeFilter = 'all',
+    this.forceRefresh = false,
   });
 }
 
@@ -163,9 +165,41 @@ class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
     LoadAllDebts event,
     Emitter<AllDebtsState> emit,
   ) async {
-    emit(AllDebtsLoading());
+    final cached = repository.getCachedAllDebtsWithStats(status: 'all');
+    final hasData = state is AllDebtsLoaded || cached != null;
+
+    if (cached != null && state is! AllDebtsLoaded) {
+      final filtered = _applyFilter(cached.debts, event.statusFilter, event.typeFilter, '');
+      final stats = cached.statistics;
+      double currentFilterIOwe = stats.iOwePending;
+      double currentFilterTheyOweMe = stats.theyOweMePending;
+      if (event.statusFilter == 'settled') {
+        currentFilterIOwe = stats.iOweSettled;
+        currentFilterTheyOweMe = stats.theyOweMeSettled;
+      }
+      emit(AllDebtsLoaded(
+        allDebts: cached.debts,
+        filteredDebts: filtered,
+        currentFilter: event.statusFilter,
+        typeFilter: event.typeFilter,
+        searchQuery: '',
+        pendingCount: stats.pendingCount,
+        settledCount: stats.settledCount,
+        totalPending: stats.totalPending,
+        totalSettled: stats.totalSettled,
+        currentFilterIOwe: currentFilterIOwe,
+        currentFilterTheyOweMe: currentFilterTheyOweMe,
+        statistics: stats,
+      ));
+    } else if (!hasData) {
+      emit(AllDebtsLoading());
+    }
+
     try {
-      final result = await repository.getAllDebtsWithStats(status: 'all');
+      final result = await repository.getAllDebtsWithStats(
+        status: 'all',
+        forceRefresh: event.forceRefresh,
+      );
       final debts = result.debts;
       final stats = result.statistics;
 
@@ -205,7 +239,9 @@ class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
         ),
       );
     } catch (e) {
-      emit(AllDebtsError(ErrorHandler.getFriendlyMessage(e)));
+      if (!hasData) {
+        emit(AllDebtsError(ErrorHandler.getFriendlyMessage(e)));
+      }
     }
   }
 

@@ -58,7 +58,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
             return RefreshIndicator(
               onRefresh: () async {
                 context.read<InsightsBloc>().add(
-                  FetchInsightsData(timeframe: state.currentTimeframe),
+                  FetchInsightsData(timeframe: state.currentTimeframe, forceRefresh: true),
                 );
               },
               child: SingleChildScrollView(

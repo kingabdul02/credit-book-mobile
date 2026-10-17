@@ -28,7 +28,7 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
   Future<void> _navigateAndRefresh(String path, {Map<String, dynamic>? extra}) async {
     await context.push(path, extra: extra);
     if (mounted) {
-      context.read<LegacyBloc>().add(LoadLegacyData());
+      context.read<LegacyBloc>().add(LoadLegacyData(forceRefresh: true));
     }
   }
 
@@ -295,11 +295,17 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
         return Scaffold(
           backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
           appBar: const CustomAppBar(title: 'Next of Kin'),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          body: RefreshIndicator(
+            color: AppTheme.primaryColor,
+            onRefresh: () async {
+              context.read<LegacyBloc>().add(LoadLegacyData(forceRefresh: true));
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 // ── Hero Banner ──────────────────────────────────────
                 _HeroBanner(settings: settings, isActionLoading: isActionLoading, onToggle: () {
                   _showToggleConfirm(context, settings.legacyAccessEnabled);
@@ -456,6 +462,7 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
                     ],
                   ),
                 ),
+          ),
         );
       },
     );

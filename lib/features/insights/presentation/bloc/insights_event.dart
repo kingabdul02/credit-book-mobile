@@ -9,9 +9,13 @@ abstract class InsightsEvent extends Equatable {
 
 class FetchInsightsData extends InsightsEvent {
   final String timeframe;
+  final bool forceRefresh;
 
-  const FetchInsightsData({this.timeframe = 'Weekly'});
+  const FetchInsightsData({
+    this.timeframe = 'Weekly',
+    this.forceRefresh = false,
+  });
 
   @override
-  List<Object> get props => [timeframe];
+  List<Object> get props => [timeframe, forceRefresh];
 }

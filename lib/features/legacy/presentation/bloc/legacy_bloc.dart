@@ -7,7 +7,10 @@ import '../../domain/repositories/legacy_repository.dart';
 
 abstract class LegacyEvent {}
 
-class LoadLegacyData extends LegacyEvent {}
+class LoadLegacyData extends LegacyEvent {
+  final bool forceRefresh;
+  LoadLegacyData({this.forceRefresh = false});
+}
 
 class EnableLegacyAccess extends LegacyEvent {}
 
@@ -41,7 +44,10 @@ class RevokeLegacyContact extends LegacyEvent {
 
 // ── Access Request Events ────────────────────────────────────────────────────
 
-class LoadAccessRequests extends LegacyEvent {}
+class LoadAccessRequests extends LegacyEvent {
+  final bool forceRefresh;
+  LoadAccessRequests({this.forceRefresh = false});
+}
 
 class SubmitAccessRequest extends LegacyEvent {
   final Map<String, dynamic> data;
@@ -214,17 +220,29 @@ class LegacyBloc extends Bloc<LegacyEvent, LegacyState> {
   }
 
   Future<void> _onLoad(LoadLegacyData event, Emitter<LegacyState> emit) async {
-    emit(LegacyLoading());
+    final cachedSettings = repository.getCachedSettings();
+    final cachedContacts = repository.getCachedLegacyContacts();
+
+    if (cachedSettings != null && cachedContacts != null) {
+      _settings = cachedSettings;
+      _contacts = cachedContacts;
+      emit(LegacyLoaded(settings: _settings!, contacts: _contacts));
+    } else {
+      emit(LegacyLoading());
+    }
+
     try {
       final results = await Future.wait([
-        repository.getSettings(),
-        repository.getLegacyContacts(),
+        repository.getSettings(forceRefresh: event.forceRefresh),
+        repository.getLegacyContacts(forceRefresh: event.forceRefresh),
       ]);
       _settings = results[0] as LegacySettingsEntity;
       _contacts = results[1] as List<LegacyContactEntity>;
       emit(LegacyLoaded(settings: _settings!, contacts: _contacts));
     } catch (e) {
-      emit(LegacyError(e.toString().replaceAll('Exception: ', '')));
+      if (_settings == null) {
+        emit(LegacyError(e.toString().replaceAll('Exception: ', '')));
+      }
     }
   }
 
@@ -331,12 +349,21 @@ class LegacyBloc extends Bloc<LegacyEvent, LegacyState> {
   // ── Access Request Handlers ──────────────────────────────────────────────
 
   Future<void> _onLoadRequests(LoadAccessRequests event, Emitter<LegacyState> emit) async {
-    emit(AccessRequestsLoading());
+    final cachedRequests = repository.getCachedAccessRequests();
+    if (cachedRequests != null) {
+      _requests = cachedRequests;
+      emit(AccessRequestsLoaded(requests: _requests));
+    } else {
+      emit(AccessRequestsLoading());
+    }
+
     try {
-      _requests = await repository.getAccessRequests();
+      _requests = await repository.getAccessRequests(forceRefresh: event.forceRefresh);
       emit(AccessRequestsLoaded(requests: _requests));
     } catch (e) {
-      emit(AccessRequestError(e.toString().replaceAll('Exception: ', '')));
+      if (_requests.isEmpty) {
+        emit(AccessRequestError(e.toString().replaceAll('Exception: ', '')));
+      }
     }
   }
 

@@ -12,7 +12,8 @@ abstract class LedgerEvent {}
 
 class LoadLedger extends LedgerEvent {
   final String contactId;
-  LoadLedger(this.contactId);
+  final bool forceRefresh;
+  LoadLedger(this.contactId, {this.forceRefresh = false});
 }
 
 class RecordPayment extends LedgerEvent {
@@ -72,86 +73,95 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
   }
 
   Future<void> _onLoadLedger(LoadLedger event, Emitter<LedgerState> emit) async {
-    emit(LedgerLoading());
-    try {
-      final contact = await repository.getContactDetails(event.contactId);
-      
-      double theyOweMeOriginal = 0.0;
-      double theyOweMePaid = 0.0;
-      double iOweThemOriginal = 0.0;
-      double iOweThemPaid = 0.0;
-      List<LedgerTransactionEntity> history = [];
+    // 1. Check for cached contact details
+    final cached = repository.getCachedContactDetails(event.contactId);
+    final hasData = state is LedgerLoaded || cached != null;
 
-      if (contact.debts != null) {
-        for (var debt in contact.debts!) {
-          final debtEntity = debt as DebtEntity;
-          if (debtEntity.transactionType == 'THEY_OWE_ME') {
-            theyOweMeOriginal += debtEntity.originalAmount;
-            theyOweMePaid += debtEntity.paidAmount;
-          } else {
-            iOweThemOriginal += debtEntity.originalAmount;
-            iOweThemPaid += debtEntity.paidAmount;
-          }
-
-
-        }
-      }
-
-      // Sort history descending by actual datetime
-      // Since we already parsed them into strings, we sort them before creating the entities if we wanted exact precision, 
-      // but for simplicity, we assume backend returns them sorted or we should sort the raw txns first.
-      // Wait, let's sort the entities by their raw creation date.
-      // Actually, let's sort all transactions first before mapping.
-      
-      List<TransactionEntity> allTxns = [];
-      Map<String, DebtEntity> txnToDebtMap = {};
-      if (contact.debts != null) {
-        for (var debt in contact.debts!) {
-          final debtEntity = debt as DebtEntity;
-          for (var txn in debtEntity.transactions) {
-            allTxns.add(txn);
-            txnToDebtMap[txn.id] = debtEntity;
-          }
-        }
-      }
-
-      allTxns.sort((a, b) => DateTime.parse(b.createdAt).compareTo(DateTime.parse(a.createdAt)));
-
-      history = allTxns.map((txn) {
-        final dateObj = DateTime.parse(txn.createdAt).toLocal();
-        final debtEntity = txnToDebtMap[txn.id]!;
-        return LedgerTransactionEntity(
-          title: _getTitle(txn.type, debtEntity.transactionType),
-          subtitle: txn.note ?? (txn.type == 'payment' ? 'Payment' : 'Debt Issuance'),
-          amount: txn.amount,
-          isPositive: _isPositive(txn.type, debtEntity.transactionType),
-          date: _formatDate(dateObj),
-          time: DateFormat('hh:mm a').format(dateObj),
-          type: txn.type,
-          transactionType: debtEntity.transactionType,
-        );
-      }).toList();
-
-      final netBalance = contact.totalOwedToUser - contact.totalUserOwes;
-
-      double repaymentProgress = 0.0;
-      if (netBalance >= 0 && theyOweMeOriginal > 0) {
-        repaymentProgress = (theyOweMePaid / theyOweMeOriginal) * 100;
-      } else if (netBalance < 0 && iOweThemOriginal > 0) {
-        repaymentProgress = (iOweThemPaid / iOweThemOriginal) * 100;
-      }
-
-      emit(LedgerLoaded(
-        contact: contact,
-        netBalance: netBalance,
-        totalOwedToUser: contact.totalOwedToUser,
-        totalUserOwes: contact.totalUserOwes,
-        repaymentProgress: repaymentProgress,
-        history: history,
-      ));
-    } catch (e) {
-      emit(LedgerError(ErrorHandler.getFriendlyMessage(e)));
+    if (cached != null && state is! LedgerLoaded) {
+      emit(_buildLedgerLoaded(cached));
+    } else if (!hasData) {
+      emit(LedgerLoading());
     }
+
+    try {
+      final contact = await repository.getContactDetails(
+        event.contactId,
+        forceRefresh: event.forceRefresh,
+      );
+      emit(_buildLedgerLoaded(contact));
+    } catch (e) {
+      if (!hasData) {
+        emit(LedgerError(ErrorHandler.getFriendlyMessage(e)));
+      }
+    }
+  }
+
+  LedgerLoaded _buildLedgerLoaded(ContactEntity contact) {
+    double theyOweMeOriginal = 0.0;
+    double theyOweMePaid = 0.0;
+    double iOweThemOriginal = 0.0;
+    double iOweThemPaid = 0.0;
+    List<LedgerTransactionEntity> history = [];
+
+    if (contact.debts != null) {
+      for (var debt in contact.debts!) {
+        final debtEntity = debt as DebtEntity;
+        if (debtEntity.transactionType == 'THEY_OWE_ME') {
+          theyOweMeOriginal += debtEntity.originalAmount;
+          theyOweMePaid += debtEntity.paidAmount;
+        } else {
+          iOweThemOriginal += debtEntity.originalAmount;
+          iOweThemPaid += debtEntity.paidAmount;
+        }
+      }
+    }
+
+    List<TransactionEntity> allTxns = [];
+    Map<String, DebtEntity> txnToDebtMap = {};
+    if (contact.debts != null) {
+      for (var debt in contact.debts!) {
+        final debtEntity = debt as DebtEntity;
+        for (var txn in debtEntity.transactions) {
+          allTxns.add(txn);
+          txnToDebtMap[txn.id] = debtEntity;
+        }
+      }
+    }
+
+    allTxns.sort((a, b) => DateTime.parse(b.createdAt).compareTo(DateTime.parse(a.createdAt)));
+
+    history = allTxns.map((txn) {
+      final dateObj = DateTime.parse(txn.createdAt).toLocal();
+      final debtEntity = txnToDebtMap[txn.id]!;
+      return LedgerTransactionEntity(
+        title: _getTitle(txn.type, debtEntity.transactionType),
+        subtitle: txn.note ?? (txn.type == 'payment' ? 'Payment' : 'Debt Issuance'),
+        amount: txn.amount,
+        isPositive: _isPositive(txn.type, debtEntity.transactionType),
+        date: _formatDate(dateObj),
+        time: DateFormat('hh:mm a').format(dateObj),
+        type: txn.type,
+        transactionType: debtEntity.transactionType,
+      );
+    }).toList();
+
+    final netBalance = contact.totalOwedToUser - contact.totalUserOwes;
+
+    double repaymentProgress = 0.0;
+    if (netBalance >= 0 && theyOweMeOriginal > 0) {
+      repaymentProgress = (theyOweMePaid / theyOweMeOriginal) * 100;
+    } else if (netBalance < 0 && iOweThemOriginal > 0) {
+      repaymentProgress = (iOweThemPaid / iOweThemOriginal) * 100;
+    }
+
+    return LedgerLoaded(
+      contact: contact,
+      netBalance: netBalance,
+      totalOwedToUser: contact.totalOwedToUser,
+      totalUserOwes: contact.totalUserOwes,
+      repaymentProgress: repaymentProgress,
+      history: history,
+    );
   }
 
   String _getTitle(String txnType, String debtType) {
@@ -187,8 +197,8 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
         note: event.note,
       );
       emit(PaymentRecorded());
-      // Reload ledger so the UI reflects the new payment
-      add(LoadLedger(event.contactId));
+      // Reload ledger with forceRefresh so the UI reflects the new payment
+      add(LoadLedger(event.contactId, forceRefresh: true));
     } catch (e) {
       emit(PaymentFailed(ErrorHandler.getFriendlyMessage(e)));
     }

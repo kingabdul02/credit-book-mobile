@@ -10,9 +10,14 @@ class DebtsWithStatistics {
 }
 
 abstract class PeopleRepository {
-  Future<PeopleDataEntity> getPeopleData();
+  Future<PeopleDataEntity> getPeopleData({bool forceRefresh = false});
+  PeopleDataEntity? getCachedPeopleData();
+
   Future<void> createContact(Map<String, dynamic> contactData);
-  Future<ContactEntity> getContactDetails(String id);
+
+  Future<ContactEntity> getContactDetails(String id, {bool forceRefresh = false});
+  ContactEntity? getCachedContactDetails(String id);
+
   Future<DebtEntity> createDebt(Map<String, dynamic> data);
 
   /// Records a payment against a debt (THEY_OWE_ME or I_OWE_THEM).
@@ -24,5 +29,9 @@ abstract class PeopleRepository {
   });
 
   /// Fetches all debts with server-calculated statistics
-  Future<DebtsWithStatistics> getAllDebtsWithStats({String status = 'all'});
+  Future<DebtsWithStatistics> getAllDebtsWithStats({
+    String status = 'all',
+    bool forceRefresh = false,
+  });
+  DebtsWithStatistics? getCachedAllDebtsWithStats({String status = 'all'});
 }

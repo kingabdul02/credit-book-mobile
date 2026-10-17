@@ -15,12 +15,25 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     LoadDashboardRequested event,
     Emitter<HomeState> emit,
   ) async {
-    emit(HomeLoading());
+    // 1. Check for cached data to display immediately
+    final cached = repository.getCachedDashboardData();
+    final hasData = state is HomeLoaded || cached != null;
+
+    if (cached != null && state is! HomeLoaded) {
+      // Emit cached data immediately with 0ms delay!
+      emit(HomeLoaded(cached));
+    } else if (!hasData) {
+      // Only emit loading spinner if we have no prior data to display
+      emit(HomeLoading());
+    }
+
     try {
-      final data = await repository.getDashboardData();
+      final data = await repository.getDashboardData(forceRefresh: event.forceRefresh);
       emit(HomeLoaded(data));
     } catch (e) {
-      emit(HomeError(ErrorHandler.getFriendlyMessage(e)));
+      if (!hasData) {
+        emit(HomeError(ErrorHandler.getFriendlyMessage(e)));
+      }
     }
   }
 }

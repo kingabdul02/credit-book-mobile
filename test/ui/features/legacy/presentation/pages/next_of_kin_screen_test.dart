@@ -33,10 +33,19 @@ class _MockLegacyRepo implements LegacyRepository {
   ];
 
   @override
-  Future<LegacySettingsEntity> getSettings() async => settings;
+  Future<LegacySettingsEntity> getSettings({bool forceRefresh = false}) async => settings;
 
   @override
-  Future<List<LegacyContactEntity>> getLegacyContacts() async => contacts;
+  LegacySettingsEntity? getCachedSettings() => null;
+
+  @override
+  Future<List<LegacyContactEntity>> getLegacyContacts({bool forceRefresh = false}) async => contacts;
+
+  @override
+  List<LegacyContactEntity>? getCachedLegacyContacts() => null;
+
+  @override
+  List<LegacyAccessRequestEntity>? getCachedAccessRequests() => null;
 
   @override
   Future<String> enableLegacyAccess() async => 'RECOVERY-CODE';
@@ -60,7 +69,7 @@ class _MockLegacyRepo implements LegacyRepository {
   Future<void> revokeLegacyContact(String id) async {}
 
   @override
-  Future<List<LegacyAccessRequestEntity>> getAccessRequests() async => [];
+  Future<List<LegacyAccessRequestEntity>> getAccessRequests({bool forceRefresh = false}) async => [];
 
   @override
   Future<LegacyAccessRequestEntity> submitAccessRequest(Map<String, dynamic> data) async => throw UnimplementedError();

@@ -15,12 +15,34 @@ class InsightsBloc extends Bloc<InsightsEvent, InsightsState> {
     FetchInsightsData event,
     Emitter<InsightsState> emit,
   ) async {
-    emit(InsightsLoading());
+    final cached = repository.getCachedInsightsData(event.timeframe);
+    final hasData = (state is InsightsLoaded &&
+            (state as InsightsLoaded).currentTimeframe.toLowerCase() ==
+                event.timeframe.toLowerCase()) ||
+        cached != null;
+
+    if (cached != null &&
+        (state is! InsightsLoaded ||
+            (state as InsightsLoaded).currentTimeframe.toLowerCase() !=
+                event.timeframe.toLowerCase())) {
+      emit(InsightsLoaded(data: cached, currentTimeframe: event.timeframe));
+    } else if (!hasData) {
+      emit(InsightsLoading());
+    }
+
     try {
-      final data = await repository.getInsightsData(event.timeframe);
+      final data = await repository.getInsightsData(
+        event.timeframe,
+        forceRefresh: event.forceRefresh,
+      );
       emit(InsightsLoaded(data: data, currentTimeframe: event.timeframe));
     } catch (e) {
-      emit(InsightsError(ErrorHandler.getFriendlyMessage(e), currentTimeframe: event.timeframe));
+      if (!hasData) {
+        emit(InsightsError(
+          ErrorHandler.getFriendlyMessage(e),
+          currentTimeframe: event.timeframe,
+        ));
+      }
     }
   }
 }

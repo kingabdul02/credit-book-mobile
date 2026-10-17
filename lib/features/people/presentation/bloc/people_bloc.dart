@@ -6,7 +6,10 @@ import '../../domain/repositories/people_repository.dart';
 // Events
 abstract class PeopleEvent {}
 
-class LoadPeopleDataRequested extends PeopleEvent {}
+class LoadPeopleDataRequested extends PeopleEvent {
+  final bool forceRefresh;
+  LoadPeopleDataRequested({this.forceRefresh = false});
+}
 
 // States
 abstract class PeopleState {}
@@ -37,12 +40,23 @@ class PeopleBloc extends Bloc<PeopleEvent, PeopleState> {
     LoadPeopleDataRequested event,
     Emitter<PeopleState> emit,
   ) async {
-    emit(PeopleLoading());
+    // 1. Check for cached people data to render immediately
+    final cached = repository.getCachedPeopleData();
+    final hasData = state is PeopleLoaded || cached != null;
+
+    if (cached != null && state is! PeopleLoaded) {
+      emit(PeopleLoaded(cached));
+    } else if (!hasData) {
+      emit(PeopleLoading());
+    }
+
     try {
-      final data = await repository.getPeopleData();
+      final data = await repository.getPeopleData(forceRefresh: event.forceRefresh);
       emit(PeopleLoaded(data));
     } catch (e) {
-      emit(PeopleError(ErrorHandler.getFriendlyMessage(e)));
+      if (!hasData) {
+        emit(PeopleError(ErrorHandler.getFriendlyMessage(e)));
+      }
     }
   }
 }

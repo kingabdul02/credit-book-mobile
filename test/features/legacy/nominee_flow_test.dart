@@ -34,7 +34,7 @@ class _FakeLegacyRepo implements LegacyRepository {
   }
 
   @override
-  Future<LegacySettingsEntity> getSettings() async => const LegacySettingsEntity(
+  Future<LegacySettingsEntity> getSettings({bool forceRefresh = false}) async => const LegacySettingsEntity(
         legacyAccessEnabled: true,
         legacyWaitingPeriodDays: 30,
         hasRecoveryCode: false,
@@ -43,13 +43,19 @@ class _FakeLegacyRepo implements LegacyRepository {
       );
 
   @override
+  LegacySettingsEntity? getCachedSettings() => null;
+
+  @override
   Future<String?> enableLegacyAccess() async => 'ABCD-1234-EFGH';
 
   @override
   Future<void> disableLegacyAccess() async {}
 
   @override
-  Future<List<LegacyContactEntity>> getLegacyContacts() async => [];
+  Future<List<LegacyContactEntity>> getLegacyContacts({bool forceRefresh = false}) async => [];
+
+  @override
+  List<LegacyContactEntity>? getCachedLegacyContacts() => null;
 
   @override
   Future<LegacyContactEntity> createLegacyContact(Map<String, dynamic> data) async =>
@@ -69,7 +75,10 @@ class _FakeLegacyRepo implements LegacyRepository {
   Future<void> revokeLegacyContact(String id) async {}
 
   @override
-  Future<List<LegacyAccessRequestEntity>> getAccessRequests() async => [];
+  Future<List<LegacyAccessRequestEntity>> getAccessRequests({bool forceRefresh = false}) async => [];
+
+  @override
+  List<LegacyAccessRequestEntity>? getCachedAccessRequests() => null;
 
   @override
   Future<LegacyAccessRequestEntity> approveAccessRequest(String id) async => throw UnimplementedError();
