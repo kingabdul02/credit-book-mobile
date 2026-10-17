@@ -478,19 +478,12 @@ class AppRouter {
         path: '/access-requests',
         name: 'access-requests',
         pageBuilder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>? ?? {};
-          final bloc = extra['bloc'] as LegacyBloc?;
           return CustomTransitionPage(
             key: state.pageKey,
-            child: bloc != null
-                ? BlocProvider.value(
-                    value: bloc,
-                    child: const AccessRequestsScreen(),
-                  )
-                : BlocProvider(
-                    create: (_) => di.sl<LegacyBloc>(),
-                    child: const AccessRequestsScreen(),
-                  ),
+            child: BlocProvider(
+              create: (_) => di.sl<LegacyBloc>(),
+              child: const AccessRequestsScreen(),
+            ),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) =>
                     SlideTransition(

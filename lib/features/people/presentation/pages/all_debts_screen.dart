@@ -193,6 +193,8 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                   child: state is AllDebtsLoaded
                       ? TabBar(
                           controller: _tabController,
+                          dividerColor: Colors.transparent,
+                          dividerHeight: 0,
                           indicatorColor: AppTheme.primaryColor,
                           indicatorWeight: 3,
                           labelColor: AppTheme.primaryColor,
@@ -215,6 +217,8 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                         )
                       : TabBar(
                           controller: _tabController,
+                          dividerColor: Colors.transparent,
+                          dividerHeight: 0,
                           indicatorColor: AppTheme.primaryColor,
                           labelColor: AppTheme.primaryColor,
                           unselectedLabelColor: isDark

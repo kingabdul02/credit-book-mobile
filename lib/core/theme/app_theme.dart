@@ -90,7 +90,17 @@ class AppTheme {
         backgroundColor: lightSurface,
         foregroundColor: lightTextPrimary,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         centerTitle: false,
+      ),
+      tabBarTheme: const TabBarThemeData(
+        dividerColor: Colors.transparent,
+      ),
+      dividerTheme: const DividerThemeData(
+        color: lightBorder,
+        thickness: 1,
+        space: 1,
       ),
       cardTheme: CardThemeData(
         color: lightCard,
@@ -186,7 +196,17 @@ class AppTheme {
         backgroundColor: darkBackground,
         foregroundColor: darkTextPrimary,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         centerTitle: false,
+      ),
+      tabBarTheme: const TabBarThemeData(
+        dividerColor: Colors.transparent,
+      ),
+      dividerTheme: const DividerThemeData(
+        color: darkBorder,
+        thickness: 1,
+        space: 1,
       ),
       cardTheme: CardThemeData(
         color: darkCard,

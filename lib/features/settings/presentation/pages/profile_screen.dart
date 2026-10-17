@@ -206,7 +206,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: () => _pickImage(ImageSource.gallery),
             ),
             if (hasCustomAvatar) ...[
-              const Divider(height: 24),
+              Divider(height: 24, thickness: 1, color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(10),
@@ -297,9 +297,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         return Scaffold(
           backgroundColor: isDark ? AppTheme.darkBackground : const Color(0xFFF8FAFC),
-          appBar: const CustomAppBar(
+          appBar: CustomAppBar(
             title: 'Personal Profile',
             showBackButton: true,
+            backgroundColor: isDark ? AppTheme.darkBackground : const Color(0xFFF8FAFC),
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -589,14 +590,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ? DateFormat('dd MMMM yyyy').format(user!.createdAt!)
                               : 'Recent',
                         ),
-                        Divider(height: 24, color: isDark ? AppTheme.darkBorder : null),
+                        Divider(height: 24, thickness: 1, color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                         _buildAccountInfoRow(
                           icon: Icons.cloud_done_outlined,
                           title: 'Cloud Sync',
                           value: 'Connected & Secure',
                           valueColor: AppTheme.primaryColor,
                         ),
-                        Divider(height: 24, color: isDark ? AppTheme.darkBorder : null),
+                        Divider(height: 24, thickness: 1, color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                         _buildAccountInfoRow(
                           icon: Icons.lock_outline_rounded,
                           title: 'Security PIN',

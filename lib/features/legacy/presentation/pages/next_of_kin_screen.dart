@@ -16,18 +16,38 @@ class NextOfKinScreen extends StatefulWidget {
 }
 
 class _NextOfKinScreenState extends State<NextOfKinScreen> {
+  LegacySettingsEntity? _cachedSettings;
+  List<LegacyContactEntity> _cachedContacts = [];
+
   @override
   void initState() {
     super.initState();
     context.read<LegacyBloc>().add(LoadLegacyData());
   }
 
+  Future<void> _navigateAndRefresh(String path, {Map<String, dynamic>? extra}) async {
+    await context.push(path, extra: extra);
+    if (mounted) {
+      context.read<LegacyBloc>().add(LoadLegacyData());
+    }
+  }
+
   void _handleStateChange(BuildContext context, LegacyState state) {
-    if (state is LegacyEnabled) {
+    if (state is LegacyLoaded) {
+      _cachedSettings = state.settings;
+      _cachedContacts = state.contacts;
+    } else if (state is LegacyActionLoading) {
+      _cachedSettings = state.settings;
+      _cachedContacts = state.contacts;
+    } else if (state is LegacyEnabled) {
+      _cachedSettings = state.settings;
+      _cachedContacts = state.contacts;
       if (state.recoveryCode != null) {
         _showRecoveryCodeDialog(context, state.recoveryCode!);
       }
     } else if (state is LegacyContactAdded) {
+      _cachedSettings = state.settings;
+      _cachedContacts = state.contacts;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -49,6 +69,8 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
         ),
       );
     } else if (state is LegacyContactDeleted) {
+      _cachedSettings = state.settings;
+      _cachedContacts = state.contacts;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Nominee removed.', style: TextStyle(color: Colors.white)),
@@ -59,6 +81,8 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
         ),
       );
     } else if (state is LegacyVerificationSent) {
+      _cachedSettings = state.settings;
+      _cachedContacts = state.contacts;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Verification email resent!', style: TextStyle(color: Colors.white)),
@@ -69,6 +93,10 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
         ),
       );
     } else if (state is LegacyError) {
+      if (state.settings != null) {
+        _cachedSettings = state.settings;
+        _cachedContacts = state.contacts;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(state.message, style: const TextStyle(color: Colors.white)),
@@ -185,33 +213,78 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
     return BlocConsumer<LegacyBloc, LegacyState>(
       listener: _handleStateChange,
       builder: (context, state) {
-        final isLoading = state is LegacyLoading;
-        final isActionLoading = state is LegacyActionLoading;
-
-        LegacySettingsEntity? settings;
-        List<LegacyContactEntity> contacts = [];
-
         if (state is LegacyLoaded) {
-          settings = state.settings;
-          contacts = state.contacts;
+          _cachedSettings = state.settings;
+          _cachedContacts = state.contacts;
         } else if (state is LegacyActionLoading) {
-          settings = state.settings;
-          contacts = state.contacts;
+          _cachedSettings = state.settings;
+          _cachedContacts = state.contacts;
         } else if (state is LegacyEnabled) {
-          settings = state.settings;
-          contacts = state.contacts;
+          _cachedSettings = state.settings;
+          _cachedContacts = state.contacts;
         } else if (state is LegacyContactAdded) {
-          settings = state.settings;
-          contacts = state.contacts;
+          _cachedSettings = state.settings;
+          _cachedContacts = state.contacts;
         } else if (state is LegacyContactDeleted) {
-          settings = state.settings;
-          contacts = state.contacts;
+          _cachedSettings = state.settings;
+          _cachedContacts = state.contacts;
         } else if (state is LegacyVerificationSent) {
-          settings = state.settings;
-          contacts = state.contacts;
-        } else if (state is LegacyError) {
-          settings = state.settings;
-          contacts = state.contacts;
+          _cachedSettings = state.settings;
+          _cachedContacts = state.contacts;
+        } else if (state is LegacyError && state.settings != null) {
+          _cachedSettings = state.settings;
+          _cachedContacts = state.contacts;
+        }
+
+        final settings = _cachedSettings;
+        final contacts = _cachedContacts;
+        final isActionLoading = state is LegacyActionLoading;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+
+        if (settings == null) {
+          if (state is LegacyError) {
+            return Scaffold(
+              backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
+              appBar: const CustomAppBar(title: 'Next of Kin'),
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline_rounded, color: AppTheme.errorColor, size: 48),
+                      const SizedBox(height: 16),
+                      Text(
+                        state.message,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () => context.read<LegacyBloc>().add(LoadLegacyData()),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryVariant,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('Try Again', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+
+          return Scaffold(
+            backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
+            appBar: const CustomAppBar(title: 'Next of Kin'),
+            body: const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
+          );
         }
 
         final primaryContact = contacts.where((c) => c.isPrimary).isNotEmpty
@@ -219,33 +292,28 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
             : null;
         final secondaryContacts = contacts.where((c) => !c.isPrimary).toList();
 
-        final isDark = Theme.of(context).brightness == Brightness.dark;
         return Scaffold(
           backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
           appBar: const CustomAppBar(title: 'Next of Kin'),
-          body: isLoading
-              ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // ── Hero Banner ──────────────────────────────────────
-                      _HeroBanner(settings: settings, isActionLoading: isActionLoading, onToggle: () {
-                        if (settings != null) {
-                          _showToggleConfirm(context, settings.legacyAccessEnabled);
-                        }
-                      }),
-                      const SizedBox(height: 24),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Hero Banner ──────────────────────────────────────
+                _HeroBanner(settings: settings, isActionLoading: isActionLoading, onToggle: () {
+                  _showToggleConfirm(context, settings.legacyAccessEnabled);
+                }),
+                const SizedBox(height: 24),
 
-                      // ── Security Notice ──────────────────────────────────
-                      _SecurityNotice(settings: settings),
-                      const SizedBox(height: 16),
+                // ── Security Notice ──────────────────────────────────
+                _SecurityNotice(settings: settings),
+                const SizedBox(height: 16),
 
-                      // ── Access Requests Card ──────────────────────────────
-                      if (settings?.legacyAccessEnabled == true)
-                        GestureDetector(
-                          onTap: () => context.push('/access-requests', extra: {'bloc': context.read<LegacyBloc>()}),
+                // ── Access Requests Card ──────────────────────────────
+                if (settings.legacyAccessEnabled)
+                  GestureDetector(
+                    onTap: () => _navigateAndRefresh('/access-requests'),
                           child: Container(
                             width: double.infinity,
                             padding: const EdgeInsets.all(16),
@@ -323,7 +391,7 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
                             ),
                           ),
                           if (primaryContact == null)
-                            _AddButton(onTap: () => context.push('/next-of-kin/add', extra: {'isPrimary': true, 'bloc': context.read<LegacyBloc>()})),
+                            _AddButton(onTap: () => _navigateAndRefresh('/next-of-kin/add', extra: {'isPrimary': true, 'bloc': context.read<LegacyBloc>()})),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -332,7 +400,7 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
                           contact: primaryContact,
                           isPrimary: true,
                           isActionLoading: isActionLoading,
-                          onEdit: () => context.push('/next-of-kin/add', extra: {'contact': primaryContact, 'isPrimary': true, 'bloc': context.read<LegacyBloc>()}),
+                          onEdit: () => _navigateAndRefresh('/next-of-kin/add', extra: {'contact': primaryContact, 'isPrimary': true, 'bloc': context.read<LegacyBloc>()}),
                           onDelete: () => _confirmDelete(context, primaryContact),
                           onResend: () => context.read<LegacyBloc>().add(ResendVerification(primaryContact.id)),
                           onRevoke: () => context.read<LegacyBloc>().add(RevokeLegacyContact(primaryContact.id)),
@@ -341,7 +409,7 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
                         _EmptySlot(
                           label: 'No primary nominee added',
                           enabled: true,
-                          onAdd: () => context.push('/next-of-kin/add', extra: {'isPrimary': true, 'bloc': context.read<LegacyBloc>()}),
+                          onAdd: () => _navigateAndRefresh('/next-of-kin/add', extra: {'isPrimary': true, 'bloc': context.read<LegacyBloc>()}),
                         ),
 
                       const SizedBox(height: 28),
@@ -360,7 +428,7 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
                             ),
                           ),
                           if (secondaryContacts.length < 3)
-                            _AddButton(onTap: () => context.push('/next-of-kin/add', extra: {'isPrimary': false, 'bloc': context.read<LegacyBloc>()})),
+                            _AddButton(onTap: () => _navigateAndRefresh('/next-of-kin/add', extra: {'isPrimary': false, 'bloc': context.read<LegacyBloc>()})),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -368,7 +436,7 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
                         _EmptySlot(
                           label: 'Add a secondary nominee (optional)',
                           enabled: true,
-                          onAdd: () => context.push('/next-of-kin/add', extra: {'isPrimary': false, 'bloc': context.read<LegacyBloc>()}),
+                          onAdd: () => _navigateAndRefresh('/next-of-kin/add', extra: {'isPrimary': false, 'bloc': context.read<LegacyBloc>()}),
                         )
                       else
                         ...secondaryContacts.map((c) => Padding(
@@ -377,7 +445,7 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
                                 contact: c,
                                 isPrimary: false,
                                 isActionLoading: isActionLoading,
-                                onEdit: () => context.push('/next-of-kin/add', extra: {'contact': c, 'isPrimary': false, 'bloc': context.read<LegacyBloc>()}),
+                                onEdit: () => _navigateAndRefresh('/next-of-kin/add', extra: {'contact': c, 'isPrimary': false, 'bloc': context.read<LegacyBloc>()}),
                                 onDelete: () => _confirmDelete(context, c),
                                 onResend: () => context.read<LegacyBloc>().add(ResendVerification(c.id)),
                                 onRevoke: () => context.read<LegacyBloc>().add(RevokeLegacyContact(c.id)),
