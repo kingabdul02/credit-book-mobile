@@ -113,3 +113,82 @@ class ResetPinRequested extends AuthEvent {
   @override
   List<Object?> get props => [phoneNumber, resetToken, newPin];
 }
+
+class VerifyTwoFactorRequested extends AuthEvent {
+  final String twoFactorToken;
+  final String code;
+  final String? method;
+
+  const VerifyTwoFactorRequested({
+    required this.twoFactorToken,
+    required this.code,
+    this.method,
+  });
+
+  @override
+  List<Object?> get props => [twoFactorToken, code, method];
+}
+
+class ResendTwoFactorRequested extends AuthEvent {
+  final String twoFactorToken;
+  final String? method;
+
+  const ResendTwoFactorRequested({
+    required this.twoFactorToken,
+    this.method,
+  });
+
+  @override
+  List<Object?> get props => [twoFactorToken, method];
+}
+
+class SwitchTwoFactorMethodRequested extends AuthEvent {
+  final String twoFactorToken;
+  final String method;
+
+  const SwitchTwoFactorMethodRequested({
+    required this.twoFactorToken,
+    required this.method,
+  });
+
+  @override
+  List<Object?> get props => [twoFactorToken, method];
+}
+
+class SendTwoFactorSetupCodeRequested extends AuthEvent {
+  final String method;
+  final String? email;
+  final String? phoneNumber;
+
+  const SendTwoFactorSetupCodeRequested({
+    this.method = 'authenticator',
+    this.email,
+    this.phoneNumber,
+  });
+
+  @override
+  List<Object?> get props => [method, email, phoneNumber];
+}
+
+class EnableTwoFactorRequested extends AuthEvent {
+  final String code;
+  final String method;
+
+  const EnableTwoFactorRequested({
+    required this.code,
+    this.method = 'authenticator',
+  });
+
+  @override
+  List<Object?> get props => [code, method];
+}
+
+class DisableTwoFactorRequested extends AuthEvent {
+  final String? pin;
+
+  const DisableTwoFactorRequested({this.pin});
+
+  @override
+  List<Object?> get props => [pin];
+}
+

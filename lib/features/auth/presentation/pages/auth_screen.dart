@@ -121,6 +121,26 @@ class _AuthScreenState extends State<AuthScreen> {
           await prefs.setString('saved_phone_number', _phoneController.text.trim());
           await prefs.setString('saved_country_code', _selectedCountry.dialCode);
           if (mounted) context.go('/set-pin');
+        } else if (state is AuthRequires2FA) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('saved_phone_number', _phoneController.text.trim());
+          await prefs.setString('saved_country_code', _selectedCountry.dialCode);
+          if (mounted) {
+            context.push(
+              '/verify-2fa',
+              extra: {
+                'two_factor_token': state.twoFactorToken,
+                'phone_number': state.phoneNumber,
+                'email': state.email,
+                'debug_code': state.debugCode,
+                'method': state.method,
+                'default_method': state.defaultMethod,
+                'available_methods': state.availableMethods,
+                'masked_phone': state.maskedPhone,
+                'message': state.message,
+              },
+            );
+          }
         } else if (state is AuthSuccess) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('saved_phone_number', _phoneController.text.trim());

@@ -10,6 +10,8 @@ class UserModel extends User {
     super.avatarUrl,
     super.defaultCurrency,
     required super.hasPin,
+    super.twoFactorEnabled = false,
+    super.twoFactorMethod = 'authenticator',
     super.createdAt,
   });
 
@@ -22,6 +24,8 @@ class UserModel extends User {
       avatarUrl: UserAvatar.resolveUrl(json['avatar_url'] as String?),
       defaultCurrency: json['default_currency'] as String?,
       hasPin: json['has_pin'] as bool? ?? false,
+      twoFactorEnabled: json['two_factor_enabled'] as bool? ?? false,
+      twoFactorMethod: json['two_factor_method'] as String? ?? 'authenticator',
       createdAt: json['created_at'] != null 
           ? DateTime.parse(json['created_at'] as String) 
           : null,
@@ -37,6 +41,8 @@ class UserModel extends User {
       avatarUrl: user.avatarUrl,
       defaultCurrency: user.defaultCurrency,
       hasPin: user.hasPin,
+      twoFactorEnabled: user.twoFactorEnabled,
+      twoFactorMethod: user.twoFactorMethod,
       createdAt: user.createdAt,
     );
   }
@@ -50,6 +56,8 @@ class UserModel extends User {
       'avatar_url': avatarUrl,
       'default_currency': defaultCurrency,
       'has_pin': hasPin,
+      'two_factor_enabled': twoFactorEnabled,
+      'two_factor_method': twoFactorMethod,
       'created_at': createdAt?.toIso8601String(),
     };
   }

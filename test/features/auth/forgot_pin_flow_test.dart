@@ -71,6 +71,18 @@ class _FakeAuthRepository implements AuthRepository {
   Future<User> deleteAvatar() async => throw UnimplementedError();
   @override
   Future<bool> refreshToken() async => true;
+  @override
+  Future<User> verifyTwoFactor(String twoFactorToken, String code, {String? method}) async => throw UnimplementedError();
+  @override
+  Future<Map<String, dynamic>> resendTwoFactor(String twoFactorToken, {String? method}) async => throw UnimplementedError();
+  @override
+  Future<Map<String, dynamic>> switchTwoFactorMethod(String twoFactorToken, String method) async => throw UnimplementedError();
+  @override
+  Future<Map<String, dynamic>> sendTwoFactorSetupCode({String method = 'authenticator', String? email, String? phoneNumber}) async => throw UnimplementedError();
+  @override
+  Future<User> enableTwoFactor(String code, {String method = 'authenticator'}) async => throw UnimplementedError();
+  @override
+  Future<User> disableTwoFactor({String? pin}) async => throw UnimplementedError();
 }
 
 void main() {

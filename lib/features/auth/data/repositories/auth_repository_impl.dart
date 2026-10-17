@@ -122,4 +122,48 @@ class AuthRepositoryImpl implements AuthRepository {
     await _cacheUser(user);
     return user;
   }
+
+  @override
+  Future<User> verifyTwoFactor(String twoFactorToken, String code, {String? method}) async {
+    final user = await remoteDataSource.verifyTwoFactor(twoFactorToken, code, method: method);
+    await _cacheUser(user);
+    return user;
+  }
+
+  @override
+  Future<Map<String, dynamic>> resendTwoFactor(String twoFactorToken, {String? method}) async {
+    return await remoteDataSource.resendTwoFactor(twoFactorToken, method: method);
+  }
+
+  @override
+  Future<Map<String, dynamic>> switchTwoFactorMethod(String twoFactorToken, String method) async {
+    return await remoteDataSource.switchTwoFactorMethod(twoFactorToken, method);
+  }
+
+  @override
+  Future<Map<String, dynamic>> sendTwoFactorSetupCode({
+    String method = 'authenticator',
+    String? email,
+    String? phoneNumber,
+  }) async {
+    return await remoteDataSource.sendTwoFactorSetupCode(
+      method: method,
+      email: email,
+      phoneNumber: phoneNumber,
+    );
+  }
+
+  @override
+  Future<User> enableTwoFactor(String code, {String method = 'authenticator'}) async {
+    final user = await remoteDataSource.enableTwoFactor(code, method: method);
+    await _cacheUser(user);
+    return user;
+  }
+
+  @override
+  Future<User> disableTwoFactor({String? pin}) async {
+    final user = await remoteDataSource.disableTwoFactor(pin: pin);
+    await _cacheUser(user);
+    return user;
+  }
 }

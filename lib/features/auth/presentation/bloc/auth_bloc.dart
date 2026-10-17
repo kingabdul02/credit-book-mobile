@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/error/error_handler.dart';
 import '../../domain/entities/user.dart';
+import '../../domain/entities/two_factor_exception.dart';
 import '../../domain/repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -21,6 +22,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<ForgotPinRequested>(_onForgotPinRequested);
     on<VerifyPinResetCodeRequested>(_onVerifyPinResetCodeRequested);
     on<ResetPinRequested>(_onResetPinRequested);
+    on<VerifyTwoFactorRequested>(_onVerifyTwoFactorRequested);
+    on<ResendTwoFactorRequested>(_onResendTwoFactorRequested);
+    on<SwitchTwoFactorMethodRequested>(_onSwitchTwoFactorMethodRequested);
+    on<SendTwoFactorSetupCodeRequested>(_onSendTwoFactorSetupCodeRequested);
+    on<EnableTwoFactorRequested>(_onEnableTwoFactorRequested);
+    on<DisableTwoFactorRequested>(_onDisableTwoFactorRequested);
   }
 
   /// Sanitizes exceptions into friendly messages (detecting network issues, 401s, etc.)
@@ -53,6 +60,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } else {
         emit(AuthSuccess(user));
       }
+    } on TwoFactorRequiredException catch (e) {
+      emit(AuthRequires2FA(
+        twoFactorToken: e.twoFactorToken,
+        phoneNumber: e.phoneNumber,
+        email: e.email,
+        debugCode: e.debugCode,
+        method: e.method,
+        defaultMethod: e.defaultMethod,
+        availableMethods: e.availableMethods,
+        maskedPhone: e.maskedPhone,
+      ));
     } catch (e) {
       emit(AuthError(_cleanError(e)));
     }
@@ -237,6 +255,120 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         user: user,
         message: 'Your PIN has been reset successfully.',
       ));
+    } catch (e) {
+      emit(AuthError(_cleanError(e)));
+    }
+  }
+
+  Future<void> _onVerifyTwoFactorRequested(
+    VerifyTwoFactorRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final user = await authRepository.verifyTwoFactor(
+        event.twoFactorToken,
+        event.code,
+        method: event.method,
+      );
+      emit(AuthSuccess(user, successMessage: 'Signed in successfully.'));
+    } catch (e) {
+      emit(AuthError(_cleanError(e)));
+    }
+  }
+
+  Future<void> _onResendTwoFactorRequested(
+    ResendTwoFactorRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      final result = await authRepository.resendTwoFactor(
+        event.twoFactorToken,
+        method: event.method,
+      );
+      emit(TwoFactorCodeResent(
+        message: result['message'] as String? ?? 'A new verification code has been sent.',
+        debugCode: result['debug_code'] as String?,
+        method: result['method'] as String? ?? event.method,
+      ));
+    } catch (e) {
+      emit(AuthError(_cleanError(e)));
+    }
+  }
+
+  Future<void> _onSwitchTwoFactorMethodRequested(
+    SwitchTwoFactorMethodRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final result = await authRepository.switchTwoFactorMethod(
+        event.twoFactorToken,
+        event.method,
+      );
+      emit(AuthRequires2FA(
+        twoFactorToken: event.twoFactorToken,
+        phoneNumber: result['phone_number'] as String? ?? '',
+        email: result['email'] as String?,
+        method: event.method,
+        message: result['message'] as String?,
+        debugCode: result['debug_code'] as String?,
+      ));
+    } catch (e) {
+      emit(AuthError(_cleanError(e)));
+    }
+  }
+
+  Future<void> _onSendTwoFactorSetupCodeRequested(
+    SendTwoFactorSetupCodeRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final result = await authRepository.sendTwoFactorSetupCode(
+        method: event.method,
+        email: event.email,
+        phoneNumber: event.phoneNumber,
+      );
+      emit(TwoFactorSetupDataLoaded(
+        method: event.method,
+        secret: result['secret'] as String?,
+        otpauthUrl: result['otpauth_url'] as String?,
+        qrCodeUrl: result['qr_code_url'] as String?,
+        email: result['email'] as String?,
+        phoneNumber: result['phone_number'] as String?,
+        message: result['message'] as String?,
+        debugCode: result['debug_code'] as String?,
+      ));
+    } catch (e) {
+      emit(AuthError(_cleanError(e)));
+    }
+  }
+
+  Future<void> _onEnableTwoFactorRequested(
+    EnableTwoFactorRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final user = await authRepository.enableTwoFactor(
+        event.code,
+        method: event.method,
+      );
+      emit(AuthSuccess(user, successMessage: 'Two-factor authentication enabled successfully.'));
+    } catch (e) {
+      emit(AuthError(_cleanError(e)));
+    }
+  }
+
+  Future<void> _onDisableTwoFactorRequested(
+    DisableTwoFactorRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final user = await authRepository.disableTwoFactor(pin: event.pin);
+      emit(AuthSuccess(user, successMessage: 'Two-factor authentication disabled.'));
     } catch (e) {
       emit(AuthError(_cleanError(e)));
     }

@@ -48,7 +48,7 @@ class DebtDistributionItemModel extends DebtDistributionItem {
   factory DebtDistributionItemModel.fromJson(Map<String, dynamic> json) {
     return DebtDistributionItemModel(
       category: json['category']?.toString() ?? '',
-      percentage: (json['percentage'] as num?)?.toDouble() ?? 0.0,
+      percentage: double.tryParse(json['percentage']?.toString() ?? '0') ?? 0.0,
     );
   }
 }
@@ -124,6 +124,27 @@ class InsightsDataModel extends InsightsDataEntity {
     final repaymentJson = root['repayment_rate'] as Map<String, dynamic>? ?? {};
     final categoryList = root['category_breakdown'] as List? ?? [];
 
+    var categoryItems = categoryList
+        .map((e) => DebtDistributionItemModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    // Fallback: If backend provided total_amount but percentage is 0.0 on all items
+    final totalSum = categoryList.fold<double>(
+      0.0,
+      (sum, e) => sum + (double.tryParse((e as Map<String, dynamic>)['total_amount']?.toString() ?? '0') ?? 0.0),
+    );
+    if (totalSum > 0 && categoryItems.isNotEmpty && categoryItems.every((item) => item.percentage == 0.0)) {
+      categoryItems = categoryList.map((e) {
+        final map = e as Map<String, dynamic>;
+        final amt = double.tryParse(map['total_amount']?.toString() ?? '0') ?? 0.0;
+        final pct = double.parse(((amt / totalSum) * 100).toStringAsFixed(1));
+        return DebtDistributionItemModel(
+          category: map['category']?.toString() ?? '',
+          percentage: pct,
+        );
+      }).toList();
+    }
+
     return InsightsDataModel(
       summary: InsightSummaryModel.fromJson(summaryJson),
       monthlyTrends: trendsList
@@ -136,9 +157,7 @@ class InsightsDataModel extends InsightsDataEntity {
           .map((e) => TopContactModel.fromJson(e as Map<String, dynamic>))
           .toList(),
       repaymentRate: RepaymentRateModel.fromJson(repaymentJson),
-      categoryBreakdown: categoryList
-          .map((e) => DebtDistributionItemModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      categoryBreakdown: categoryItems,
     );
   }
 }

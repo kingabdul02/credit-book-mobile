@@ -19,6 +19,7 @@ import '../../features/splash/presentation/pages/splash_screen.dart';
 import '../../features/auth/presentation/pages/auth_screen.dart';
 import '../../features/auth/presentation/pages/forgot_pin_screen.dart';
 import '../../features/auth/presentation/pages/verify_pin_reset_screen.dart';
+import '../../features/auth/presentation/pages/verify_2fa_screen.dart';
 import '../../features/auth/presentation/pages/reset_pin_screen.dart';
 import '../../features/auth/presentation/pages/set_pin_screen.dart';
 import '../../features/auth/presentation/pages/profile_photo_setup_screen.dart';
@@ -92,6 +93,38 @@ class AppRouter {
               phoneNumber: (extra['phone_number'] as String?) ?? '',
               hasEmail: (extra['has_email'] as bool?) ?? false,
               debugCode: extra['debug_code'] as String?,
+            ),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1.0, 0.0),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              );
+            },
+          );
+        },
+      ),
+      GoRoute(
+        path: '/verify-2fa',
+        name: 'verify-2fa',
+        pageBuilder: (context, state) {
+          final extra = (state.extra as Map<String, dynamic>?) ?? {};
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: Verify2faScreen(
+              twoFactorToken: (extra['two_factor_token'] as String?) ?? '',
+              phoneNumber: (extra['phone_number'] as String?) ?? '',
+              email: extra['email'] as String?,
+              debugCode: extra['debug_code'] as String?,
+              initialMethod: (extra['method'] as String?) ?? 'authenticator',
+              availableMethods: (extra['available_methods'] as List<dynamic>?)
+                      ?.map((e) => e.toString())
+                      .toList() ??
+                  const ['authenticator', 'email', 'phone'],
+              maskedPhone: extra['masked_phone'] as String?,
+              initialMessage: extra['message'] as String?,
             ),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return SlideTransition(

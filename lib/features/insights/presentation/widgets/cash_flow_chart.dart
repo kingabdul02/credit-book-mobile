@@ -33,7 +33,7 @@ class CashFlowChart extends StatelessWidget {
     }
 
     final allValues = data.expand((e) => [e.lent, e.borrowed]);
-    final maxVal = allValues.reduce((a, b) => a > b ? a : b);
+    final maxVal = allValues.isEmpty ? 0.0 : allValues.reduce((a, b) => a > b ? a : b);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -109,9 +109,9 @@ class CashFlowChart extends StatelessWidget {
                 ),
                 borderData: FlBorderData(show: false),
                 minX: 0,
-                maxX: (data.length - 1).toDouble(),
+                maxX: data.length > 1 ? (data.length - 1).toDouble() : 1.0,
                 minY: 0,
-                maxY: maxVal * 1.2,
+                maxY: maxVal > 0 ? maxVal * 1.2 : 100.0,
                 lineBarsData: [
                   // Lent line
                   LineChartBarData(

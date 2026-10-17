@@ -97,7 +97,7 @@ class DebtDistributionChart extends StatelessWidget {
                         sections: items.asMap().entries.map((e) {
                           return PieChartSectionData(
                             color: colors[e.key % colors.length],
-                            value: e.value.percentage,
+                            value: e.value.percentage > 0 ? e.value.percentage : 1.0,
                             title: '',
                             radius: 12,
                           );

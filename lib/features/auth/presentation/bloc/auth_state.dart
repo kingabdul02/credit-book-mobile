@@ -116,3 +116,129 @@ class PinResetSuccess extends AuthState {
   @override
   List<Object?> get props => [user, message];
 }
+
+class AuthRequires2FA extends AuthState {
+  final String twoFactorToken;
+  final String phoneNumber;
+  final String? email;
+  final String? debugCode;
+  final String method;
+  final String defaultMethod;
+  final List<String> availableMethods;
+  final String? maskedPhone;
+  final String? message;
+
+  const AuthRequires2FA({
+    required this.twoFactorToken,
+    required this.phoneNumber,
+    this.email,
+    this.debugCode,
+    this.method = 'authenticator',
+    this.defaultMethod = 'authenticator',
+    this.availableMethods = const ['authenticator', 'email', 'phone'],
+    this.maskedPhone,
+    this.message,
+  });
+
+  AuthRequires2FA copyWith({
+    String? twoFactorToken,
+    String? phoneNumber,
+    String? email,
+    String? debugCode,
+    String? method,
+    String? defaultMethod,
+    List<String>? availableMethods,
+    String? maskedPhone,
+    String? message,
+  }) {
+    return AuthRequires2FA(
+      twoFactorToken: twoFactorToken ?? this.twoFactorToken,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      email: email ?? this.email,
+      debugCode: debugCode ?? this.debugCode,
+      method: method ?? this.method,
+      defaultMethod: defaultMethod ?? this.defaultMethod,
+      availableMethods: availableMethods ?? this.availableMethods,
+      maskedPhone: maskedPhone ?? this.maskedPhone,
+      message: message ?? this.message,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        twoFactorToken,
+        phoneNumber,
+        email,
+        debugCode,
+        method,
+        defaultMethod,
+        availableMethods,
+        maskedPhone,
+        message,
+      ];
+}
+
+class TwoFactorSetupDataLoaded extends AuthState {
+  final String method;
+  final String? secret;
+  final String? otpauthUrl;
+  final String? qrCodeUrl;
+  final String? email;
+  final String? phoneNumber;
+  final String? message;
+  final String? debugCode;
+
+  const TwoFactorSetupDataLoaded({
+    required this.method,
+    this.secret,
+    this.otpauthUrl,
+    this.qrCodeUrl,
+    this.email,
+    this.phoneNumber,
+    this.message,
+    this.debugCode,
+  });
+
+  @override
+  List<Object?> get props => [
+        method,
+        secret,
+        otpauthUrl,
+        qrCodeUrl,
+        email,
+        phoneNumber,
+        message,
+        debugCode,
+      ];
+}
+
+class TwoFactorSetupCodeSent extends AuthState {
+  final String email;
+  final String message;
+  final String? debugCode;
+
+  const TwoFactorSetupCodeSent({
+    required this.email,
+    required this.message,
+    this.debugCode,
+  });
+
+  @override
+  List<Object?> get props => [email, message, debugCode];
+}
+
+class TwoFactorCodeResent extends AuthState {
+  final String message;
+  final String? debugCode;
+  final String? method;
+
+  const TwoFactorCodeResent({
+    required this.message,
+    this.debugCode,
+    this.method,
+  });
+
+  @override
+  List<Object?> get props => [message, debugCode, method];
+}
+

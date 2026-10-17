@@ -16,6 +16,8 @@ import '../../../../core/services/sync_service.dart';
 import '../../../../core/services/sync_status_model.dart';
 import '../widgets/set_transaction_pin_modal.dart';
 import '../widgets/reset_transaction_pin_modal.dart';
+import '../widgets/two_factor_modal.dart';
+import '../../../auth/domain/entities/user.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -80,6 +82,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _handleBiometricTap() async {
     final result = await context.push<bool>('/settings/face-setup');
     if (result == true) _loadFaceStatus();
+  }
+
+  Future<void> _handleTwoFactorTap(User? user) async {
+    if (user == null) return;
+    await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: TwoFactorModal(user: user),
+      ),
+    );
   }
 
   Future<void> _handleLogout() async {
@@ -250,14 +265,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildListTile(
                   icon: Icons.shield_outlined,
                   title: 'Two-Factor Authentication',
-                  subtitleWidget: const Text(
-                    'Currently Disabled',
-                    style: TextStyle(
-                      color: AppTheme.errorColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  subtitle: (user?.twoFactorEnabled == true)
+                      ? 'Enabled ✓ (Extra sign-in protection)'
+                      : 'Disabled • Tap to configure',
+                  subtitleColor: (user?.twoFactorEnabled == true)
+                      ? AppTheme.primaryColor
+                      : AppTheme.errorColor,
+                  trailing: (user?.twoFactorEnabled == true)
+                      ? const Icon(Icons.check_circle, color: AppTheme.primaryColor, size: 20)
+                      : null,
+                  onTap: () => _handleTwoFactorTap(user),
                 ),
                 _buildDivider(),
                 _buildListTile(

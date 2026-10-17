@@ -46,14 +46,19 @@ class MonthlyTrendPoint {
     required this.borrowed,
   });
 
-  /// Returns a short display label, e.g. "Jun"
+  /// Returns a short display label, e.g. "Jun", "Mon", "W1", "15/10"
   String get shortLabel {
     try {
       final parts = month.split('-');
       if (parts.length == 2) {
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         final monthIdx = int.parse(parts[1]) - 1;
-        return months[monthIdx];
+        if (monthIdx >= 0 && monthIdx < months.length) {
+          return months[monthIdx];
+        }
+      }
+      if (parts.length == 3) {
+        return '${parts[2]}/${parts[1]}';
       }
     } catch (_) {}
     return month;

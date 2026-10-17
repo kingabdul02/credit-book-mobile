@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/user_model.dart';
+import '../../domain/entities/two_factor_exception.dart';
 
 abstract class AuthRemoteDataSource {
   Future<UserModel> login(String phoneNumber, String pin);
@@ -18,6 +19,12 @@ abstract class AuthRemoteDataSource {
   Future<Map<String, dynamic>> forgotPin(String phoneNumber);
   Future<String> verifyPinResetCode(String phoneNumber, String code);
   Future<UserModel> resetPin(String phoneNumber, String resetToken, String newPin);
+  Future<UserModel> verifyTwoFactor(String twoFactorToken, String code, {String? method});
+  Future<Map<String, dynamic>> resendTwoFactor(String twoFactorToken, {String? method});
+  Future<Map<String, dynamic>> switchTwoFactorMethod(String twoFactorToken, String method);
+  Future<Map<String, dynamic>> sendTwoFactorSetupCode({String method = 'authenticator', String? email, String? phoneNumber});
+  Future<UserModel> enableTwoFactor(String code, {String method = 'authenticator'});
+  Future<UserModel> disableTwoFactor({String? pin});
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -68,6 +75,21 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
+      if (json['requires_2fa'] == true) {
+        throw TwoFactorRequiredException(
+          twoFactorToken: json['two_factor_token'] as String,
+          phoneNumber: json['phone_number'] as String,
+          email: json['email'] as String?,
+          debugCode: json['debug_code'] as String?,
+          method: json['method'] as String? ?? 'authenticator',
+          defaultMethod: json['default_method'] as String? ?? 'authenticator',
+          availableMethods: (json['available_methods'] as List<dynamic>?)
+                  ?.map((e) => e.toString())
+                  .toList() ??
+              const ['authenticator', 'email', 'phone'],
+          maskedPhone: json['masked_phone'] as String?,
+        );
+      }
       final token = json['access_token'] ?? json['token'];
       if (token != null) {
         await sharedPreferences.setString(tokenKey, token as String);
@@ -320,6 +342,129 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (json['refresh_token'] != null) {
         await sharedPreferences.setString(refreshTokenKey, json['refresh_token'] as String);
       }
+      return UserModel.fromJson(json['user']);
+    } else {
+      throw Exception(_parseError(response));
+    }
+  }
+
+  @override
+  Future<UserModel> verifyTwoFactor(String twoFactorToken, String code, {String? method}) async {
+    final response = await client.post(
+      Uri.parse('$baseUrl/auth/2fa/verify'),
+      headers: _headers,
+      body: jsonEncode({
+        'two_factor_token': twoFactorToken,
+        'code': code,
+        if (method != null) 'method': method,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      final token = json['access_token'] ?? json['token'];
+      if (token != null) {
+        await sharedPreferences.setString(tokenKey, token as String);
+      }
+      if (json['refresh_token'] != null) {
+        await sharedPreferences.setString(refreshTokenKey, json['refresh_token'] as String);
+      }
+      return UserModel.fromJson(json['user']);
+    } else {
+      throw Exception(_parseError(response));
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> resendTwoFactor(String twoFactorToken, {String? method}) async {
+    final response = await client.post(
+      Uri.parse('$baseUrl/auth/2fa/resend'),
+      headers: _headers,
+      body: jsonEncode({
+        'two_factor_token': twoFactorToken,
+        if (method != null) 'method': method,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      throw Exception(_parseError(response));
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> switchTwoFactorMethod(String twoFactorToken, String method) async {
+    final response = await client.post(
+      Uri.parse('$baseUrl/auth/2fa/switch-method'),
+      headers: _headers,
+      body: jsonEncode({
+        'two_factor_token': twoFactorToken,
+        'method': method,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      throw Exception(_parseError(response));
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> sendTwoFactorSetupCode({
+    String method = 'authenticator',
+    String? email,
+    String? phoneNumber,
+  }) async {
+    final response = await client.post(
+      Uri.parse('$baseUrl/auth/2fa/send-setup-code'),
+      headers: _headers,
+      body: jsonEncode({
+        'method': method,
+        if (email != null && email.isNotEmpty) 'email': email,
+        if (phoneNumber != null && phoneNumber.isNotEmpty) 'phone_number': phoneNumber,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      throw Exception(_parseError(response));
+    }
+  }
+
+  @override
+  Future<UserModel> enableTwoFactor(String code, {String method = 'authenticator'}) async {
+    final response = await client.post(
+      Uri.parse('$baseUrl/auth/2fa/enable'),
+      headers: _headers,
+      body: jsonEncode({
+        'code': code,
+        'method': method,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return UserModel.fromJson(json['user']);
+    } else {
+      throw Exception(_parseError(response));
+    }
+  }
+
+  @override
+  Future<UserModel> disableTwoFactor({String? pin}) async {
+    final response = await client.post(
+      Uri.parse('$baseUrl/auth/2fa/disable'),
+      headers: _headers,
+      body: jsonEncode({
+        if (pin != null) 'pin': pin,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
       return UserModel.fromJson(json['user']);
     } else {
       throw Exception(_parseError(response));

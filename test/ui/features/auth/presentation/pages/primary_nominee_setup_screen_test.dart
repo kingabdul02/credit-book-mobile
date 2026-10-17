@@ -38,6 +38,18 @@ class _MockAuthRepo implements AuthRepository {
   Future<String> verifyPinResetCode(String phoneNumber, String code) async => throw UnimplementedError();
   @override
   Future<User> resetPin(String phoneNumber, String resetToken, String newPin) async => throw UnimplementedError();
+  @override
+  Future<User> verifyTwoFactor(String twoFactorToken, String code, {String? method}) async => throw UnimplementedError();
+  @override
+  Future<Map<String, dynamic>> resendTwoFactor(String twoFactorToken, {String? method}) async => throw UnimplementedError();
+  @override
+  Future<Map<String, dynamic>> switchTwoFactorMethod(String twoFactorToken, String method) async => throw UnimplementedError();
+  @override
+  Future<Map<String, dynamic>> sendTwoFactorSetupCode({String method = 'authenticator', String? email, String? phoneNumber}) async => throw UnimplementedError();
+  @override
+  Future<User> enableTwoFactor(String code, {String method = 'authenticator'}) async => throw UnimplementedError();
+  @override
+  Future<User> disableTwoFactor({String? pin}) async => throw UnimplementedError();
 }
 
 class _MockLegacyRepo implements LegacyRepository {

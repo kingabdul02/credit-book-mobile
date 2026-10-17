@@ -15,4 +15,10 @@ abstract class AuthRepository {
   Future<Map<String, dynamic>> forgotPin(String phoneNumber);
   Future<String> verifyPinResetCode(String phoneNumber, String code);
   Future<User> resetPin(String phoneNumber, String resetToken, String newPin);
+  Future<User> verifyTwoFactor(String twoFactorToken, String code, {String? method});
+  Future<Map<String, dynamic>> resendTwoFactor(String twoFactorToken, {String? method});
+  Future<Map<String, dynamic>> switchTwoFactorMethod(String twoFactorToken, String method);
+  Future<Map<String, dynamic>> sendTwoFactorSetupCode({String method = 'authenticator', String? email, String? phoneNumber});
+  Future<User> enableTwoFactor(String code, {String method = 'authenticator'});
+  Future<User> disableTwoFactor({String? pin});
 }

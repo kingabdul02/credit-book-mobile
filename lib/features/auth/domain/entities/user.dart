@@ -6,6 +6,8 @@ class User {
   final String? avatarUrl;
   final String? defaultCurrency;
   final bool hasPin;
+  final bool twoFactorEnabled;
+  final String twoFactorMethod;
   final DateTime? createdAt;
 
   const User({
@@ -16,6 +18,8 @@ class User {
     this.avatarUrl,
     this.defaultCurrency,
     required this.hasPin,
+    this.twoFactorEnabled = false,
+    this.twoFactorMethod = 'authenticator',
     this.createdAt,
   });
 
@@ -28,6 +32,8 @@ class User {
     bool clearAvatarUrl = false,
     String? defaultCurrency,
     bool? hasPin,
+    bool? twoFactorEnabled,
+    String? twoFactorMethod,
     DateTime? createdAt,
   }) {
     return User(
@@ -38,6 +44,8 @@ class User {
       avatarUrl: clearAvatarUrl ? null : (avatarUrl ?? this.avatarUrl),
       defaultCurrency: defaultCurrency ?? this.defaultCurrency,
       hasPin: hasPin ?? this.hasPin,
+      twoFactorEnabled: twoFactorEnabled ?? this.twoFactorEnabled,
+      twoFactorMethod: twoFactorMethod ?? this.twoFactorMethod,
       createdAt: createdAt ?? this.createdAt,
     );
   }

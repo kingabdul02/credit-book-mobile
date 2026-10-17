@@ -13,6 +13,7 @@ class CustomTextField extends StatefulWidget {
   final Widget? trailingLabel;
   final int? maxLength;
   final List<TextInputFormatter>? inputFormatters;
+  final ValueChanged<String>? onChanged;
 
   const CustomTextField({
     super.key,
@@ -26,6 +27,7 @@ class CustomTextField extends StatefulWidget {
     this.trailingLabel,
     this.maxLength,
     this.inputFormatters,
+    this.onChanged,
   });
 
   @override
@@ -95,6 +97,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                   keyboardType: widget.keyboardType,
                   maxLength: widget.maxLength,
                   inputFormatters: widget.inputFormatters,
+                  onChanged: widget.onChanged,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
                   ),
