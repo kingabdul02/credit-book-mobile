@@ -78,6 +78,7 @@ class _SetTransactionPinModalState extends State<SetTransactionPinModal>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final currentPin = _isConfirmStep ? _confirmPin : _pin;
     final title = _isConfirmStep ? 'Confirm your PIN' : 'Create a 4-digit PIN';
     final subtitle = _isConfirmStep
@@ -86,14 +87,23 @@ class _SetTransactionPinModalState extends State<SetTransactionPinModal>
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      decoration: const BoxDecoration(
-        color: Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkBackground : const Color(0xFFF8FAFC),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(width: 40, height: 4, decoration: BoxDecoration(color: AppTheme.textMuted.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(2))),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: isDark
+                  ? AppTheme.darkBorder
+                  : AppTheme.textMuted.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
           const SizedBox(height: 24),
 
           // Header icon
@@ -105,9 +115,23 @@ class _SetTransactionPinModalState extends State<SetTransactionPinModal>
           ).animate().scale(duration: 300.ms, curve: Curves.easeOutBack),
           const SizedBox(height: 16),
 
-          Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppTheme.textDark)),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+            ),
+          ),
           const SizedBox(height: 6),
-          Text(subtitle, style: TextStyle(fontSize: 13, color: AppTheme.textDark.withValues(alpha: 0.6), fontWeight: FontWeight.w500)),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 13,
+              color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.6),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
           const SizedBox(height: 32),
 
           // Dot indicators
@@ -140,7 +164,9 @@ class _SetTransactionPinModalState extends State<SetTransactionPinModal>
                           ? AppTheme.errorColor
                           : filled
                               ? AppTheme.primaryColor
-                              : AppTheme.textMuted.withValues(alpha: 0.4),
+                              : isDark
+                                  ? AppTheme.darkBorder
+                                  : AppTheme.textMuted.withValues(alpha: 0.4),
                       width: 2,
                     ),
                   ),
@@ -156,51 +182,51 @@ class _SetTransactionPinModalState extends State<SetTransactionPinModal>
           const SizedBox(height: 40),
 
           // Keypad
-          _buildKeypad(),
+          _buildKeypad(isDark),
           const SizedBox(height: 24),
         ],
       ),
     );
   }
 
-  Widget _buildKeypad() {
+  Widget _buildKeypad(bool isDark) {
     return Column(
       children: [
-        _buildKeyRow(['1', '2', '3']),
+        _buildKeyRow(['1', '2', '3'], isDark),
         const SizedBox(height: 16),
-        _buildKeyRow(['4', '5', '6']),
+        _buildKeyRow(['4', '5', '6'], isDark),
         const SizedBox(height: 16),
-        _buildKeyRow(['7', '8', '9']),
+        _buildKeyRow(['7', '8', '9'], isDark),
         const SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildKey('', icon: Icons.fingerprint, iconColor: AppTheme.primaryColor),
+            _buildKey('', icon: Icons.fingerprint, iconColor: AppTheme.primaryColor, isDark: isDark),
             const SizedBox(width: 24),
-            _buildKey('0'),
+            _buildKey('0', isDark: isDark),
             const SizedBox(width: 24),
-            _buildKey('DEL', icon: Icons.backspace_outlined),
+            _buildKey('DEL', icon: Icons.backspace_outlined, isDark: isDark),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildKeyRow(List<String> keys) {
+  Widget _buildKeyRow(List<String> keys, bool isDark) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: keys.asMap().entries.map((e) {
         return Row(
           children: [
             if (e.key > 0) const SizedBox(width: 24),
-            _buildKey(e.value),
+            _buildKey(e.value, isDark: isDark),
           ],
         );
       }).toList(),
     );
   }
 
-  Widget _buildKey(String value, {IconData? icon, Color? iconColor}) {
+  Widget _buildKey(String value, {IconData? icon, Color? iconColor, required bool isDark}) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => icon == Icons.fingerprint ? null : _onKeyPress(value == '' ? '' : (icon != null ? 'DEL' : value)),
@@ -209,8 +235,15 @@ class _SetTransactionPinModalState extends State<SetTransactionPinModal>
         height: 72,
         alignment: Alignment.center,
         child: icon != null
-            ? Icon(icon, size: 28, color: iconColor ?? AppTheme.textMuted)
-            : Text(value, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w600, color: AppTheme.textDark)),
+            ? Icon(icon, size: 28, color: iconColor ?? (isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted))
+            : Text(
+                value,
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                ),
+              ),
       ),
     );
   }

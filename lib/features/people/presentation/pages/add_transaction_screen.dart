@@ -8,7 +8,14 @@ import '../../../../core/services/face_auth_service.dart';
 import '../bloc/add_transaction_bloc.dart';
 import '../../domain/entities/contact_entity.dart';
 import '../widgets/confirm_transaction_pin_modal.dart';
+import '../../../settings/presentation/widgets/set_transaction_pin_modal.dart';
 import 'package:intl/intl.dart';
+
+enum _LargeTransactionPromptResult {
+  cancel,
+  usePin,
+  setupFaceId,
+}
 
 class AddTransactionScreen extends StatefulWidget {
   final String? preSelectedContactId;
@@ -49,25 +56,94 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       
       if (!hasFaceSet) {
         if (!context.mounted) return;
-        final usePinFallback = await showDialog<bool>(
+        final result = await showDialog<_LargeTransactionPromptResult>(
           context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Action Required'),
-            content: const Text('Transactions of this size require biometric verification. Please set up your Face ID in Settings.'),
-            actions: [
-              TextButton(
-                onPressed: () => ctx.pop(false),
-                child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          builder: (ctx) {
+            final isDark = Theme.of(ctx).brightness == Brightness.dark;
+            return AlertDialog(
+              backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
+              title: Text(
+                'Action Required',
+                style: TextStyle(
+                  color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-              TextButton(
-                onPressed: () => ctx.pop(true),
-                child: const Text('Use PIN instead', style: TextStyle(color: AppTheme.primaryColor)),
+              content: Text(
+                'Transactions of this size require biometric verification. Please set up your Face ID in Settings.',
+                style: TextStyle(
+                  color: isDark ? AppTheme.darkTextSecondary : AppTheme.textDark.withValues(alpha: 0.8),
+                ),
               ),
-            ],
-          ),
+              actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              actionsOverflowButtonSpacing: 8,
+              actions: [
+                TextButton(
+                  onPressed: () => ctx.pop(_LargeTransactionPromptResult.cancel),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: isDark ? AppTheme.darkTextSecondary : Colors.grey,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => ctx.pop(_LargeTransactionPromptResult.usePin),
+                  child: Text(
+                    'Use PIN instead',
+                    style: TextStyle(
+                      color: isDark ? AppTheme.darkTextSecondary : AppTheme.textMuted,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () => ctx.pop(_LargeTransactionPromptResult.setupFaceId),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryColor,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Set up Face ID',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            );
+          },
         );
-        if (usePinFallback != true) return;
-        // Fallback to PIN
+
+        if (result == null || result == _LargeTransactionPromptResult.cancel) {
+          return;
+        }
+
+        if (result == _LargeTransactionPromptResult.setupFaceId) {
+          if (!context.mounted) return;
+          await context.push<bool>('/settings/face-setup');
+
+          // Re-check if Face ID was registered after setup
+          final hasFaceNow = await FaceAuthService.isFaceRegistered();
+          if (!hasFaceNow) {
+            return;
+          }
+
+          // Proceed directly to face verification
+          if (!context.mounted) return;
+          final verified = await context.push<bool>('/face-verify', extra: {
+            'amount': amount,
+            'contactName': contactName,
+          });
+
+          if (verified == true && context.mounted) {
+            context.read<AddTransactionBloc>().add(SubmitTransaction());
+          }
+          return;
+        }
+        // If result == _LargeTransactionPromptResult.usePin, proceed to Transaction PIN Flow below
       } else {
         if (!context.mounted) return;
         final verified = await context.push<bool>('/face-verify', extra: {
@@ -79,19 +155,33 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           // Face verification is mandatory; abort if cancelled or failed
           return;
         }
+
+        if (context.mounted) {
+          context.read<AddTransactionBloc>().add(SubmitTransaction());
+        }
+        return;
       }
     }
 
-    // Standard PIN Flow
+    // Transaction PIN Flow
     final hasPinSet = await TransactionPinService.hasPin();
 
     if (!hasPinSet) {
-      // No PIN set — save directly
-      if (context.mounted) context.read<AddTransactionBloc>().add(SubmitTransaction());
-      return;
+      if (!context.mounted) return;
+      final pinCreated = await showModalBottomSheet<bool>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => const SetTransactionPinModal(),
+      );
+
+      if (pinCreated != true) {
+        // User cancelled PIN setup
+        return;
+      }
     }
 
-    // PIN is set — show confirmation modal
+    // PIN is set — show confirmation modal to validate PIN
     if (!context.mounted) return;
 
     final confirmed = await showModalBottomSheet<bool>(
