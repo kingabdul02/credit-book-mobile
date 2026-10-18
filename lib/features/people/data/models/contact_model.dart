@@ -42,6 +42,7 @@ class ContactModel extends ContactEntity {
     );
   }
 
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -52,6 +53,13 @@ class ContactModel extends ContactEntity {
       'total_owed_to_user': totalOwedToUser,
       'total_user_owes': totalUserOwes,
       'updated_at': updatedAt,
+      if (debts != null)
+        'debts': debts!.map((d) {
+          if (d is DebtModel) return d.toJson();
+          if (d is DebtEntity) return DebtModel.fromEntity(d).toJson();
+          if (d is Map<String, dynamic>) return d;
+          return null;
+        }).where((d) => d != null).toList(),
     };
   }
 }

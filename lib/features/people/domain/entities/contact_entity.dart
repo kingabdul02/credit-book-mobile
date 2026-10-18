@@ -1,3 +1,5 @@
+import '../../data/models/debt_model.dart';
+
 class ContactEntity {
   final String id;
   final String fullName;
@@ -64,6 +66,13 @@ class ContactEntity {
       'total_owed_to_user': totalOwedToUser,
       'total_user_owes': totalUserOwes,
       'updated_at': updatedAt,
+      if (debts != null)
+        'debts': debts!.map((d) {
+          if (d is DebtModel) return d.toJson();
+          if (d is DebtEntity) return DebtModel.fromEntity(d).toJson();
+          if (d is Map<String, dynamic>) return d;
+          return null;
+        }).where((d) => d != null).toList(),
     };
   }
 
@@ -77,6 +86,9 @@ class ContactEntity {
       totalOwedToUser: double.tryParse(json['total_owed_to_user']?.toString() ?? '0') ?? 0.0,
       totalUserOwes: double.tryParse(json['total_user_owes']?.toString() ?? '0') ?? 0.0,
       updatedAt: json['updated_at']?.toString() ?? '',
+      debts: (json['debts'] as List?)
+          ?.map((d) => d is Map<String, dynamic> ? DebtModel.fromJson(d) : d)
+          .toList(),
     );
   }
 }

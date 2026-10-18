@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/error/error_handler.dart';
+import '../../../../core/services/sync_service.dart';
 import '../../domain/entities/contact_entity.dart';
 import '../../data/models/debt_model.dart';
 import '../../data/models/transaction_model.dart';
@@ -66,20 +68,32 @@ class PaymentFailed extends LedgerState {
 // Bloc
 class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
   final PeopleRepository repository;
+  String? _currentContactId;
+  StreamSubscription? _syncSub;
 
   LedgerBloc({required this.repository}) : super(LedgerInitial()) {
     on<LoadLedger>(_onLoadLedger);
     on<RecordPayment>(_onRecordPayment);
+    _syncSub = SyncService.onSyncComplete.listen((_) {
+      if (_currentContactId != null) {
+        add(LoadLedger(_currentContactId!, forceRefresh: false));
+      }
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _syncSub?.cancel();
+    return super.close();
   }
 
   Future<void> _onLoadLedger(LoadLedger event, Emitter<LedgerState> emit) async {
-    // 1. Check for cached contact details
+    _currentContactId = event.contactId;
+    // 1. Immediately emit cached/local contact details with 0ms latency
     final cached = repository.getCachedContactDetails(event.contactId);
-    final hasData = state is LedgerLoaded || cached != null;
-
-    if (cached != null && state is! LedgerLoaded) {
+    if (cached != null) {
       emit(_buildLedgerLoaded(cached));
-    } else if (!hasData) {
+    } else if (state is! LedgerLoaded) {
       emit(LedgerLoading());
     }
 
@@ -90,7 +104,7 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
       );
       emit(_buildLedgerLoaded(contact));
     } catch (e) {
-      if (!hasData) {
+      if (state is! LedgerLoaded) {
         emit(LedgerError(ErrorHandler.getFriendlyMessage(e)));
       }
     }
@@ -195,10 +209,14 @@ class LedgerBloc extends Bloc<LedgerEvent, LedgerState> {
         debtId: event.debtId,
         amount: event.amount,
         note: event.note,
+        contactId: event.contactId,
       );
       emit(PaymentRecorded());
-      // Reload ledger with forceRefresh so the UI reflects the new payment
-      add(LoadLedger(event.contactId, forceRefresh: true));
+      final cached = repository.getCachedContactDetails(event.contactId);
+      if (cached != null) {
+        emit(_buildLedgerLoaded(cached));
+      }
+      add(LoadLedger(event.contactId, forceRefresh: false));
     } catch (e) {
       emit(PaymentFailed(ErrorHandler.getFriendlyMessage(e)));
     }

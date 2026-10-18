@@ -15,6 +15,8 @@ class AuthRepositoryImpl implements AuthRepository {
   final PeopleLocalDataSource? peopleLocalDataSource;
 
   static const String cachedUserKey = 'cached_user';
+  static const String currentUserIdKey = 'current_user_id';
+  static const String lastLoggedInUserIdKey = 'last_logged_in_user_id';
 
   AuthRepositoryImpl({
     required this.remoteDataSource,
@@ -23,12 +25,36 @@ class AuthRepositoryImpl implements AuthRepository {
     this.peopleLocalDataSource,
   });
 
+  String? getLastLoggedInUserId() {
+    return sharedPreferences.getString(lastLoggedInUserIdKey);
+  }
+
+  bool isSameAsPreviousUser(String userId) {
+    final previous = getLastLoggedInUserId();
+    return previous != null && previous == userId;
+  }
+
   Future<void> _cacheUser(User user) async {
     try {
       final userModel = UserModel.fromEntity(user);
       await sharedPreferences.setString(cachedUserKey, jsonEncode(userModel.toJson()));
-      await sharedPreferences.setString('current_user_id', user.id);
-      await peopleLocalDataSource?.setNeedsLoginSync(user.id, true);
+      await sharedPreferences.setString(currentUserIdKey, user.id);
+
+      final isSameUser = isSameAsPreviousUser(user.id);
+
+      if (isSameUser) {
+        // Same user logged back in:
+        // Retain locally stored contacts without fetching them again from the server.
+        await peopleLocalDataSource?.setNeedsLoginSync(user.id, false);
+      } else {
+        // Different user logged in:
+        // Clear in-memory caches to prevent data leakage from previous user
+        cacheManager?.clear();
+        await sharedPreferences.remove('cached_dashboard');
+        // Flag to fetch their contacts from the server and update local storage accordingly
+        await peopleLocalDataSource?.setNeedsLoginSync(user.id, true);
+        await sharedPreferences.setString(lastLoggedInUserIdKey, user.id);
+      }
     } catch (_) {
       // Graceful degradation if local serialization fails
     }
@@ -105,10 +131,13 @@ class AuthRepositoryImpl implements AuthRepository {
       await remoteDataSource.logout();
     } finally {
       await sharedPreferences.remove(cachedUserKey);
-      await sharedPreferences.remove('current_user_id');
+      await sharedPreferences.remove(currentUserIdKey);
       await sharedPreferences.remove('app_notifications_list');
+      await sharedPreferences.remove('cached_dashboard');
       cacheManager?.clear();
-      await peopleLocalDataSource?.clearAll();
+      // NOTE: We deliberately do NOT call peopleLocalDataSource?.clearAll() here.
+      // Contacts remain partitioned per user (cached_people_data_$userId) and are preserved
+      // across logout/login sessions for the same user.
     }
   }
 

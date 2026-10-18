@@ -1,10 +1,12 @@
+import 'dart:convert';
+import 'dart:io';
+import '../../../../core/services/connectivity_manager.dart';
+import '../../../../core/services/app_cache_manager.dart';
 import '../../domain/entities/dashboard_entities.dart';
 import '../../domain/repositories/home_repository.dart';
 import '../datasources/home_remote_data_source.dart';
 import '../datasources/home_local_data_source.dart';
 import '../models/dashboard_models.dart';
-import '../../../../core/services/app_cache_manager.dart';
-import 'dart:io';
 
 class HomeRepositoryImpl implements HomeRepository {
   final HomeRemoteDataSource remoteDataSource;
@@ -21,7 +23,21 @@ class HomeRepositoryImpl implements HomeRepository {
 
   @override
   DashboardData? getCachedDashboardData() {
-    return cacheManager?.get<DashboardData>(cacheKey);
+    final memory = cacheManager?.get<DashboardData>(cacheKey);
+    if (memory != null) return memory;
+    try {
+      if (localDataSource is HomeLocalDataSourceImpl) {
+        final jsonString = (localDataSource as HomeLocalDataSourceImpl)
+            .sharedPreferences
+            .getString('cached_dashboard');
+        if (jsonString != null && jsonString.isNotEmpty) {
+          final local = DashboardDataModel.fromJson(jsonDecode(jsonString));
+          cacheManager?.put<DashboardData>(cacheKey, local, ttl: const Duration(minutes: 3));
+          return local;
+        }
+      }
+    } catch (_) {}
+    return null;
   }
 
   @override
@@ -30,6 +46,11 @@ class HomeRepositoryImpl implements HomeRepository {
     if (!forceRefresh && cacheManager != null && cacheManager!.isFresh(cacheKey)) {
       final cached = cacheManager!.get<DashboardData>(cacheKey);
       if (cached != null) return cached;
+    }
+
+    // Fast path: if offline, return local data immediately
+    if (!ConnectivityManager.instance.isOnline) {
+      return await _fetchLocalData();
     }
 
     // 2. Fetch fresh from remote

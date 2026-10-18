@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/contact_entity.dart';
+import '../models/debt_model.dart';
+import '../models/transaction_model.dart';
 
 abstract class PeopleLocalDataSource {
   PeopleDataEntity? getPeopleData(String userId);
@@ -12,6 +14,10 @@ abstract class PeopleLocalDataSource {
   Future<void> setFetchedFromServer(String userId, bool value);
   bool needsLoginSync(String userId);
   Future<void> setNeedsLoginSync(String userId, bool value);
+  ContactEntity? getContactById(String userId, String contactId);
+  Future<void> saveContactDetails(String userId, ContactEntity contact);
+  Future<void> addOfflineDebt(String userId, String contactId, DebtEntity debt, {String? replaceClientId});
+  Future<void> addOfflinePayment(String userId, String contactId, String debtId, TransactionEntity transaction);
   Future<void> clearUserContacts(String userId);
   Future<void> clearAll();
 }
@@ -145,6 +151,148 @@ class PeopleLocalDataSourceImpl implements PeopleLocalDataSource {
   }
 
   @override
+  ContactEntity? getContactById(String userId, String contactId) {
+    if (userId.isEmpty || contactId.isEmpty) return null;
+    final data = getPeopleData(userId);
+    if (data == null) return null;
+
+    final index = data.allContacts.indexWhere((c) => c.id == contactId);
+    if (index >= 0) return data.allContacts[index];
+
+    final favIndex = data.favorites.indexWhere((c) => c.id == contactId);
+    if (favIndex >= 0) return data.favorites[favIndex];
+
+    final freqIndex = data.frequentlyContacted.indexWhere((c) => c.id == contactId);
+    if (freqIndex >= 0) return data.frequentlyContacted[freqIndex];
+
+    return null;
+  }
+
+  @override
+  Future<void> saveContactDetails(String userId, ContactEntity contact) async {
+    await saveContact(userId, contact);
+  }
+
+  @override
+  Future<void> addOfflineDebt(String userId, String contactId, DebtEntity debt, {String? replaceClientId}) async {
+    final contact = getContactById(userId, contactId);
+    if (contact == null) return;
+
+    final currentDebts = List<dynamic>.from(contact.debts ?? []);
+    final debtIndex = currentDebts.indexWhere((d) {
+      final id = d is DebtEntity ? d.id : (d is Map ? d['id'] : null);
+      return id == debt.id || (replaceClientId != null && id == replaceClientId);
+    });
+
+    double owedToUser = contact.totalOwedToUser;
+    double userOwes = contact.totalUserOwes;
+
+    final type = debt.transactionType.toUpperCase();
+    if (debtIndex >= 0) {
+      final old = currentDebts[debtIndex];
+      final double oldAmount = old is DebtEntity
+          ? old.originalAmount
+          : ((old is Map ? (old['original_amount'] ?? old['originalAmount']) : 0.0) as num).toDouble();
+      final diff = debt.originalAmount - oldAmount;
+      if (type == 'THEY_OWE_ME') {
+        owedToUser += diff;
+      } else {
+        userOwes += diff;
+      }
+      currentDebts[debtIndex] = debt;
+    } else {
+      currentDebts.insert(0, debt);
+      if (type == 'THEY_OWE_ME') {
+        owedToUser += debt.originalAmount;
+      } else {
+        userOwes += debt.originalAmount;
+      }
+    }
+
+    final updatedContact = contact.copyWith(
+      debts: currentDebts,
+      totalOwedToUser: owedToUser.clamp(0.0, double.infinity),
+      totalUserOwes: userOwes.clamp(0.0, double.infinity),
+      updatedAt: DateTime.now().toIso8601String(),
+    );
+
+    await saveContact(userId, updatedContact);
+  }
+
+  @override
+  Future<void> addOfflinePayment(
+    String userId,
+    String contactId,
+    String debtId,
+    TransactionEntity transaction,
+  ) async {
+    final contact = getContactById(userId, contactId);
+    if (contact == null) return;
+
+    final currentDebts = List<dynamic>.from(contact.debts ?? []);
+    final debtIndex = currentDebts.indexWhere((d) {
+      if (d is DebtEntity) return d.id == debtId;
+      if (d is Map) return d['id'] == debtId;
+      return false;
+    });
+
+    if (debtIndex >= 0) {
+      final existing = currentDebts[debtIndex];
+      final DebtEntity debt = existing is DebtEntity
+          ? existing
+          : DebtModel.fromJson(existing as Map<String, dynamic>);
+
+      // Check if transaction already recorded (idempotent duplicate prevention)
+      final alreadyRecorded = debt.transactions.any((t) => t.id == transaction.id);
+      if (alreadyRecorded) {
+        return;
+      }
+
+      final updatedTransactions = List<TransactionEntity>.from(debt.transactions);
+      updatedTransactions.insert(0, transaction);
+
+      final newPaid = debt.paidAmount + transaction.amount;
+      final newOutstanding = (debt.originalAmount - newPaid).clamp(0.0, double.infinity);
+      final newProgress = debt.originalAmount > 0
+          ? ((newPaid / debt.originalAmount) * 100).clamp(0.0, 100.0)
+          : 100.0;
+      final newStatus = newOutstanding <= 0 ? 'paid' : 'partially_paid';
+
+      final updatedDebt = DebtModel(
+        id: debt.id,
+        transactionType: debt.transactionType,
+        originalAmount: debt.originalAmount,
+        paidAmount: newPaid,
+        outstandingAmount: newOutstanding,
+        progressPercentage: newProgress,
+        status: newStatus,
+        transactions: updatedTransactions,
+      );
+
+      currentDebts[debtIndex] = updatedDebt;
+
+      double owedToUser = contact.totalOwedToUser;
+      double userOwes = contact.totalUserOwes;
+
+      final type = debt.transactionType.toUpperCase();
+      if (type == 'THEY_OWE_ME') {
+        owedToUser = (owedToUser - transaction.amount).clamp(0.0, double.infinity);
+      } else {
+        userOwes = (userOwes - transaction.amount).clamp(0.0, double.infinity);
+      }
+
+      final updatedContact = contact.copyWith(
+        debts: currentDebts,
+        totalOwedToUser: owedToUser,
+        totalUserOwes: userOwes,
+        updatedAt: DateTime.now().toIso8601String(),
+      );
+
+      await saveContact(userId, updatedContact);
+    }
+  }
+
+  @override
   Future<void> clearUserContacts(String userId) async {
     if (userId.isEmpty) return;
     await sharedPreferences.remove(_userKey(userId));
@@ -163,3 +311,4 @@ class PeopleLocalDataSourceImpl implements PeopleLocalDataSource {
     }
   }
 }
+

@@ -34,4 +34,24 @@ class TransactionModel extends TransactionEntity {
       createdAt: json['created_at'] ?? '',
     );
   }
+
+  factory TransactionModel.fromEntity(TransactionEntity entity) {
+    return TransactionModel(
+      id: entity.id,
+      type: entity.type,
+      amount: entity.amount,
+      note: entity.note,
+      createdAt: entity.createdAt,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type,
+      'amount': amount,
+      'note': note,
+      'created_at': createdAt,
+    };
+  }
 }

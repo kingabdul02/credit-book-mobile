@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -32,6 +33,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _hasPinSet = false;
   SyncStatusModel _syncStatus = SyncStatusModel.empty;
   bool _isSyncing = false;
+  StreamSubscription<SyncStatusModel>? _syncSub;
 
   @override
   void initState() {
@@ -39,6 +41,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadPinStatus();
     _loadSyncStatus();
     _loadFaceStatus();
+    _syncSub = SyncService.onSyncStatusChanged.listen((status) {
+      if (mounted) {
+        setState(() {
+          _syncStatus = status;
+          _isSyncing = status.isSyncing;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _syncSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadFaceStatus() async {
@@ -191,55 +207,72 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: user?.name.isNotEmpty == true ? user!.name : 'Set up your profile',
                   onTap: () => context.push('/profile'),
                 ),
-                // _buildDivider(),
-                // _buildListTile(
-                //   icon: Icons.cloud_queue,
-                //   title: 'Cloud Sync',
-                //   onTap: _handleSyncTap,
-                //   subtitleWidget: _isSyncing
-                //       ? Row(
-                //           children: [
-                //             SizedBox(
-                //               width: 10,
-                //               height: 10,
-                //               child: CircularProgressIndicator(strokeWidth: 1.5, color: AppTheme.primaryColor),
-                //             ),
-                //             const SizedBox(width: 6),
-                //             const Text('Syncing…', style: TextStyle(color: AppTheme.primaryColor, fontSize: 12, fontWeight: FontWeight.w700)),
-                //           ],
-                //         )
-                //       : Row(
-                //           children: [
-                //             Container(
-                //               width: 6,
-                //               height: 6,
-                //               decoration: BoxDecoration(
-                //                 color: _syncStatus.hasConflicts
-                //                     ? AppTheme.errorColor
-                //                     : _syncStatus.isStale
-                //                         ? Colors.orange
-                //                         : AppTheme.primaryColor,
-                //                 shape: BoxShape.circle,
-                //               ),
-                //             ),
-                //             const SizedBox(width: 6),
-                //             Flexible(
-                //               child: Text(
-                //                 _syncStatus.hasConflicts
-                //                     ? '${_syncStatus.conflictCount} conflict(s) — tap to resolve'
-                //                     : 'Active • ${_syncStatus.formattedLastSync}',
-                //                 maxLines: 1,
-                //                 overflow: TextOverflow.ellipsis,
-                //                 style: TextStyle(
-                //                   color: _syncStatus.hasConflicts ? AppTheme.errorColor : AppTheme.primaryColor,
-                //                   fontSize: 12,
-                //                   fontWeight: FontWeight.w700,
-                //                 ),
-                //               ),
-                //             ),
-                //           ],
-                //         ),
-                // ),
+                _buildDivider(),
+                _buildListTile(
+                  icon: Icons.cloud_sync_outlined,
+                  title: 'Cloud Sync',
+                  onTap: _handleSyncTap,
+                  subtitleWidget: _isSyncing
+                      ? Row(
+                          children: [
+                            SizedBox(
+                              width: 10,
+                              height: 10,
+                              child: CircularProgressIndicator(strokeWidth: 1.5, color: AppTheme.primaryColor),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'Syncing in background…',
+                              style: TextStyle(
+                                color: AppTheme.primaryColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          children: [
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: BoxDecoration(
+                                color: _syncStatus.hasFailed
+                                    ? AppTheme.errorColor
+                                    : _syncStatus.hasConflicts
+                                        ? AppTheme.errorColor
+                                        : _syncStatus.hasPending
+                                            ? Colors.orange
+                                            : AppTheme.primaryColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                _syncStatus.hasFailed
+                                    ? '${_syncStatus.failedCount} failed • Tap to retry'
+                                    : _syncStatus.hasConflicts
+                                        ? '${_syncStatus.conflictCount} conflict(s) • Tap to resolve'
+                                        : _syncStatus.hasPending
+                                            ? '${_syncStatus.pendingCount} pending offline changes'
+                                            : 'Synced • ${_syncStatus.formattedLastSync}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: _syncStatus.hasFailed || _syncStatus.hasConflicts
+                                      ? AppTheme.errorColor
+                                      : _syncStatus.hasPending
+                                          ? Colors.orange
+                                          : AppTheme.primaryColor,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
               ],
             ),
             const SizedBox(height: 32),

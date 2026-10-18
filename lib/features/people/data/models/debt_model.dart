@@ -51,4 +51,32 @@ class DebtModel extends DebtEntity {
           [],
     );
   }
+
+  factory DebtModel.fromEntity(DebtEntity entity) {
+    return DebtModel(
+      id: entity.id,
+      transactionType: entity.transactionType,
+      originalAmount: entity.originalAmount,
+      paidAmount: entity.paidAmount,
+      outstandingAmount: entity.outstandingAmount,
+      progressPercentage: entity.progressPercentage,
+      status: entity.status,
+      transactions: entity.transactions,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'transaction_type': transactionType,
+      'original_amount': originalAmount,
+      'paid_amount': paidAmount,
+      'outstanding_amount': outstandingAmount,
+      'progress_percentage': progressPercentage,
+      'status': status,
+      'transactions': transactions
+          .map((t) => t is TransactionModel ? t.toJson() : TransactionModel.fromEntity(t).toJson())
+          .toList(),
+    };
+  }
 }

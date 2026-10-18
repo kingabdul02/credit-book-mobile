@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/error/error_handler.dart';
 import '../../../../core/widgets/app_error_view.dart';
+import '../../../../core/services/sync_service.dart';
 import '../bloc/ledger_bloc.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
 import '../../domain/entities/ledger_transaction_entity.dart';
@@ -21,11 +23,23 @@ class LedgerScreen extends StatefulWidget {
 
 class _LedgerScreenState extends State<LedgerScreen> {
   final formatCurrency = NumberFormat.currency(symbol: '₦', decimalDigits: 0);
+  StreamSubscription? _syncSub;
 
   @override
   void initState() {
     super.initState();
     context.read<LedgerBloc>().add(LoadLedger(widget.contactId));
+    _syncSub = SyncService.onSyncComplete.listen((_) {
+      if (mounted) {
+        context.read<LedgerBloc>().add(LoadLedger(widget.contactId));
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _syncSub?.cancel();
+    super.dispose();
   }
 
   @override
@@ -57,7 +71,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
         ),
         body: BlocBuilder<LedgerBloc, LedgerState>(
           builder: (context, state) {
-            if (state is LedgerLoading || state is LedgerInitial || state is PaymentRecording || state is PaymentRecorded) {
+            if (state is LedgerLoading || state is LedgerInitial) {
               return const Center(child: CircularProgressIndicator());
             }
 
@@ -480,7 +494,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
               onPressed: () async {
                 final result = await context.push('/add-transaction?contactId=${widget.contactId}');
                 if (result == true && context.mounted) {
-                  context.read<LedgerBloc>().add(LoadLedger(widget.contactId, forceRefresh: true));
+                  context.read<LedgerBloc>().add(LoadLedger(widget.contactId, forceRefresh: false));
                 }
               },
               icon: const Icon(Icons.add, color: Colors.white, size: 18),

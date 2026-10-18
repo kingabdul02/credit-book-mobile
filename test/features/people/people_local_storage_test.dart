@@ -83,21 +83,61 @@ class _FakeRemoteDataSource implements PeopleRemoteDataSource {
   Future<DebtModel> createDebt(Map<String, dynamic> data) async => throw UnimplementedError();
 
   @override
-  Future<void> recordPayment({required String debtId, required double amount, String? note}) async => throw UnimplementedError();
+  Future<void> recordPayment({
+    required String debtId,
+    required double amount,
+    String? note,
+    String? clientId,
+    String? contactId,
+  }) async => throw UnimplementedError();
 
   @override
   Future<Map<String, dynamic>> getAllDebtsWithStats({String status = 'all'}) async => throw UnimplementedError();
 }
 
 class _FakeSyncQueue implements SyncQueueLocalDataSource {
+  final List<SyncActionItem> items = [];
+
   @override
-  Future<void> clearQueue() async {}
+  Future<void> clearQueue() async => items.clear();
+
   @override
-  Future<void> enqueueAction(SyncActionItem item) async {}
+  Future<void> enqueueAction(SyncActionItem item) async {
+    items.removeWhere((i) => i.clientId == item.clientId);
+    items.add(item);
+  }
+
   @override
-  Future<List<SyncActionItem>> getQueue() async => [];
+  Future<List<SyncActionItem>> getQueue() async => List.from(items);
+
   @override
-  Future<void> removeFromQueue(String clientId) async {}
+  Future<List<SyncActionItem>> getPendingActions() async =>
+      items.where((i) => i.status == SyncItemStatus.pending || i.status == SyncItemStatus.failed).toList();
+
+  @override
+  Future<void> markInProgress(String clientId) async {}
+
+  @override
+  Future<void> markSuccess(String clientId) async => removeFromQueue(clientId);
+
+  @override
+  Future<void> markFailed(String clientId, String errorMessage) async {}
+
+  @override
+  Future<void> markConflict(String clientId, String errorMessage) async {}
+
+  @override
+  Future<void> removeFromQueue(String clientId) async =>
+      items.removeWhere((i) => i.clientId == clientId);
+
+  @override
+  Future<Map<String, int>> getStats() async => {
+        'pending': items.where((i) => i.status == SyncItemStatus.pending).length,
+        'in_progress': items.where((i) => i.status == SyncItemStatus.inProgress).length,
+        'failed': items.where((i) => i.status == SyncItemStatus.failed).length,
+        'conflict': items.where((i) => i.status == SyncItemStatus.conflict).length,
+        'total': items.length,
+      };
 }
 
 void main() {
@@ -321,6 +361,79 @@ void main() {
       final userAReloaded = repository.getCachedPeopleData()!;
       expect(userAReloaded.allContacts.first.fullName, 'User A Contact');
       expect(userAReloaded.allContacts.any((c) => c.fullName == 'User B Contact'), isFalse);
+    });
+
+    test('same user login retains local contacts without server fetch, different user login fetches fresh', () async {
+      // 1. User A logs in for the first time
+      await prefs.setString('current_user_id', 'user-A');
+      await prefs.setString('cached_user', '{"id":"user-A","name":"User A"}');
+      await prefs.setString('last_logged_in_user_id', 'user-A');
+      await localDataSource.setNeedsLoginSync('user-A', true);
+
+      remoteDataSource.mockAllContacts = [
+        const ContactModel(
+          id: 'contact-A',
+          fullName: 'Alice for User A',
+          isFavorite: false,
+          totalOwedToUser: 0,
+          totalUserOwes: 0,
+          updatedAt: '2026-10-18T10:00:00Z',
+        ),
+      ];
+
+      // User A fetches contacts from server on first login
+      final dataA = await repository.getPeopleData();
+      expect(dataA.allContacts.first.fullName, 'Alice for User A');
+      expect(remoteDataSource.getAllContactsCalls, 1);
+
+      // 2. User A logs out
+      cacheManager.clear();
+      await prefs.remove('current_user_id');
+      await prefs.remove('cached_user');
+      // last_logged_in_user_id is preserved as 'user-A'
+
+      // 3. Same User A logs back in
+      await prefs.setString('current_user_id', 'user-A');
+      await prefs.setString('cached_user', '{"id":"user-A","name":"User A"}');
+      // Since same user logged back in, needsLoginSync is set to false
+      await localDataSource.setNeedsLoginSync('user-A', false);
+
+      // User A gets people data: MUST retain locally stored contacts WITHOUT calling server!
+      final reloadedA = await repository.getPeopleData();
+      expect(reloadedA.allContacts.first.fullName, 'Alice for User A');
+      expect(remoteDataSource.getAllContactsCalls, 1); // STILL 1! NO SERVER CALL!
+
+      // 4. User A logs out and a DIFFERENT user (User B) logs in
+      cacheManager.clear();
+      await prefs.remove('current_user_id');
+      await prefs.remove('cached_user');
+
+      // User B logs in
+      await prefs.setString('current_user_id', 'user-B');
+      await prefs.setString('cached_user', '{"id":"user-B","name":"User B"}');
+      await prefs.setString('last_logged_in_user_id', 'user-B');
+      // Since different user logged in, needsLoginSync is set to true
+      await localDataSource.setNeedsLoginSync('user-B', true);
+
+      // User B has not fetched yet: MUST NOT see User A's contacts!
+      expect(repository.getCachedPeopleData(), isNull);
+
+      remoteDataSource.mockAllContacts = [
+        const ContactModel(
+          id: 'contact-B',
+          fullName: 'Bob for User B',
+          isFavorite: false,
+          totalOwedToUser: 0,
+          totalUserOwes: 0,
+          updatedAt: '2026-10-18T10:00:00Z',
+        ),
+      ];
+
+      // User B fetches from server because different user logged in
+      final dataB = await repository.getPeopleData();
+      expect(dataB.allContacts.first.fullName, 'Bob for User B');
+      expect(remoteDataSource.getAllContactsCalls, 2); // FETCHED FROM SERVER FOR USER B!
+      expect(dataB.allContacts.any((c) => c.fullName == 'Alice for User A'), isFalse);
     });
   });
 }

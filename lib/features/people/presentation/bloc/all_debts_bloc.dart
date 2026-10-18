@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/error/error_handler.dart';
+import '../../../../core/services/sync_service.dart';
 import '../../domain/entities/debt_with_contact_entity.dart';
 import '../../domain/repositories/people_repository.dart';
 
@@ -152,6 +154,7 @@ class PaymentFailed extends AllDebtsState {
 
 class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
   final PeopleRepository repository;
+  StreamSubscription? _syncSub;
 
   AllDebtsBloc({required this.repository}) : super(AllDebtsInitial()) {
     on<LoadAllDebts>(_onLoadAllDebts);
@@ -159,6 +162,17 @@ class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
     on<FilterDebtsByType>(_onFilterDebtsByType);
     on<SearchDebts>(_onSearchDebts);
     on<RecordDebtPayment>(_onRecordDebtPayment);
+    _syncSub = SyncService.onSyncComplete.listen((_) {
+      final currentStatus = state is AllDebtsLoaded ? (state as AllDebtsLoaded).currentFilter : 'all';
+      final currentType = state is AllDebtsLoaded ? (state as AllDebtsLoaded).typeFilter : 'all';
+      add(LoadAllDebts(statusFilter: currentStatus, typeFilter: currentType, forceRefresh: false));
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _syncSub?.cancel();
+    return super.close();
   }
 
   Future<void> _onLoadAllDebts(
@@ -168,7 +182,7 @@ class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
     final cached = repository.getCachedAllDebtsWithStats(status: 'all');
     final hasData = state is AllDebtsLoaded || cached != null;
 
-    if (cached != null && state is! AllDebtsLoaded) {
+    if (cached != null) {
       final filtered = _applyFilter(cached.debts, event.statusFilter, event.typeFilter, '');
       final stats = cached.statistics;
       double currentFilterIOwe = stats.iOwePending;
@@ -385,8 +399,34 @@ class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
       );
       emit(PaymentRecorded());
 
-      // Reload debts to reflect the payment, preserving current filters
-      add(LoadAllDebts(statusFilter: currentStatus, typeFilter: currentType, forceRefresh: true));
+      final cached = repository.getCachedAllDebtsWithStats(status: 'all');
+      if (cached != null) {
+        final filtered = _applyFilter(cached.debts, currentStatus, currentType, '');
+        final stats = cached.statistics;
+        double currentFilterIOwe = stats.iOwePending;
+        double currentFilterTheyOweMe = stats.theyOweMePending;
+        if (currentStatus == 'settled') {
+          currentFilterIOwe = stats.iOweSettled;
+          currentFilterTheyOweMe = stats.theyOweMeSettled;
+        }
+        emit(AllDebtsLoaded(
+          allDebts: cached.debts,
+          filteredDebts: filtered,
+          currentFilter: currentStatus,
+          typeFilter: currentType,
+          searchQuery: '',
+          pendingCount: stats.pendingCount,
+          settledCount: stats.settledCount,
+          totalPending: stats.totalPending,
+          totalSettled: stats.totalSettled,
+          currentFilterIOwe: currentFilterIOwe,
+          currentFilterTheyOweMe: currentFilterTheyOweMe,
+          statistics: stats,
+        ));
+      }
+
+      // Reload debts to reflect the payment, preserving current filters without network blocking
+      add(LoadAllDebts(statusFilter: currentStatus, typeFilter: currentType, forceRefresh: false));
     } catch (e) {
       emit(PaymentFailed(ErrorHandler.getFriendlyMessage(e)));
     }

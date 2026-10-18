@@ -236,10 +236,7 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                 Expanded(
                   child: Builder(
                     builder: (context) {
-                      if (state is AllDebtsInitial ||
-                          state is AllDebtsLoading ||
-                          state is PaymentRecording ||
-                          state is PaymentRecorded) {
+                      if (state is AllDebtsInitial || state is AllDebtsLoading) {
                         return const Center(child: CircularProgressIndicator());
                       }
 

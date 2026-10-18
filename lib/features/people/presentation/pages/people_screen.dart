@@ -268,7 +268,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
       onTap: () async {
         await context.push('/ledger/${contact.id}');
         if (context.mounted) {
-          context.read<PeopleBloc>().add(LoadPeopleDataRequested(forceRefresh: true));
+          context.read<PeopleBloc>().add(LoadPeopleDataRequested(forceRefresh: false));
         }
       },
       child: Column(
@@ -350,7 +350,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
       onTap: () async {
         await context.push('/ledger/${contact.id}');
         if (context.mounted) {
-          context.read<PeopleBloc>().add(LoadPeopleDataRequested(forceRefresh: true));
+          context.read<PeopleBloc>().add(LoadPeopleDataRequested(forceRefresh: false));
         }
       },
       child: Container(
@@ -445,7 +445,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
       onTap: () async {
         await context.push('/ledger/${contact.id}');
         if (context.mounted) {
-          context.read<PeopleBloc>().add(LoadPeopleDataRequested(forceRefresh: true));
+          context.read<PeopleBloc>().add(LoadPeopleDataRequested(forceRefresh: false));
         }
       },
       child: Padding(

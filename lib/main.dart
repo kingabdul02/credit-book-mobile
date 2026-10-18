@@ -9,6 +9,7 @@ import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_event.dart';
 import 'features/auth/presentation/bloc/auth_state.dart';
 import 'features/notifications/presentation/bloc/notification_cubit.dart';
+import 'core/services/connectivity_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +24,9 @@ void main() async {
 
   // Initialize Dependency Injection
   await di.init();
+
+  // Initialize Network Connectivity Monitor and Auto-Sync
+  ConnectivityManager.instance.init();
 
   runApp(const MyApp());
 }

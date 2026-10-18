@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/error/error_handler.dart';
+import '../../../../core/services/sync_service.dart';
 import '../../domain/entities/contact_entity.dart';
 import '../../domain/repositories/people_repository.dart';
 
@@ -31,9 +33,19 @@ class PeopleError extends PeopleState {
 // Bloc
 class PeopleBloc extends Bloc<PeopleEvent, PeopleState> {
   final PeopleRepository repository;
+  StreamSubscription? _syncSub;
 
   PeopleBloc({required this.repository}) : super(PeopleInitial()) {
     on<LoadPeopleDataRequested>(_onLoadPeopleDataRequested);
+    _syncSub = SyncService.onSyncComplete.listen((_) {
+      add(LoadPeopleDataRequested(forceRefresh: false));
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _syncSub?.cancel();
+    return super.close();
   }
 
   Future<void> _onLoadPeopleDataRequested(

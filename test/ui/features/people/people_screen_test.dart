@@ -68,7 +68,7 @@ class _MockPeopleRepository implements PeopleRepository {
   Future<DebtEntity> createDebt(Map<String, dynamic> data) async => throw UnimplementedError();
 
   @override
-  Future<void> recordPayment({required String debtId, required double amount, String? note}) async {}
+  Future<void> recordPayment({required String debtId, required double amount, String? note, String? clientId, String? contactId}) async {}
 
   @override
   Future<DebtsWithStatistics> getAllDebtsWithStats({String status = 'all', bool forceRefresh = false}) async => throw UnimplementedError();

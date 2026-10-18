@@ -542,7 +542,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () async {
               final result = await context.push('/add-transaction');
               if (result == true && mounted) {
-                context.read<HomeBloc>().add(LoadDashboardRequested(forceRefresh: true));
+                context.read<HomeBloc>().add(LoadDashboardRequested(forceRefresh: false));
               }
             },
             backgroundColor: AppTheme.textDark,

@@ -33,7 +33,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     final response = await client.get(
       Uri.parse('$baseUrl/analytics/dashboard'),
       headers: _headers,
-    );
+    ).timeout(const Duration(seconds: 4));
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);

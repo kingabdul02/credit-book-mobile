@@ -1,14 +1,20 @@
 class SyncStatusModel {
   final int pendingCount;
   final int conflictCount;
+  final int failedCount;
+  final int syncedCount;
   final String? lastSyncedAt;
   final bool isActive;
+  final bool isSyncing;
 
   const SyncStatusModel({
     required this.pendingCount,
     required this.conflictCount,
+    this.failedCount = 0,
+    this.syncedCount = 0,
     this.lastSyncedAt,
     this.isActive = true,
+    this.isSyncing = false,
   });
 
   factory SyncStatusModel.fromJson(Map<String, dynamic> json) {
@@ -16,13 +22,37 @@ class SyncStatusModel {
     return SyncStatusModel(
       pendingCount: (sync['pending_count'] as int?) ?? 0,
       conflictCount: (sync['conflict_count'] as int?) ?? 0,
+      failedCount: (sync['failed_count'] as int?) ?? 0,
+      syncedCount: (sync['synced_count'] as int?) ?? 0,
       lastSyncedAt: sync['last_synced_at'] as String?,
       isActive: true,
+      isSyncing: (sync['is_syncing'] as bool?) ?? false,
+    );
+  }
+
+  SyncStatusModel copyWith({
+    int? pendingCount,
+    int? conflictCount,
+    int? failedCount,
+    int? syncedCount,
+    String? lastSyncedAt,
+    bool? isActive,
+    bool? isSyncing,
+  }) {
+    return SyncStatusModel(
+      pendingCount: pendingCount ?? this.pendingCount,
+      conflictCount: conflictCount ?? this.conflictCount,
+      failedCount: failedCount ?? this.failedCount,
+      syncedCount: syncedCount ?? this.syncedCount,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      isActive: isActive ?? this.isActive,
+      isSyncing: isSyncing ?? this.isSyncing,
     );
   }
 
   bool get hasConflicts => conflictCount > 0;
   bool get hasPending => pendingCount > 0;
+  bool get hasFailed => failedCount > 0;
 
   bool get isStale {
     if (lastSyncedAt == null) return true;
@@ -42,5 +72,10 @@ class SyncStatusModel {
     return '${diff.inDays}d ago';
   }
 
-  static SyncStatusModel get empty => const SyncStatusModel(pendingCount: 0, conflictCount: 0);
+  static SyncStatusModel get empty => const SyncStatusModel(
+        pendingCount: 0,
+        conflictCount: 0,
+        failedCount: 0,
+        syncedCount: 0,
+      );
 }

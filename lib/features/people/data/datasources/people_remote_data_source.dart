@@ -20,6 +20,7 @@ abstract class PeopleRemoteDataSource {
     required String debtId,
     required double amount,
     String? note,
+    String? clientId,
   });
   Future<Map<String, dynamic>> getAllDebtsWithStats({String status = 'all'});
 }
@@ -48,7 +49,7 @@ class PeopleRemoteDataSourceImpl implements PeopleRemoteDataSource {
     final response = await client.get(
       Uri.parse('$baseUrl/favorites'),
       headers: await _headers,
-    );
+    ).timeout(const Duration(seconds: 4));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -65,7 +66,7 @@ class PeopleRemoteDataSourceImpl implements PeopleRemoteDataSource {
     final response = await client.get(
       Uri.parse('$baseUrl/frequent'),
       headers: await _headers,
-    );
+    ).timeout(const Duration(seconds: 4));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -82,7 +83,7 @@ class PeopleRemoteDataSourceImpl implements PeopleRemoteDataSource {
     final response = await client.get(
       Uri.parse('$baseUrl?per_page=50'),
       headers: await _headers,
-    );
+    ).timeout(const Duration(seconds: 4));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -100,7 +101,7 @@ class PeopleRemoteDataSourceImpl implements PeopleRemoteDataSource {
       Uri.parse(baseUrl),
       headers: await _headers,
       body: json.encode(data),
-    );
+    ).timeout(const Duration(seconds: 4));
 
     if (response.statusCode == 201) {
       final responseData = json.decode(response.body);
@@ -116,7 +117,7 @@ class PeopleRemoteDataSourceImpl implements PeopleRemoteDataSource {
       Uri.parse('$baseUrl/$id'),
       headers: await _headers,
       body: json.encode(data),
-    );
+    ).timeout(const Duration(seconds: 4));
 
     if (response.statusCode == 200) {
       final responseData = json.decode(response.body);
@@ -131,7 +132,7 @@ class PeopleRemoteDataSourceImpl implements PeopleRemoteDataSource {
     final response = await client.delete(
       Uri.parse('$baseUrl/$id'),
       headers: await _headers,
-    );
+    ).timeout(const Duration(seconds: 4));
 
     if (response.statusCode != 200 && response.statusCode != 204) {
       throw Exception('Failed to delete contact: ${response.body}');
@@ -143,7 +144,7 @@ class PeopleRemoteDataSourceImpl implements PeopleRemoteDataSource {
     final response = await client.get(
       Uri.parse('$baseUrl/$id'),
       headers: await _headers,
-    );
+    ).timeout(const Duration(seconds: 4));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -160,7 +161,7 @@ class PeopleRemoteDataSourceImpl implements PeopleRemoteDataSource {
       Uri.parse(debtUrl),
       headers: await _headers,
       body: json.encode(data),
-    );
+    ).timeout(const Duration(seconds: 4));
 
     if (response.statusCode == 201) {
       final responseData = json.decode(response.body);
@@ -175,19 +176,20 @@ class PeopleRemoteDataSourceImpl implements PeopleRemoteDataSource {
     required String debtId,
     required double amount,
     String? note,
+    String? clientId,
   }) async {
     final debtsUrl = dotenv.env['API_BASE_URL']! + '/debts';
-    final clientId = const Uuid().v4(); // unique per request for idempotency
+    final effectiveClientId = clientId ?? const Uuid().v4(); // unique per request for idempotency
     final response = await client.post(
       Uri.parse('$debtsUrl/$debtId/transactions'),
       headers: await _headers,
       body: json.encode({
         'amount': amount,
         'type': 'PAYMENT', // backend expects uppercase
-        'client_id': clientId, // required UUID for idempotency
+        'client_id': effectiveClientId, // required UUID for idempotency
         if (note != null && note.isNotEmpty) 'note': note,
       }),
-    );
+    ).timeout(const Duration(seconds: 4));
 
     if (response.statusCode != 201 && response.statusCode != 200) {
       final body = json.decode(response.body);
@@ -206,7 +208,7 @@ class PeopleRemoteDataSourceImpl implements PeopleRemoteDataSource {
     final queryParams = <String, String>{'per_page': '100'};
 
     final uri = Uri.parse(debtsUrl).replace(queryParameters: queryParams);
-    final response = await client.get(uri, headers: await _headers);
+    final response = await client.get(uri, headers: await _headers).timeout(const Duration(seconds: 4));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);

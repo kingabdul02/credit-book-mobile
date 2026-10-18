@@ -9,6 +9,9 @@ import 'package:creditbook/features/auth/data/repositories/auth_repository_impl.
 import 'package:creditbook/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:creditbook/features/auth/presentation/bloc/auth_event.dart';
 import 'package:creditbook/features/auth/presentation/bloc/auth_state.dart';
+import 'package:creditbook/features/people/data/datasources/people_local_data_source.dart';
+import 'package:creditbook/features/people/domain/entities/contact_entity.dart';
+import 'package:creditbook/features/auth/domain/entities/user.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -133,6 +136,133 @@ void main() {
 
       expect(prefs.getString(AuthRepositoryImpl.cachedUserKey), isNull);
       expect(prefs.getString(AuthRemoteDataSourceImpl.tokenKey), isNull);
+    });
+
+    test('preserves locally stored contacts and records lastLoggedInUserId across logout', () async {
+      final prefs = await SharedPreferences.getInstance();
+      final peopleLocal = PeopleLocalDataSourceImpl(sharedPreferences: prefs);
+
+      // Seed User 1's local contacts
+      await peopleLocal.savePeopleData('1', const PeopleDataEntity(
+        favorites: [],
+        frequentlyContacted: [],
+        allContacts: [
+          ContactEntity(
+            id: 'c-1',
+            fullName: 'User 1 Contact',
+            isFavorite: false,
+            totalOwedToUser: 0,
+            totalUserOwes: 0,
+            updatedAt: '2026-10-18T10:00:00Z',
+          ),
+        ],
+      ));
+
+      final mockClient = MockClient((request) async {
+        return http.Response(jsonEncode({
+          'user': {
+            'id': '1',
+            'name': 'Test User',
+            'phone_number': '+1234567890',
+            'has_pin': true,
+          },
+          'token': 'new-token',
+        }), 200);
+      });
+
+      final dataSource = AuthRemoteDataSourceImpl(
+        client: mockClient,
+        sharedPreferences: prefs,
+      );
+
+      final repository = AuthRepositoryImpl(
+        remoteDataSource: dataSource,
+        sharedPreferences: prefs,
+        peopleLocalDataSource: peopleLocal,
+      );
+
+      // User 1 logs in
+      await repository.login('+1234567890', '1234');
+      expect(repository.getLastLoggedInUserId(), '1');
+      expect(peopleLocal.getPeopleData('1'), isNotNull);
+
+      // User 1 logs out
+      await repository.logout();
+
+      // Tokens and session user are cleared, but lastLoggedInUserId and User 1 contacts are PRESERVED
+      expect(prefs.getString(AuthRepositoryImpl.cachedUserKey), isNull);
+      expect(prefs.getString(AuthRepositoryImpl.currentUserIdKey), isNull);
+      expect(repository.getLastLoggedInUserId(), '1');
+      expect(peopleLocal.getPeopleData('1')!.allContacts.first.fullName, 'User 1 Contact');
+
+      // Same User 1 logs back in
+      await repository.login('+1234567890', '1234');
+      expect(repository.isSameAsPreviousUser('1'), isTrue);
+      // needsLoginSync remains false because same user logged in, retaining local storage without server fetch
+      expect(peopleLocal.needsLoginSync('1'), isFalse);
+      expect(peopleLocal.getPeopleData('1')!.allContacts.first.fullName, 'User 1 Contact');
+    });
+
+    test('flags needsLoginSync and clears previous memory cache when a different user logs in', () async {
+      final prefs = await SharedPreferences.getInstance();
+      final peopleLocal = PeopleLocalDataSourceImpl(sharedPreferences: prefs);
+
+      // User 1 was previously logged in
+      await prefs.setString(AuthRepositoryImpl.lastLoggedInUserIdKey, 'user-1');
+      await peopleLocal.savePeopleData('user-1', const PeopleDataEntity(
+        favorites: [],
+        frequentlyContacted: [],
+        allContacts: [
+          ContactEntity(
+            id: 'c-1',
+            fullName: 'User 1 Contact',
+            isFavorite: false,
+            totalOwedToUser: 0,
+            totalUserOwes: 0,
+            updatedAt: '2026-10-18T10:00:00Z',
+          ),
+        ],
+      ));
+
+      final mockClient = MockClient((request) async {
+        return http.Response(jsonEncode({
+          'user': {
+            'id': 'user-2',
+            'name': 'User Two',
+            'phone_number': '+9876543210',
+            'has_pin': true,
+          },
+          'token': 'user-2-token',
+        }), 200);
+      });
+
+      final dataSource = AuthRemoteDataSourceImpl(
+        client: mockClient,
+        sharedPreferences: prefs,
+      );
+
+      final repository = AuthRepositoryImpl(
+        remoteDataSource: dataSource,
+        sharedPreferences: prefs,
+        peopleLocalDataSource: peopleLocal,
+      );
+
+      // User 2 logs in
+      final user2 = await repository.login('+9876543210', '1234');
+      expect(user2.id, 'user-2');
+
+      // Identify that User 2 is DIFFERENT from previous user (user-1)
+      expect(repository.isSameAsPreviousUser('user-1'), isFalse);
+      expect(repository.getLastLoggedInUserId(), 'user-2');
+
+      // User 2 is flagged to fetch contacts from server
+      expect(peopleLocal.needsLoginSync('user-2'), isTrue);
+
+      // User 2 partition has NO contacts yet (MUST NOT see User 1 contacts!)
+      expect(peopleLocal.getPeopleData('user-2'), isNull);
+
+      // User 1 contacts remain intact in user-1 partition
+      expect(peopleLocal.getPeopleData('user-1')!.allContacts.first.fullName, 'User 1 Contact');
     });
   });
 

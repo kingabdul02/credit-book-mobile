@@ -30,6 +30,8 @@ abstract class PeopleRepository {
     required String debtId,
     required double amount,
     String? note,
+    String? contactId,
+    String? clientId,
   });
 
   /// Fetches all debts with server-calculated statistics
