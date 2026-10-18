@@ -74,8 +74,7 @@ class PeopleRepositoryImpl implements PeopleRepository {
     try {
       final contact = await remoteDataSource.createContact(data);
       // Invalidate relevant caches on mutation
-      cacheManager?.invalidate(peopleCacheKey);
-      cacheManager?.invalidate('dashboard_data');
+      _invalidateTransactionCaches(null);
       return contact;
     } catch (e) {
       throw Exception('Failed to create contact: $e');

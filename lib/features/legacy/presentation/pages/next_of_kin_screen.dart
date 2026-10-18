@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/error/error_handler.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
 import '../../domain/entities/legacy_contact_entity.dart';
 import '../bloc/legacy_bloc.dart';
@@ -97,15 +99,17 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
         _cachedSettings = state.settings;
         _cachedContacts = state.contacts;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(state.message, style: const TextStyle(color: Colors.white)),
-          backgroundColor: AppTheme.errorColor,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
+      if (_cachedSettings != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(ErrorHandler.getFriendlyMessage(state.message), style: const TextStyle(color: Colors.white)),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
     }
   }
 
@@ -246,36 +250,9 @@ class _NextOfKinScreenState extends State<NextOfKinScreen> {
             return Scaffold(
               backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
               appBar: const CustomAppBar(title: 'Next of Kin'),
-              body: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline_rounded, color: AppTheme.errorColor, size: 48),
-                      const SizedBox(height: 16),
-                      Text(
-                        state.message,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: isDark ? AppTheme.darkTextPrimary : AppTheme.textDark,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () => context.read<LegacyBloc>().add(LoadLegacyData()),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryVariant,
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: const Text('Try Again', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
-                  ),
-                ),
+              body: AppErrorView(
+                error: state.message,
+                onRetry: () => context.read<LegacyBloc>().add(LoadLegacyData(forceRefresh: true)),
               ),
             );
           }

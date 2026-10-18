@@ -386,7 +386,7 @@ class AllDebtsBloc extends Bloc<AllDebtsEvent, AllDebtsState> {
       emit(PaymentRecorded());
 
       // Reload debts to reflect the payment, preserving current filters
-      add(LoadAllDebts(statusFilter: currentStatus, typeFilter: currentType));
+      add(LoadAllDebts(statusFilter: currentStatus, typeFilter: currentType, forceRefresh: true));
     } catch (e) {
       emit(PaymentFailed(ErrorHandler.getFriendlyMessage(e)));
     }

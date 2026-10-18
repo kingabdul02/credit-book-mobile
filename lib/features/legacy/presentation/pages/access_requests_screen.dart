@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/error/error_handler.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
 import '../../domain/entities/legacy_access_request_entity.dart';
 import '../bloc/legacy_bloc.dart';
@@ -105,15 +107,17 @@ class _AccessRequestsScreenState extends State<AccessRequestsScreen>
             ),
           );
         } else if (state is AccessRequestError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message, style: const TextStyle(color: Colors.white)),
-              backgroundColor: AppTheme.errorColor,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              margin: const EdgeInsets.all(16),
-            ),
-          );
+          if (state.requests.isNotEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(ErrorHandler.getFriendlyMessage(state.message), style: const TextStyle(color: Colors.white)),
+                backgroundColor: AppTheme.errorColor,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                margin: const EdgeInsets.all(16),
+              ),
+            );
+          }
         }
       },
       builder: (context, state) {
@@ -138,6 +142,17 @@ class _AccessRequestsScreenState extends State<AccessRequestsScreen>
         final denied = allRequests.where((r) => r.isDenied).toList();
 
         final isDark = Theme.of(context).brightness == Brightness.dark;
+
+        if (state is AccessRequestError && allRequests.isEmpty) {
+          return Scaffold(
+            backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,
+            appBar: const CustomAppBar(title: 'Access Requests'),
+            body: AppErrorView(
+              error: state.message,
+              onRetry: () => context.read<LegacyBloc>().add(LoadAccessRequests(forceRefresh: true)),
+            ),
+          );
+        }
 
         return Scaffold(
           backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.onBackground,

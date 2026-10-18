@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/error/error_handler.dart';
 import '../../domain/entities/legacy_contact_entity.dart';
 import '../../domain/entities/legacy_access_request_entity.dart';
 import '../../domain/repositories/legacy_repository.dart';
@@ -241,7 +242,7 @@ class LegacyBloc extends Bloc<LegacyEvent, LegacyState> {
       emit(LegacyLoaded(settings: _settings!, contacts: _contacts));
     } catch (e) {
       if (_settings == null) {
-        emit(LegacyError(e.toString().replaceAll('Exception: ', '')));
+        emit(LegacyError(ErrorHandler.getFriendlyMessage(e)));
       }
     }
   }
@@ -254,7 +255,7 @@ class LegacyBloc extends Bloc<LegacyEvent, LegacyState> {
       _settings = settings;
       emit(LegacyEnabled(recoveryCode: code, settings: settings, contacts: _contacts));
     } catch (e) {
-      emit(LegacyError(e.toString().replaceAll('Exception: ', ''), settings: _settings, contacts: _contacts));
+      emit(LegacyError(ErrorHandler.getFriendlyMessage(e), settings: _settings, contacts: _contacts));
     }
   }
 
@@ -266,7 +267,7 @@ class LegacyBloc extends Bloc<LegacyEvent, LegacyState> {
       _settings = settings;
       emit(LegacyLoaded(settings: settings, contacts: _contacts));
     } catch (e) {
-      emit(LegacyError(e.toString().replaceAll('Exception: ', ''), settings: _settings, contacts: _contacts));
+      emit(LegacyError(ErrorHandler.getFriendlyMessage(e), settings: _settings, contacts: _contacts));
     }
   }
 
@@ -295,7 +296,7 @@ class LegacyBloc extends Bloc<LegacyEvent, LegacyState> {
       );
       emit(LegacyContactAdded(contact: contact, settings: _settings!, contacts: _contacts));
     } catch (e) {
-      emit(LegacyError(e.toString().replaceAll('Exception: ', ''), settings: _settings, contacts: _contacts));
+      emit(LegacyError(ErrorHandler.getFriendlyMessage(e), settings: _settings, contacts: _contacts));
     }
   }
 
@@ -307,7 +308,7 @@ class LegacyBloc extends Bloc<LegacyEvent, LegacyState> {
       _contacts = _contacts.map((c) => c.id == event.id ? updated : c).toList();
       emit(LegacyLoaded(settings: settings, contacts: _contacts));
     } catch (e) {
-      emit(LegacyError(e.toString().replaceAll('Exception: ', ''), settings: _settings, contacts: _contacts));
+      emit(LegacyError(ErrorHandler.getFriendlyMessage(e), settings: _settings, contacts: _contacts));
     }
   }
 
@@ -319,7 +320,7 @@ class LegacyBloc extends Bloc<LegacyEvent, LegacyState> {
       _contacts = _contacts.where((c) => c.id != event.id).toList();
       emit(LegacyContactDeleted(settings: settings, contacts: _contacts));
     } catch (e) {
-      emit(LegacyError(e.toString().replaceAll('Exception: ', ''), settings: _settings, contacts: _contacts));
+      emit(LegacyError(ErrorHandler.getFriendlyMessage(e), settings: _settings, contacts: _contacts));
     }
   }
 
@@ -329,7 +330,7 @@ class LegacyBloc extends Bloc<LegacyEvent, LegacyState> {
       await repository.resendVerification(event.id);
       emit(LegacyVerificationSent(settings: _settings!, contacts: _contacts));
     } catch (e) {
-      emit(LegacyError(e.toString().replaceAll('Exception: ', ''), settings: _settings, contacts: _contacts));
+      emit(LegacyError(ErrorHandler.getFriendlyMessage(e), settings: _settings, contacts: _contacts));
     }
   }
 
@@ -342,7 +343,7 @@ class LegacyBloc extends Bloc<LegacyEvent, LegacyState> {
       _contacts = contacts;
       emit(LegacyLoaded(settings: _settings!, contacts: _contacts));
     } catch (e) {
-      emit(LegacyError(e.toString().replaceAll('Exception: ', ''), settings: _settings, contacts: _contacts));
+      emit(LegacyError(ErrorHandler.getFriendlyMessage(e), settings: _settings, contacts: _contacts));
     }
   }
 
@@ -362,7 +363,7 @@ class LegacyBloc extends Bloc<LegacyEvent, LegacyState> {
       emit(AccessRequestsLoaded(requests: _requests));
     } catch (e) {
       if (_requests.isEmpty) {
-        emit(AccessRequestError(e.toString().replaceAll('Exception: ', '')));
+        emit(AccessRequestError(ErrorHandler.getFriendlyMessage(e)));
       }
     }
   }
@@ -373,7 +374,7 @@ class LegacyBloc extends Bloc<LegacyEvent, LegacyState> {
       final request = await repository.submitAccessRequest(event.data);
       emit(AccessRequestSubmitted(request: request));
     } catch (e) {
-      emit(AccessRequestError(e.toString().replaceAll('Exception: ', ''), requests: _requests));
+      emit(AccessRequestError(ErrorHandler.getFriendlyMessage(e), requests: _requests));
     }
   }
 
@@ -384,7 +385,7 @@ class LegacyBloc extends Bloc<LegacyEvent, LegacyState> {
       _requests = _requests.map((r) => r.id == event.requestId ? approved : r).toList();
       emit(AccessRequestApproved(request: approved, requests: _requests));
     } catch (e) {
-      emit(AccessRequestError(e.toString().replaceAll('Exception: ', ''), requests: _requests));
+      emit(AccessRequestError(ErrorHandler.getFriendlyMessage(e), requests: _requests));
     }
   }
 
@@ -395,7 +396,7 @@ class LegacyBloc extends Bloc<LegacyEvent, LegacyState> {
       _requests = _requests.map((r) => r.id == event.requestId ? denied : r).toList();
       emit(AccessRequestDenied(request: denied, requests: _requests));
     } catch (e) {
-      emit(AccessRequestError(e.toString().replaceAll('Exception: ', ''), requests: _requests));
+      emit(AccessRequestError(ErrorHandler.getFriendlyMessage(e), requests: _requests));
     }
   }
 
@@ -405,7 +406,7 @@ class LegacyBloc extends Bloc<LegacyEvent, LegacyState> {
       final report = await repository.getEstateReport(event.requestId);
       emit(EstateReportLoaded(report: report));
     } catch (e) {
-      emit(EstateReportError(e.toString().replaceAll('Exception: ', '')));
+      emit(EstateReportError(ErrorHandler.getFriendlyMessage(e)));
     }
   }
 }

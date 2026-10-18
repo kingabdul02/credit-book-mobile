@@ -238,7 +238,8 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
                     builder: (context) {
                       if (state is AllDebtsInitial ||
                           state is AllDebtsLoading ||
-                          state is PaymentRecording) {
+                          state is PaymentRecording ||
+                          state is PaymentRecorded) {
                         return const Center(child: CircularProgressIndicator());
                       }
 
@@ -268,30 +269,48 @@ class _AllDebtsScreenState extends State<AllDebtsScreen>
 
                             // Debt List
                             Expanded(
-                              child: state.filteredDebts.isEmpty
-                                  ? _buildEmptyState(
-                                      state.searchQuery,
-                                      state.typeFilter,
-                                    )
-                                  : ListView.separated(
-                                      padding: const EdgeInsets.all(16),
-                                      itemCount: state.filteredDebts.length,
-                                      separatorBuilder: (context, index) =>
-                                          const SizedBox(height: 12),
-                                      itemBuilder: (context, index) {
-                                        return _buildDebtCard(
-                                              context,
-                                              state.filteredDebts[index],
-                                            )
-                                            .animate()
-                                            .fadeIn(
-                                              delay: Duration(
-                                                milliseconds: 50 * index,
-                                              ),
-                                            )
-                                            .slideY(begin: 0.1, end: 0);
-                                      },
+                              child: RefreshIndicator(
+                                color: AppTheme.primaryColor,
+                                onRefresh: () async {
+                                  context.read<AllDebtsBloc>().add(
+                                    LoadAllDebts(
+                                      statusFilter: state.currentFilter,
+                                      typeFilter: state.typeFilter,
+                                      forceRefresh: true,
                                     ),
+                                  );
+                                },
+                                child: state.filteredDebts.isEmpty
+                                    ? ListView(
+                                        physics: const AlwaysScrollableScrollPhysics(),
+                                        children: [
+                                          _buildEmptyState(
+                                            state.searchQuery,
+                                            state.typeFilter,
+                                          ),
+                                        ],
+                                      )
+                                    : ListView.separated(
+                                        physics: const AlwaysScrollableScrollPhysics(),
+                                        padding: const EdgeInsets.all(16),
+                                        itemCount: state.filteredDebts.length,
+                                        separatorBuilder: (context, index) =>
+                                            const SizedBox(height: 12),
+                                        itemBuilder: (context, index) {
+                                          return _buildDebtCard(
+                                                context,
+                                                state.filteredDebts[index],
+                                              )
+                                              .animate()
+                                              .fadeIn(
+                                                delay: Duration(
+                                                  milliseconds: 50 * index,
+                                                ),
+                                              )
+                                              .slideY(begin: 0.1, end: 0);
+                                        },
+                                      ),
+                              ),
                             ),
                           ],
                         );

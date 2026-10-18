@@ -97,7 +97,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                           onTap: () async {
                             final result = await context.push('/add-person');
                             if (result == true && context.mounted) {
-                              context.read<PeopleBloc>().add(LoadPeopleDataRequested());
+                              context.read<PeopleBloc>().add(LoadPeopleDataRequested(forceRefresh: true));
                             }
                           },
                           child: Container(
@@ -231,7 +231,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
         onPressed: () async {
           final result = await context.push('/add-person');
           if (result == true && context.mounted) {
-            context.read<PeopleBloc>().add(LoadPeopleDataRequested());
+            context.read<PeopleBloc>().add(LoadPeopleDataRequested(forceRefresh: true));
           }
         },
         backgroundColor: AppTheme.primaryColor,
@@ -265,7 +265,12 @@ class _PeopleScreenState extends State<PeopleScreen> {
     final isActive = contact.totalOwedToUser > 0 || contact.totalUserOwes > 0;
 
     return GestureDetector(
-      onTap: () => context.push('/ledger/${contact.id}'),
+      onTap: () async {
+        await context.push('/ledger/${contact.id}');
+        if (context.mounted) {
+          context.read<PeopleBloc>().add(LoadPeopleDataRequested(forceRefresh: true));
+        }
+      },
       child: Column(
         children: [
           Stack(
@@ -342,7 +347,12 @@ class _PeopleScreenState extends State<PeopleScreen> {
     String lastActivity = 'Last activity ${_timeAgo(contact.updatedAt)}';
 
     return GestureDetector(
-      onTap: () => context.push('/ledger/${contact.id}'),
+      onTap: () async {
+        await context.push('/ledger/${contact.id}');
+        if (context.mounted) {
+          context.read<PeopleBloc>().add(LoadPeopleDataRequested(forceRefresh: true));
+        }
+      },
       child: Container(
         padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -432,7 +442,12 @@ class _PeopleScreenState extends State<PeopleScreen> {
     }
 
     return GestureDetector(
-      onTap: () => context.push('/ledger/${contact.id}'),
+      onTap: () async {
+        await context.push('/ledger/${contact.id}');
+        if (context.mounted) {
+          context.read<PeopleBloc>().add(LoadPeopleDataRequested(forceRefresh: true));
+        }
+      },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(

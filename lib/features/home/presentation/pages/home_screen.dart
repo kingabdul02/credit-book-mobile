@@ -539,7 +539,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton:
           FloatingActionButton(
-            onPressed: () => context.push('/add-transaction'),
+            onPressed: () async {
+              final result = await context.push('/add-transaction');
+              if (result == true && mounted) {
+                context.read<HomeBloc>().add(LoadDashboardRequested(forceRefresh: true));
+              }
+            },
             backgroundColor: AppTheme.textDark,
             child: const Icon(Icons.add, color: Colors.white, size: 28),
           ).animate().scale(
@@ -628,7 +633,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => context.push('/all-debts'),
+        onTap: () async {
+          await context.push('/all-debts');
+          if (mounted) {
+            context.read<HomeBloc>().add(LoadDashboardRequested(forceRefresh: true));
+          }
+        },
         borderRadius: BorderRadius.circular(16),
         child: Container(
           width: double.infinity,
@@ -716,7 +726,12 @@ class _HomeScreenState extends State<HomeScreen> {
       color: isDark ? AppTheme.darkSurface : Colors.white,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
-        onTap: () => context.push('/all-debts?filter=pending&type=receivable'),
+        onTap: () async {
+          await context.push('/all-debts?filter=pending&type=receivable');
+          if (mounted) {
+            context.read<HomeBloc>().add(LoadDashboardRequested(forceRefresh: true));
+          }
+        },
         borderRadius: BorderRadius.circular(16),
         child: Ink(
           padding: const EdgeInsets.all(20),
@@ -804,7 +819,12 @@ class _HomeScreenState extends State<HomeScreen> {
       color: isDark ? AppTheme.darkSurface : Colors.white,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
-        onTap: () => context.push('/all-debts?filter=pending&type=payable'),
+        onTap: () async {
+          await context.push('/all-debts?filter=pending&type=payable');
+          if (mounted) {
+            context.read<HomeBloc>().add(LoadDashboardRequested(forceRefresh: true));
+          }
+        },
         borderRadius: BorderRadius.circular(16),
         child: Ink(
           padding: const EdgeInsets.all(20),
@@ -1009,9 +1029,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         if (transaction.debt?.contact?.id != null) {
-          context.push('/ledger/${transaction.debt!.contact!.id}');
+          await context.push('/ledger/${transaction.debt!.contact!.id}');
+          if (mounted) {
+            context.read<HomeBloc>().add(LoadDashboardRequested(forceRefresh: true));
+          }
         }
       },
       child: Container(

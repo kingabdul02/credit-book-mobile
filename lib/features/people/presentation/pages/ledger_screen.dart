@@ -57,7 +57,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
         ),
         body: BlocBuilder<LedgerBloc, LedgerState>(
           builder: (context, state) {
-            if (state is LedgerLoading || state is LedgerInitial || state is PaymentRecording) {
+            if (state is LedgerLoading || state is LedgerInitial || state is PaymentRecording || state is PaymentRecorded) {
               return const Center(child: CircularProgressIndicator());
             }
 
@@ -480,7 +480,7 @@ class _LedgerScreenState extends State<LedgerScreen> {
               onPressed: () async {
                 final result = await context.push('/add-transaction?contactId=${widget.contactId}');
                 if (result == true && context.mounted) {
-                  context.read<LedgerBloc>().add(LoadLedger(widget.contactId));
+                  context.read<LedgerBloc>().add(LoadLedger(widget.contactId, forceRefresh: true));
                 }
               },
               icon: const Icon(Icons.add, color: Colors.white, size: 18),

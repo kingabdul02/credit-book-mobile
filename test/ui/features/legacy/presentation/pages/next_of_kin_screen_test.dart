@@ -170,4 +170,25 @@ void main() {
     expect(find.text('John Doe'), findsOneWidget);
     expect(find.text('No primary nominee added'), findsNothing);
   });
+
+  testWidgets('NextOfKinScreen displays AppErrorView on initial load error without redundant SnackBar', (tester) async {
+    tester.view.physicalSize = const Size(800, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    legacyBloc.emit(LegacyError('Unable to connect to the server. Please check your internet connection and try again.'));
+
+    await tester.pumpWidget(createWidgetUnderTest());
+    await tester.pump();
+
+    // AppErrorView should be displayed
+    expect(find.text('Unable to connect to the server. Please check your internet connection and try again.'), findsOneWidget);
+    expect(find.text('Try Again'), findsOneWidget);
+
+    // No SnackBar should be rendered on initial load error
+    expect(find.byType(SnackBar), findsNothing);
+  });
 }
