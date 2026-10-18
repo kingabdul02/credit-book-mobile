@@ -5,22 +5,30 @@ import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_data_source.dart';
 import '../models/user_model.dart';
+import '../../../../core/services/app_cache_manager.dart';
+import '../../../people/data/datasources/people_local_data_source.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
   final SharedPreferences sharedPreferences;
+  final AppCacheManager? cacheManager;
+  final PeopleLocalDataSource? peopleLocalDataSource;
 
   static const String cachedUserKey = 'cached_user';
 
   AuthRepositoryImpl({
     required this.remoteDataSource,
     required this.sharedPreferences,
+    this.cacheManager,
+    this.peopleLocalDataSource,
   });
 
   Future<void> _cacheUser(User user) async {
     try {
       final userModel = UserModel.fromEntity(user);
       await sharedPreferences.setString(cachedUserKey, jsonEncode(userModel.toJson()));
+      await sharedPreferences.setString('current_user_id', user.id);
+      await peopleLocalDataSource?.setNeedsLoginSync(user.id, true);
     } catch (_) {
       // Graceful degradation if local serialization fails
     }
@@ -97,7 +105,9 @@ class AuthRepositoryImpl implements AuthRepository {
       await remoteDataSource.logout();
     } finally {
       await sharedPreferences.remove(cachedUserKey);
+      await sharedPreferences.remove('current_user_id');
       await sharedPreferences.remove('app_notifications_list');
+      cacheManager?.clear();
     }
   }
 

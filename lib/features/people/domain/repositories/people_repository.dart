@@ -13,7 +13,11 @@ abstract class PeopleRepository {
   Future<PeopleDataEntity> getPeopleData({bool forceRefresh = false});
   PeopleDataEntity? getCachedPeopleData();
 
-  Future<void> createContact(Map<String, dynamic> contactData);
+  Future<ContactEntity> createContact(Map<String, dynamic> contactData);
+  Future<ContactEntity> updateContact(String id, Map<String, dynamic> contactData);
+  Future<void> deleteContact(String id);
+
+  Future<void> syncContactsOnLogin(String userId);
 
   Future<ContactEntity> getContactDetails(String id, {bool forceRefresh = false});
   ContactEntity? getCachedContactDetails(String id);

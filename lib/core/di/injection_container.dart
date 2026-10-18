@@ -14,6 +14,7 @@ import '../../features/home/domain/repositories/home_repository.dart';
 import '../../features/home/presentation/bloc/home_bloc.dart';
 import '../../features/home/data/datasources/home_local_data_source.dart';
 import '../../features/people/data/datasources/people_remote_data_source.dart';
+import '../../features/people/data/datasources/people_local_data_source.dart';
 import '../../features/people/data/repositories/people_repository_impl.dart';
 import '../../features/people/domain/repositories/people_repository.dart';
 import '../../features/people/presentation/bloc/people_bloc.dart';
@@ -44,7 +45,12 @@ Future<void> init() async {
 
   // Repository
   sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(remoteDataSource: sl(), sharedPreferences: sl()),
+    () => AuthRepositoryImpl(
+      remoteDataSource: sl(),
+      sharedPreferences: sl(),
+      cacheManager: sl(),
+      peopleLocalDataSource: sl(),
+    ),
   );
 
   // Data sources
@@ -74,8 +80,18 @@ Future<void> init() async {
   sl.registerFactory(() => AddTransactionBloc(repository: sl()));
   sl.registerFactory(() => AllDebtsBloc(repository: sl()));
 
+  sl.registerLazySingleton<PeopleLocalDataSource>(
+    () => PeopleLocalDataSourceImpl(sharedPreferences: sl()),
+  );
+
   sl.registerLazySingleton<PeopleRepository>(
-    () => PeopleRepositoryImpl(remoteDataSource: sl(), syncQueue: sl(), cacheManager: sl()),
+    () => PeopleRepositoryImpl(
+      remoteDataSource: sl(),
+      localDataSource: sl(),
+      syncQueue: sl(),
+      sharedPreferences: sl(),
+      cacheManager: sl(),
+    ),
   );
 
   sl.registerLazySingleton<PeopleRemoteDataSource>(

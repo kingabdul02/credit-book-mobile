@@ -16,15 +16,42 @@ class ContactModel extends ContactEntity {
 
   factory ContactModel.fromJson(Map<String, dynamic> json) {
     return ContactModel(
-      id: json['id'] ?? '',
+      id: json['id']?.toString() ?? '',
       fullName: json['full_name'] ?? 'Unknown',
       nickname: json['nickname'],
       profilePicture: json['profile_picture'],
       isFavorite: json['is_favorite'] == true,
       totalOwedToUser: double.tryParse(json['total_owed_to_user']?.toString() ?? '0') ?? 0.0,
       totalUserOwes: double.tryParse(json['total_user_owes']?.toString() ?? '0') ?? 0.0,
-      updatedAt: json['updated_at'] ?? '',
+      updatedAt: json['updated_at']?.toString() ?? '',
       debts: (json['debts'] as List?)?.map((d) => DebtModel.fromJson(d)).toList(),
     );
+  }
+
+  factory ContactModel.fromEntity(ContactEntity entity) {
+    return ContactModel(
+      id: entity.id,
+      fullName: entity.fullName,
+      nickname: entity.nickname,
+      profilePicture: entity.profilePicture,
+      isFavorite: entity.isFavorite,
+      totalOwedToUser: entity.totalOwedToUser,
+      totalUserOwes: entity.totalUserOwes,
+      updatedAt: entity.updatedAt,
+      debts: entity.debts,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'full_name': fullName,
+      'nickname': nickname,
+      'profile_picture': profilePicture,
+      'is_favorite': isFavorite,
+      'total_owed_to_user': totalOwedToUser,
+      'total_user_owes': totalUserOwes,
+      'updated_at': updatedAt,
+    };
   }
 }

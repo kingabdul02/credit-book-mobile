@@ -40,13 +40,12 @@ class PeopleBloc extends Bloc<PeopleEvent, PeopleState> {
     LoadPeopleDataRequested event,
     Emitter<PeopleState> emit,
   ) async {
-    // 1. Check for cached people data to render immediately
+    // 1. Check for local storage / cached people data to render immediately
     final cached = repository.getCachedPeopleData();
-    final hasData = state is PeopleLoaded || cached != null;
 
-    if (cached != null && state is! PeopleLoaded) {
+    if (cached != null) {
       emit(PeopleLoaded(cached));
-    } else if (!hasData) {
+    } else if (state is! PeopleLoaded) {
       emit(PeopleLoading());
     }
 
@@ -54,7 +53,7 @@ class PeopleBloc extends Bloc<PeopleEvent, PeopleState> {
       final data = await repository.getPeopleData(forceRefresh: event.forceRefresh);
       emit(PeopleLoaded(data));
     } catch (e) {
-      if (!hasData) {
+      if (state is! PeopleLoaded) {
         emit(PeopleError(ErrorHandler.getFriendlyMessage(e)));
       }
     }

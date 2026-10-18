@@ -12,6 +12,8 @@ abstract class PeopleRemoteDataSource {
   Future<List<ContactModel>> getFrequentlyContacted();
   Future<List<ContactModel>> getAllContacts();
   Future<ContactModel> createContact(Map<String, dynamic> data);
+  Future<ContactModel> updateContact(String id, Map<String, dynamic> data);
+  Future<void> deleteContact(String id);
   Future<ContactModel> getContact(String id);
   Future<DebtModel> createDebt(Map<String, dynamic> data);
   Future<void> recordPayment({
@@ -105,6 +107,34 @@ class PeopleRemoteDataSourceImpl implements PeopleRemoteDataSource {
       return ContactModel.fromJson(responseData['contact']);
     } else {
       throw Exception('Failed to create contact: ${response.body}');
+    }
+  }
+
+  @override
+  Future<ContactModel> updateContact(String id, Map<String, dynamic> data) async {
+    final response = await client.put(
+      Uri.parse('$baseUrl/$id'),
+      headers: await _headers,
+      body: json.encode(data),
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      return ContactModel.fromJson(responseData['contact']);
+    } else {
+      throw Exception('Failed to update contact: ${response.body}');
+    }
+  }
+
+  @override
+  Future<void> deleteContact(String id) async {
+    final response = await client.delete(
+      Uri.parse('$baseUrl/$id'),
+      headers: await _headers,
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception('Failed to delete contact: ${response.body}');
     }
   }
 
