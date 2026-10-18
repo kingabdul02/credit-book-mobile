@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/theme_cubit.dart';
 import '../../core/services/sync_queue_local_data_source.dart';
 import '../../core/services/app_cache_manager.dart';
+import '../../core/services/session_manager.dart';
+import '../../core/network/session_interceptor_client.dart';
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
@@ -41,7 +43,7 @@ Future<void> init() async {
   // Features - Auth
 
   // Bloc
-  sl.registerFactory(() => AuthBloc(authRepository: sl()));
+  sl.registerFactory(() => AuthBloc(authRepository: sl(), sessionManager: sl()));
 
   // Repository
   sl.registerLazySingleton<AuthRepository>(
@@ -119,9 +121,12 @@ Future<void> init() async {
   // External
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPreferences);
-  sl.registerLazySingleton(() => http.Client());
+  sl.registerLazySingleton<http.Client>(
+    () => SessionInterceptorClient(inner: http.Client(), sessionManager: sl()),
+  );
 
   // Core Services
+  sl.registerLazySingleton(() => SessionManager.instance);
   sl.registerLazySingleton<AppCacheManager>(
     () => AppCacheManager(sharedPreferences: sl()),
   );

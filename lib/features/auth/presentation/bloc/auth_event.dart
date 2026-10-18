@@ -192,3 +192,12 @@ class DisableTwoFactorRequested extends AuthEvent {
   List<Object?> get props => [pin];
 }
 
+class SessionExpiredEvent extends AuthEvent {
+  final String? reason;
+
+  const SessionExpiredEvent([this.reason]);
+
+  @override
+  List<Object?> get props => [reason];
+}
+

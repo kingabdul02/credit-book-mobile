@@ -136,7 +136,7 @@ void main() {
     });
   });
 
-  group('AuthBloc - LogoutRequested', () {
+  group('AuthBloc - LogoutRequested and SessionExpired', () {
     test('emits [AuthLoading, AuthInitial] on LogoutRequested', () async {
       final prefs = await SharedPreferences.getInstance();
       final mockClient = MockClient((request) async {
@@ -163,6 +163,72 @@ void main() {
       expect(states.length, 2);
       expect(states[0], isA<AuthLoading>());
       expect(states[1], isA<AuthInitial>());
+
+      await bloc.close();
+    });
+
+    test('emits AuthSessionExpired on SessionExpiredEvent and clears cached user', () async {
+      final prefs = await SharedPreferences.getInstance();
+      final mockClient = MockClient((request) async {
+        return http.Response(jsonEncode({'message': 'Logged out'}), 200);
+      });
+
+      final dataSource = AuthRemoteDataSourceImpl(
+        client: mockClient,
+        sharedPreferences: prefs,
+      );
+      final repository = AuthRepositoryImpl(
+        remoteDataSource: dataSource,
+        sharedPreferences: prefs,
+      );
+      final bloc = AuthBloc(authRepository: repository);
+
+      final states = <AuthState>[];
+      bloc.stream.listen(states.add);
+
+      bloc.add(const SessionExpiredEvent());
+
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      expect(states.length, 1);
+      expect(states[0], isA<AuthSessionExpired>());
+      expect(prefs.getString(AuthRepositoryImpl.cachedUserKey), isNull);
+
+      await bloc.close();
+    });
+
+    test('emits AuthSessionExpired during CheckAuthStatus if remote returns 401 unauthenticated', () async {
+      final prefs = await SharedPreferences.getInstance();
+      final mockClient = MockClient((request) async {
+        if (request.url.path.endsWith('/auth/user')) {
+          return http.Response(jsonEncode({'message': 'Unauthenticated.'}), 401);
+        }
+        return http.Response('{}', 200);
+      });
+
+      final dataSource = AuthRemoteDataSourceImpl(
+        client: mockClient,
+        sharedPreferences: prefs,
+      );
+      final repository = AuthRepositoryImpl(
+        remoteDataSource: dataSource,
+        sharedPreferences: prefs,
+      );
+      final bloc = AuthBloc(authRepository: repository);
+
+      final states = <AuthState>[];
+      bloc.stream.listen(states.add);
+
+      bloc.add(CheckAuthStatus());
+
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Should emit AuthSuccess(cached) first, then AuthSessionExpired when 401 returned
+      expect(states.any((s) => s is AuthSessionExpired), isTrue);
+      expect(prefs.getString(AuthRepositoryImpl.cachedUserKey), isNull);
+
+      await bloc.close();
     });
   });
 }
+

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../error/error_handler.dart';
 import '../theme/app_theme.dart';
+import '../services/session_manager.dart';
 
 /// A polished, user-friendly error view widget that gracefully displays
 /// error messages (especially network/connectivity failures) with an icon,
@@ -30,13 +31,21 @@ class AppErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isNetwork = ErrorHandler.isNetworkError(error);
+    final isSession = ErrorHandler.isSessionExpired(error);
     final displayTitle = title ?? ErrorHandler.getTitle(error);
     final displayMessage = message ?? ErrorHandler.getFriendlyMessage(error);
     final displayIcon = icon ??
-        (isNetwork ? Icons.wifi_off_rounded : Icons.error_outline_rounded);
+        (isNetwork
+            ? Icons.wifi_off_rounded
+            : isSession
+                ? Icons.lock_outline_rounded
+                : Icons.error_outline_rounded);
 
     final iconColor = isNetwork ? AppTheme.primaryColor : AppTheme.errorColor;
     final iconBgColor = iconColor.withValues(alpha: 0.1);
+
+    final buttonLabel = (retryText == 'Try Again' && isSession) ? 'Sign In Again' : retryText;
+    final buttonIcon = isSession ? Icons.login_rounded : Icons.refresh_rounded;
 
     return Center(
       child: SingleChildScrollView(
@@ -92,13 +101,18 @@ class AppErrorView extends StatelessWidget {
               ),
             ),
             // Action button
-            if (onRetry != null) ...[
+            if (onRetry != null || isSession) ...[
               SizedBox(height: isCompact ? 18 : 24),
               ElevatedButton.icon(
-                onPressed: onRetry,
-                icon: const Icon(Icons.refresh_rounded, size: 18),
+                onPressed: () {
+                  if (isSession) {
+                    SessionManager.instance.notifySessionExpired();
+                  }
+                  onRetry?.call();
+                },
+                icon: Icon(buttonIcon, size: 18),
                 label: Text(
-                  retryText,
+                  buttonLabel,
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,

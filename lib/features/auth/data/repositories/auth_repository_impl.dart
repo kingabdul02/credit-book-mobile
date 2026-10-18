@@ -108,6 +108,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await sharedPreferences.remove('current_user_id');
       await sharedPreferences.remove('app_notifications_list');
       cacheManager?.clear();
+      await peopleLocalDataSource?.clearAll();
     }
   }
 

@@ -48,9 +48,19 @@ void main() {
     test('handles 401 unauthorized gracefully', () {
       const error = '401 Unauthorized: Invalid credentials';
       expect(ErrorHandler.isNetworkError(error), isFalse);
+      expect(ErrorHandler.isSessionExpired(error), isTrue);
       expect(ErrorHandler.getTitle(error), equals('Session Expired'));
       expect(ErrorHandler.getFriendlyMessage(error), equals('Your session has expired. Please sign in again.'));
     });
+
+    test('handles Sanctum Unauthenticated error gracefully', () {
+      const error = 'Exception: Unauthenticated.';
+      expect(ErrorHandler.isNetworkError(error), isFalse);
+      expect(ErrorHandler.isSessionExpired(error), isTrue);
+      expect(ErrorHandler.getTitle(error), equals('Session Expired'));
+      expect(ErrorHandler.getFriendlyMessage(error), equals('Your session has expired. Please sign in again.'));
+    });
+
 
     test('handles 500 server errors gracefully', () {
       const error = '500 Internal Server Error';

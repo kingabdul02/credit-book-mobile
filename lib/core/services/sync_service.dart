@@ -30,7 +30,8 @@ class SyncService {
   /// Get the real-time sync status from the server.
   static Future<SyncStatusModel> getStatus() async {
     try {
-      final response = await http.get(
+      final client = sl<http.Client>();
+      final response = await client.get(
         Uri.parse('$_baseUrl/sync/status'),
         headers: await _headers(),
       ).timeout(const Duration(seconds: 10));
@@ -50,7 +51,8 @@ class SyncService {
       final since = prefs.getString(_lastSyncKey);
 
       final uri = Uri.parse('$_baseUrl/sync/pull${since != null ? '?since=$since' : ''}');
-      final response = await http.get(uri, headers: await _headers())
+      final client = sl<http.Client>();
+      final response = await client.get(uri, headers: await _headers())
           .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {

@@ -34,16 +34,28 @@ class ErrorHandler {
         str.contains('handshakeexception');
   }
 
+  /// Detects whether an error or exception indicates an expired session or unauthenticated request.
+  static bool isSessionExpired(dynamic error) {
+    if (error == null) return false;
+    final str = error.toString().toLowerCase();
+    return str.contains('401') ||
+        str.contains('unauthorized') ||
+        str.contains('unauthenticated') ||
+        str.contains('session expired') ||
+        str.contains('token expired') ||
+        str.contains('token has expired');
+  }
+
   /// Returns a short, user-friendly title for the error.
   static String getTitle(dynamic error) {
     if (isNetworkError(error)) {
       return 'No Internet Connection';
     }
 
-    final str = error?.toString().toLowerCase() ?? '';
-    if (str.contains('401') || str.contains('unauthorized')) {
+    if (isSessionExpired(error)) {
       return 'Session Expired';
     }
+    final str = error?.toString().toLowerCase() ?? '';
     if (str.contains('403') || str.contains('forbidden')) {
       return 'Access Denied';
     }
@@ -71,12 +83,12 @@ class ErrorHandler {
       return 'Unable to connect to the server. Please check your internet connection and try again.';
     }
 
-    final raw = error.toString();
-    final lower = raw.toLowerCase();
-
-    if (lower.contains('401') || lower.contains('unauthorized')) {
+    if (isSessionExpired(error)) {
       return 'Your session has expired. Please sign in again.';
     }
+
+    final raw = error.toString();
+    final lower = raw.toLowerCase();
     if (lower.contains('403') || lower.contains('forbidden')) {
       return 'You do not have permission to perform this action.';
     }

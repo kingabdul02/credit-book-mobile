@@ -242,3 +242,14 @@ class TwoFactorCodeResent extends AuthState {
   List<Object?> get props => [message, debugCode, method];
 }
 
+class AuthSessionExpired extends AuthState {
+  final String message;
+
+  const AuthSessionExpired({
+    this.message = 'Your session has expired. Please sign in again.',
+  });
+
+  @override
+  List<Object?> get props => [message];
+}
+

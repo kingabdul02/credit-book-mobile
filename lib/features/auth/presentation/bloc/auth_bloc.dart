@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/error/error_handler.dart';
+import '../../../../core/services/session_manager.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/entities/two_factor_exception.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -8,8 +10,17 @@ import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
+  StreamSubscription<String?>? _sessionExpiredSub;
 
-  AuthBloc({required this.authRepository}) : super(AuthInitial()) {
+  AuthBloc({
+    required this.authRepository,
+    SessionManager? sessionManager,
+  }) : super(AuthInitial()) {
+    _sessionExpiredSub = (sessionManager ?? SessionManager.instance)
+        .onSessionExpired
+        .listen((reason) => add(SessionExpiredEvent(reason)));
+
+    on<SessionExpiredEvent>(_onSessionExpired);
     on<CheckAuthStatus>(_onCheckAuthStatus);
     on<LoginRequested>(_onLoginRequested);
     on<SignupRequested>(_onSignupRequested);
@@ -35,6 +46,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     return ErrorHandler.getFriendlyMessage(e);
   }
 
+  Future<void> _onSessionExpired(
+    SessionExpiredEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      await authRepository.logout();
+    } catch (_) {}
+    emit(AuthSessionExpired(
+      message: event.reason ?? 'Your session has expired. Please sign in again.',
+    ));
+  }
+
   Future<void> _onCheckAuthStatus(CheckAuthStatus event, Emitter<AuthState> emit) async {
     final cached = await authRepository.getCachedUser();
     if (cached != null) {
@@ -43,7 +66,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final fresh = await authRepository.getCurrentUser();
       emit(AuthSuccess(fresh));
-    } catch (_) {
+    } catch (e) {
+      if (ErrorHandler.isSessionExpired(e)) {
+        try {
+          await authRepository.logout();
+        } catch (_) {}
+        emit(const AuthSessionExpired());
+        return;
+      }
       // If offline, continue using cached user if available
       if (cached == null && state is! AuthSuccess) {
         emit(AuthInitial());
@@ -372,5 +402,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (e) {
       emit(AuthError(_cleanError(e)));
     }
+  }
+
+  @override
+  Future<void> close() {
+    _sessionExpiredSub?.cancel();
+    return super.close();
   }
 }
